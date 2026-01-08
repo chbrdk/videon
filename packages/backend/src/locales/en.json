@@ -1,0 +1,35 @@
+{
+  "errors": {
+    "notFound": "Resource not found",
+    "internalError": "Internal server error",
+    "validationError": "Validation failed",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "conflict": "Resource conflict",
+    "rateLimitExceeded": "Too many requests",
+    "serviceUnavailable": "Service is currently unavailable",
+    "uploadFailed": "Upload failed",
+    "deleteError": "Error deleting resource",
+    "moveError": "Error moving resource"
+  },
+  "success": {
+    "created": "Resource created successfully",
+    "updated": "Resource updated successfully",
+    "deleted": "Resource deleted successfully",
+    "moved": "Resource moved successfully"
+  },
+  "api": {
+    "videos": {
+      "uploaded": "Video uploaded successfully",
+      "deleted": "Video deleted successfully",
+      "moved": "Video moved successfully",
+      "analyzing": "Video is being analyzed",
+      "analysisComplete": "Video analysis complete"
+    },
+    "folders": {
+      "created": "Folder created successfully",
+      "deleted": "Folder deleted successfully",
+      "renamed": "Folder renamed successfully"
+    }
+  }
+}

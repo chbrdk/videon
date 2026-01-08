@@ -1,0 +1,3 @@
+[submodule "packages/msqdx-design-system"]
+	path = packages/msqdx-design-system
+	url = https://github.com/chbrdk/msqdx-design-system.git

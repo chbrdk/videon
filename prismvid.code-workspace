@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../prismmock"
+		},
+		{
+			"path": "../figma-plugin"
+		}
+	],
+	"settings": {}
+}

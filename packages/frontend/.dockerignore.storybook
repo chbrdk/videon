@@ -1,0 +1,14 @@
+node_modules
+build
+.svelte-kit
+dist
+coverage
+.nyc_output
+*.log
+.DS_Store
+test-results
+playwright-report
+storybook-static
+.vscode
+.idea
+

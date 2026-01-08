@@ -1,0 +1,43 @@
+# Saliency Detection Service Dependencies - Oktober 2025
+# SAM 2.1 mit Core ML Support für Apple Silicon M4
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Computer Vision & Video Processing
+opencv-python-headless==4.8.1.78
+ffmpeg-python==0.2.0
+pillow==10.1.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Machine Learning - Apple Silicon optimiert
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# SAM 1 - State of the Art Saliency Detection (Python 3.9 compatible)
+git+https://github.com/facebookresearch/segment-anything.git
+# Alternative: segment-anything>=1.0.0 wenn verfügbar
+
+# Core ML für Apple Silicon Optimierung
+coremltools>=7.0.0
+transformers>=4.30.0
+
+# Database & HTTP
+psycopg2-binary==2.9.9
+httpx==0.25.2
+aiofiles==23.2.1
+
+# Utilities
+python-dotenv==1.0.1
+loguru==0.7.2
+tqdm>=4.66.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0

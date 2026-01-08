@@ -1,0 +1,8 @@
+<ExtensionList>
+  <Extension Id="com.prismvid.sceneSearch">
+    <HostList>
+      <Host Name="AEFT" Port="8095"/>
+    </HostList>
+  </Extension>
+</ExtensionList>
+

@@ -1,0 +1,766 @@
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
+  import PauseIcon from '@material-icons/svg/svg/pause/baseline.svg?raw';
+  import SkipPreviousIcon from '@material-icons/svg/svg/skip_previous/baseline.svg?raw';
+  import SkipNextIcon from '@material-icons/svg/svg/skip_next/baseline.svg?raw';
+  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
+  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
+  import UndoIcon from '@material-icons/svg/svg/undo/baseline.svg?raw';
+  import RedoIcon from '@material-icons/svg/svg/redo/baseline.svg?raw';
+  import ContentCutIcon from '@material-icons/svg/svg/content_cut/baseline.svg?raw';
+  import AddIcon from '@material-icons/svg/svg/add/baseline.svg?raw';
+  import SearchIcon from '@material-icons/svg/svg/search/baseline.svg?raw';
+  import CloseIcon from '@material-icons/svg/svg/close/baseline.svg?raw';
+  import { _, currentLocale } from '$lib/i18n';
+
+  const dispatch = createEventDispatcher();
+
+  export let isPlaying = false;
+  export let currentTime = 0;
+  export let duration = 0;
+  export let videoMuted = false;
+  export let videoAudioLevel = 100;
+  export let canGoBack = false;
+  export let canGoForward = false;
+  export let canUndo = false;
+  export let canRedo = false;
+  export let canSplit = false;
+  export let canAddScene = true;
+  export let showSearchModal = false;
+  export let searchQuery = '';
+  export let searchResults: any[] = [];
+  export let searching = false;
+
+  function handlePlayPause() {
+    dispatch('playPause');
+  }
+
+  function handlePrevious() {
+    dispatch('previous');
+  }
+
+  function handleNext() {
+    dispatch('next');
+  }
+
+  function handleMuteToggle() {
+    dispatch('muteToggle');
+  }
+
+  function handleVolumeChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const level = parseInt(target.value);
+    dispatch('volumeChange', { level });
+  }
+
+  function handleUndo() {
+    dispatch('undo');
+  }
+
+  function handleRedo() {
+    dispatch('redo');
+  }
+
+  function handleSplit() {
+    dispatch('split');
+  }
+
+  function handleAddScene() {
+    dispatch('addScene');
+  }
+
+  function handleSearch() {
+    dispatch('search');
+  }
+
+  function handleSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    dispatch('searchInput', { value: target.value });
+  }
+
+  function handleAddSceneToProject(result: { sceneId: string; videoId: string; startTime: number; endTime: number }) {
+    console.log('Central Controls: Adding scene to project:', result);
+    dispatch('addSceneToProject', result);
+  }
+
+  function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+</script>
+
+<div class="central-controls glass-effect">
+  <!-- Previous Button -->
+  <button 
+    class="control-btn"
+    on:click={handlePrevious}
+    disabled={!canGoBack}
+    title={_('controls.previousScene')}
+  >
+    <div class="icon-24px">{@html SkipPreviousIcon}</div>
+  </button>
+
+  <!-- Play/Pause Button -->
+  <button 
+    class="control-btn play-pause-btn"
+    on:click={handlePlayPause}
+    title={isPlaying ? _('controls.pause') : _('controls.play')}
+  >
+    <div class="icon-32px">{@html (isPlaying ? PauseIcon : PlayArrowIcon)}</div>
+  </button>
+
+  <!-- Next Button -->
+  <button 
+    class="control-btn"
+    on:click={handleNext}
+    disabled={!canGoForward}
+    title={_('controls.nextScene')}
+  >
+    <div class="icon-24px">{@html SkipNextIcon}</div>
+  </button>
+
+  <!-- Divider -->
+  <div class="control-divider"></div>
+
+  <!-- Time Display -->
+  <div class="time-display">
+    <span class="current-time">{formatTime(currentTime)}</span>
+    <span class="time-separator">/</span>
+    <span class="total-time">{formatTime(duration)}</span>
+  </div>
+
+  <!-- Divider -->
+  <div class="control-divider"></div>
+
+  <!-- Editing Tools -->
+  <button 
+    class="control-btn"
+    on:click={handleUndo}
+    disabled={!canUndo}
+    title={_('controls.undo')}
+  >
+    <div class="icon-20px">{@html UndoIcon}</div>
+  </button>
+
+  <button 
+    class="control-btn"
+    on:click={handleRedo}
+    disabled={!canRedo}
+    title={_('controls.redo')}
+  >
+    <div class="icon-20px">{@html RedoIcon}</div>
+  </button>
+
+  <button 
+    class="control-btn"
+    on:click={handleSplit}
+    disabled={!canSplit}
+    title={_('controls.split')}
+  >
+    <div class="icon-20px">{@html ContentCutIcon}</div>
+  </button>
+
+  <!-- Divider -->
+  <div class="control-divider"></div>
+
+  <!-- Volume Controls -->
+  <div class="volume-controls">
+    <button 
+      class="control-btn volume-btn"
+      on:click={handleMuteToggle}
+      title={videoMuted ? _('controls.unmute') : _('controls.mute')}
+    >
+      <div class="icon-20px">{@html (videoMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
+    </button>
+    
+    <input 
+      type="range" 
+      min="0" 
+      max="100" 
+      bind:value={videoAudioLevel}
+      on:input={handleVolumeChange}
+      class="volume-slider"
+      title={`${_('controls.volume')}: ${videoAudioLevel}%`}
+    />
+    
+    <span class="volume-percentage">{videoAudioLevel}%</span>
+  </div>
+  
+  <!-- Add Scene Button - Absolutely positioned right -->
+  <button 
+    class="control-btn add-scene-btn"
+    on:click={handleAddScene}
+    disabled={!canAddScene}
+    title={_('controls.addScene')}
+  >
+    <div class="icon-20px">{@html AddIcon}</div>
+  </button>
+  
+  <!-- Search Modal - Positioned relative to Add Scene Button -->
+  {#if showSearchModal}
+    <div class="search-modal-overlay" on:click={() => dispatch('closeSearchModal')}>
+      <div class="search-modal" on:click|stopPropagation>
+      <div class="search-modal-header">
+        <h3 class="text-lg font-bold">
+          {_('search.searchScenes')}
+        </h3>
+        <button class="close-btn" on:click={() => dispatch('closeSearchModal')}>
+          <div class="icon-20px">{@html CloseIcon}</div>
+        </button>
+      </div>
+      
+      <!-- Search Input -->
+      <div class="search-input-container">
+        <input
+          type="text"
+          bind:value={searchQuery}
+          on:keydown={(e) => e.key === 'Enter' && handleSearch()}
+          on:input={handleSearchInput}
+          placeholder={_('search.searchPlaceholder')}
+          class="search-input"
+        />
+        <button class="search-btn" on:click={handleSearch} disabled={searching}>
+          <div class="icon-20px">{@html SearchIcon}</div>
+        </button>
+      </div>
+      
+      <!-- Results -->
+      <div class="search-results">
+        {#each searchResults as result}
+          <div class="search-result-item">
+            <div class="result-content">
+              <div class="result-title">{result.videoTitle}</div>
+              <div class="result-description">
+                {result.content}
+              </div>
+            </div>
+            <button 
+              class="add-btn"
+              on:click={() => handleAddSceneToProject(result)}
+            >
+              {_('search.addToProject')}
+            </button>
+          </div>
+        {/each}
+      </div>
+      </div>
+    </div>
+  {/if}
+</div>
+
+<style lang="postcss">
+  .central-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    margin-top: 0 !important;
+  }
+
+  .control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+  }
+
+  .control-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+
+  .control-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .play-pause-btn {
+    width: 3rem;
+    height: 3rem;
+    background: rgba(0, 122, 255, 0.2);
+    border-color: rgba(0, 122, 255, 0.4);
+  }
+
+  .play-pause-btn:hover:not(:disabled) {
+    background: rgba(0, 122, 255, 0.3);
+    border-color: rgba(0, 122, 255, 0.6);
+  }
+
+  .control-divider {
+    width: 1px;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .time-display {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    min-width: 6rem;
+  }
+
+  .current-time {
+    color: #007AFF;
+  }
+
+  .time-separator {
+    opacity: 0.6;
+  }
+
+  .total-time {
+    opacity: 0.8;
+  }
+
+  .volume-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .volume-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .volume-slider {
+    width: 80px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #007AFF;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+  }
+
+  .volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: #007AFF;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+  }
+
+  .volume-percentage {
+    font-size: 0.75rem;
+    color: white;
+    opacity: 0.8;
+    min-width: 2.5rem;
+    text-align: center;
+  }
+
+  .add-scene-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 200, 83, 0.2) !important;
+    border-color: rgba(0, 200, 83, 0.4) !important;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .add-scene-btn:hover:not(:disabled) {
+    background: rgba(0, 200, 83, 0.3) !important;
+    border-color: rgba(0, 200, 83, 0.6) !important;
+    transform: translateY(-50%) !important;
+    transition: none !important;
+  }
+
+  .search-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+  }
+
+  .search-modal {
+    position: fixed;
+    top: 50%;
+    right: 2rem;
+    transform: translateY(-50%);
+    background: rgba(42, 52, 60, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    width: min(400px, 90vw);
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  
+  @media (max-width: 768px) {
+    .search-modal {
+      right: 1rem;
+      left: 1rem;
+      top: 2rem;
+      transform: none;
+      width: auto;
+      max-height: 70vh;
+      padding: 1rem;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .search-modal {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: none;
+      max-height: none;
+      transform: none;
+      border-radius: 0;
+      padding: 1rem;
+    }
+  }
+
+  .search-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .search-input-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.75rem;
+    color: white;
+    font-size: 0.875rem;
+  }
+
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: rgba(0, 122, 255, 0.8);
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 122, 255, 0.2);
+    border: 1px solid rgba(0, 122, 255, 0.4);
+    color: white;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.75rem;
+    width: 3rem;
+  }
+
+  .search-btn:hover:not(:disabled) {
+    background: rgba(0, 122, 255, 0.3);
+    border-color: rgba(0, 122, 255, 0.6);
+  }
+
+  .search-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+
+  .result-content {
+    flex: 1;
+  }
+
+  .result-title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: white;
+    margin-bottom: 0.25rem;
+  }
+
+  .result-description {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .add-btn {
+    background: rgba(0, 200, 83, 0.2);
+    border: 1px solid rgba(0, 200, 83, 0.4);
+    color: white;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.75rem;
+  }
+
+  .add-btn:hover {
+    background: rgba(0, 200, 83, 0.3);
+    border-color: rgba(0, 200, 83, 0.6);
+  }
+
+  /* Light theme styles */
+  html.light .search-modal {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  html.light .close-btn {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: black;
+  }
+
+  html.light .close-btn:hover {
+    background: rgba(0, 0, 0, 0.15);
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+
+  html.light .search-input {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: black;
+  }
+
+  html.light .search-input::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  html.light .search-input:focus {
+    border-color: rgba(0, 122, 255, 0.6);
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  html.light .search-result-item {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.15);
+  }
+
+  html.light .result-title {
+    color: black;
+  }
+
+  html.light .result-description {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .icon-20px {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-24px {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-32px {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Light theme styles */
+  html.light .central-controls {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  html.light .control-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: black;
+  }
+
+  html.light .control-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+
+  html.light .play-pause-btn {
+    background: rgba(0, 122, 255, 0.1);
+    border-color: rgba(0, 122, 255, 0.2);
+  }
+
+  html.light .play-pause-btn:hover:not(:disabled) {
+    background: rgba(0, 122, 255, 0.2);
+    border-color: rgba(0, 122, 255, 0.4);
+  }
+
+  html.light .control-divider {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  html.light .time-display {
+    color: black;
+  }
+
+  html.light .current-time {
+    color: #007AFF;
+  }
+
+  html.light .volume-slider {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  html.light .volume-slider::-webkit-slider-thumb {
+    border-color: black;
+  }
+
+  html.light .volume-slider::-moz-range-thumb {
+    border-color: black;
+  }
+
+  html.light .volume-percentage {
+    color: black;
+  }
+
+  html.light .add-scene-btn {
+    background: rgba(0, 200, 83, 0.1) !important;
+    border-color: rgba(0, 200, 83, 0.2) !important;
+  }
+
+  html.light .add-scene-btn:hover:not(:disabled) {
+    background: rgba(0, 200, 83, 0.2) !important;
+    border-color: rgba(0, 200, 83, 0.4) !important;
+  }
+  
+  @media (max-width: 1024px) {
+    .central-controls {
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .central-controls {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .time-display {
+      width: 100%;
+      text-align: center;
+      font-size: 0.75rem;
+      order: -1;
+    }
+    
+    .control-btn {
+      width: 2.5rem;
+      height: 2.5rem;
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .central-controls {
+      padding: 0.5rem;
+    }
+    
+    .volume-controls {
+      width: 100%;
+      justify-content: center;
+      order: 2;
+    }
+    
+    .control-divider {
+      display: none;
+    }
+  }
+</style>

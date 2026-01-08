@@ -1,0 +1,32 @@
+{
+  "name": "prismvid-ae-plugin-cep",
+  "version": "1.0.0",
+  "description": "Modern CEP Plugin for PrismVid Scene Search in After Effects",
+  "main": "src/js/main.js",
+  "scripts": {
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "symlink:mac": "ln -sf \"$(pwd)/dist\" \"$HOME/Library/Application Support/Adobe/CEP/extensions/prismvid-search\"",
+    "enable-debug:mac": "defaults write com.adobe.CSXS.11 PlayerDebugMode 1",
+    "check-debug:mac": "defaults read com.adobe.CSXS.11 PlayerDebugMode",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["after-effects", "cep", "prismvid", "plugin"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.94.1",
+    "webpack-cli": "^5.1.4",
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.1",
+    "babel-loader": "^9.2.1",
+    "html-webpack-plugin": "^5.6.3",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7"
+  }
+}
+

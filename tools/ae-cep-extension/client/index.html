@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrismVid Scene Search</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- Settings Section -->
+    <div class="section settings-section">
+      <div class="section-header">
+        <h3>Server Settings</h3>
+        <button id="settings-toggle" class="icon-btn">⚙️</button>
+      </div>
+      <div id="settings-panel" class="settings-panel hidden">
+        <label>
+          Server URL:
+          <input type="text" id="server-url" value="http://localhost:8080" />
+        </label>
+        <button id="test-btn" class="btn-primary">Test Connection</button>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="section search-section">
+      <div class="search-input-group">
+        <label>Query:</label>
+        <input type="text" id="search-input" placeholder="Nach Szenen suchen..." />
+        <button id="search-btn" class="btn-primary">Search</button>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="section results-section">
+      <div class="results-header">
+        <h3>Suchergebnisse</h3>
+        <span id="results-count">0 Ergebnisse</span>
+      </div>
+      <div id="results-container" class="results-container">
+        <div class="empty-state">
+          Geben Sie einen Suchbegriff ein und klicken Sie auf "Search".
+        </div>
+      </div>
+    </div>
+
+    <!-- Insert Options -->
+    <div id="insert-options" class="section insert-options hidden">
+      <h3>Insert Options</h3>
+      <label>
+        Target Composition:
+        <select id="target-comp">
+          <option value="new">Create New</option>
+          <option value="active">Active Composition</option>
+        </select>
+      </label>
+      <label id="comp-name-label">
+        Composition Name:
+        <input type="text" id="comp-name" value="Search Results" />
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="sequential-check" checked />
+        Sequential Placement
+      </label>
+      <label id="gap-label">
+        Gap (frames):
+        <input type="number" id="gap-frames" value="0" min="0" />
+      </label>
+      <button id="insert-btn" class="btn-primary btn-insert">
+        Add Scenes (<span id="selected-count">0</span>)
+      </button>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="status-bar" class="status-bar hidden">
+      <div class="status-content">
+        <span id="status-text">Processing...</span>
+        <button id="cancel-btn" class="btn-cancel">Cancel</button>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="CSInterface.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,260 @@
+{
+  "nav": {
+    "videos": "Videos",
+    "upload": "Upload"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "PrismVid - Dashboard",
+      "description": "PrismVid Video Analysis Dashboard",
+      "redirecting": "Redirecting...",
+      "redirectMessage": "You will be redirected to the Video Gallery."
+    },
+    "videoGallery": {
+      "title": "Video Gallery",
+      "description": "All your uploaded videos",
+      "newVideo": "Upload New Video",
+      "newFolder": "New Folder",
+      "emptyState": {
+        "noResults": "No results found",
+        "emptyFolder": "Folder is empty",
+        "noResultsMessage": "Try different search terms.",
+        "emptyFolderMessage": "Create a folder or upload a video!",
+        "createFolder": "Create Folder",
+        "uploadVideo": "Upload Video"
+      }
+    },
+    "upload": {
+      "title": "Video Upload",
+      "description": "Upload your videos for analysis",
+      "uploadVideo": "Upload Video",
+      "uploadMessage": "Upload your video and start automatic analysis",
+      "selectFile": "Select File",
+      "fileSelected": "File Selected",
+      "dragDropMessage": "Drop video here or click to select",
+      "supportedFormats": "Supported formats: MP4, AVI, MOV, WMV, MKV",
+      "maxFileSize": "Maximum file size: 1GB",
+      "selectedFile": "Selected File:",
+      "name": "Name:",
+      "size": "Size:",
+      "type": "Type:",
+      "uploadProgress": "Upload in progress...",
+      "uploadButton": "Upload and Analyze Video",
+      "help": {
+        "title": "Help",
+        "formats": "Supported video formats: MP4, AVI, MOV, WMV, MKV",
+        "maxSize": "Maximum file size: 1GB",
+        "analysis": "Vision analysis starts automatically after upload",
+        "duration": "Analysis may take several minutes"
+      }
+    }
+  },
+  "video": {
+    "status": {
+      "uploaded": "Uploaded",
+      "analyzing": "Analyzing...",
+      "analyzed": "Analyzed",
+      "complete": "Complete",
+      "error": "Error"
+    },
+    "details": {
+      "size": "Size:",
+      "uploaded": "Uploaded:",
+      "analyzed": "Analyzed:",
+      "duration": "Duration:",
+      "clickToOpen": "Click to open"
+    }
+  },
+  "folder": {
+    "create": "Create Folder",
+    "rename": "Rename",
+    "delete": "Delete",
+    "move": "Move to Folder",
+    "parentFolder": "Back",
+    "type": "Folder",
+    "name": "Folder Name",
+    "namePlaceholder": "Enter folder name..."
+  },
+  "actions": {
+    "select": "Select",
+    "deselect": "Deselect",
+    "move": "Move",
+    "delete": "Delete",
+    "rename": "Rename",
+    "create": "Create",
+    "upload": "Upload",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "selection": {
+    "selected": "selected",
+    "selectAll": "Select All"
+  },
+  "contextMenu": {
+    "rename": "Rename",
+    "delete": "Delete",
+    "moveToFolder": "Move to Folder"
+  },
+  "errors": {
+    "loadingError": "Error loading",
+    "uploadError": "Upload failed",
+    "deleteError": "Error deleting",
+    "moveError": "Error moving",
+    "selectValidVideo": "Please select a valid video file",
+    "fileTooLarge": "File is too large. Maximum: 1GB",
+    "deleteConfirm": "Really delete folder \"{name}\"?",
+    "deleteError": "Error: {message}",
+    "moveError": "Error moving: {message}"
+  },
+  "loading": {
+    "loading": "Loading...",
+    "processing": "Please wait while your video is being uploaded and analyzed..."
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kb": "KB",
+    "mb": "MB",
+    "gb": "GB"
+  },
+  "breadcrumb": {
+    "root": "Root"
+  },
+  "videoDetails": {
+    "status": "Status",
+    "size": "Size",
+    "duration": "Duration",
+    "uploaded": "Uploaded",
+    "analyzed": "Analyzed",
+    "saliency": "Saliency",
+    "frames": "frames",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing...",
+    "unknown": "Unknown"
+  },
+  "controls": {
+    "previousScene": "Previous Scene",
+    "nextScene": "Next Scene",
+    "play": "Play",
+    "pause": "Pause",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "undo": "Undo (Cmd+Z)",
+    "redo": "Redo (Cmd+Shift+Z)",
+    "split": "Split Scene at Playhead (S)",
+    "addScene": "Add Scene",
+    "volume": "Volume"
+  },
+  "export": {
+    "exportFailed": "Export failed",
+    "xmlExportFailed": "XML Export failed",
+    "unknownError": "Unknown error",
+    "exportPremiere": "Export Premiere",
+    "exportXml": "XML Only",
+    "exportSrt": "SRT",
+    "exporting": "Exporting..."
+  },
+  "audio": {
+    "separating": "Separating...",
+    "separateAudio": "Separate Audio",
+    "separateStem": "Separate Stem",
+    "deleting": "Deleting...",
+    "deleteStem": "Delete Stem"
+  },
+  "reframe": {
+    "title": "Reframe Video",
+    "deleteConfirm": "Really delete?",
+    "deleteFailed": "Failed to delete reframed video"
+  },
+  "delete": {
+    "deleteError": "Delete Error",
+    "confirmDelete": "Really delete?"
+  },
+  "move": {
+    "moveError": "Move Error"
+  },
+  "search": {
+    "title": "Search Videos",
+    "placeholder": "Search for scenes, topics, or objects...",
+    "button": "Search",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "resultsFound": "results found",
+    "videoNotSupported": "Your browser does not support the video element.",
+    "playsFrom": "Plays 5 seconds from",
+    "addToProject": "Add to Project",
+    "viewVideo": "View Video",
+    "createNewProject": "Create New Project",
+    "projectName": "Project name:",
+    "searchScenes": "Search Scenes",
+    "searchingInModal": "Searching...",
+    "searchPlaceholder": "Search..."
+  },
+  "project": {
+    "currentScene": "Current Scene:",
+    "noScenesAdded": "No scenes added yet",
+    "exporting": "Exporting...",
+    "separating": "Separating...",
+    "addToProject": "Add to Project"
+  },
+  "status": {
+    "uploaded": "Uploaded",
+    "analyzing": "Analyzing...",
+    "analyzed": "Analyzed",
+    "complete": "Complete",
+    "error": "Error",
+    "unknown": "Unknown"
+  },
+  "projects": {
+    "title": "My Projects",
+    "newProject": "New Project",
+    "createProject": "Create Project",
+    "noProjects": "No projects yet",
+    "createFirstProject": "Create your first project",
+    "name": "Project name:",
+    "loading": "Loading...",
+    "currentScene": "Current Scene:",
+    "noScenesAdded": "No scenes added yet"
+  },
+  "voiceClone": {
+    "title": "🎤 Clone Your Voice",
+    "name": "Name",
+    "namePlaceholder": "Name of voice clone",
+    "description": "Description (optional)",
+    "uploadAudio": "Upload Audio",
+    "selectFile": "Select file...",
+    "clone": "Clone Voice",
+    "cloning": "Cloning voice...",
+    "success": "Voice clone created!",
+    "error": "Failed to clone voice"
+  },
+  "revoice": {
+    "title": "🎤 Re-voice Segment",
+    "editText": "Edit Text",
+    "selectVoice": "Select Voice",
+    "voiceSettings": "Voice Settings",
+    "stability": "Stability",
+    "similarity": "Similarity",
+    "style": "Style",
+    "speakerBoost": "Speaker Boost",
+    "preview": "Preview",
+    "regenerate": "Regenerate",
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "applying": "Applying...",
+    "previewing": "Generating preview..."
+  },
+  "reframe": {
+    "title": "Reframe Video",
+    "aspectRatio": "Aspect Ratio",
+    "custom": "Custom",
+    "smoothing": "Smoothing",
+    "noSmoothing": "No smoothing",
+    "lightSmoothing": "Light smoothing",
+    "mediumSmoothing": "Medium smoothing",
+    "heavySmoothing": "Heavy smoothing",
+    "enterDimensions": "Please enter both width and height for custom aspect ratio",
+    "close": "Close",
+    "start": "Start"
+  }
+}

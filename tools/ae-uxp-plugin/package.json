@@ -1,0 +1,12 @@
+{
+  "name": "prismvid-scene-search",
+  "version": "1.0.0",
+  "description": "After Effects UXP Panel for searching and adding scenes from PrismVid",
+  "scripts": {
+    "build": "echo 'Build process would be implemented here'",
+    "test": "echo 'Tests would be implemented here'"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
+

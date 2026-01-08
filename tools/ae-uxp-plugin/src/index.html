@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrismVid Scene Search</title>
+  <link rel="stylesheet" href="ui/styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- Settings Section -->
+      <div class="section">
+        <div class="section-header">
+          <h3>Einstellungen</h3>
+          <button id="settings-toggle" class="icon-btn">⚙️</button>
+        </div>
+        <div id="settings-panel" class="settings-panel hidden">
+          <label>
+            Server URL:
+            <input type="text" id="server-url" placeholder="http://localhost:4001">
+          </label>
+          <label>
+            API Token (optional):
+            <input type="password" id="api-token" placeholder="Bearer token">
+          </label>
+          <label>
+            Standard Komposition:
+            <input type="text" id="default-comp" placeholder="Search Results">
+          </label>
+          <button id="settings-save" class="btn-primary">Speichern</button>
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="section">
+        <div class="search-input-container">
+          <input type="text" id="search-input" placeholder="Nach Szenen suchen..." />
+          <button id="search-btn" class="btn-primary">Suchen</button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="section">
+        <div class="results-header">
+          <h3 id="results-title">Suchergebnisse</h3>
+          <div class="results-info">
+            <span id="results-count">0 Ergebnisse</span>
+          </div>
+        </div>
+        
+        <div id="results-container" class="results-container">
+          <div class="empty-state">
+            Geben Sie einen Suchbegriff ein und klicken Sie auf "Suchen".
+          </div>
+        </div>
+      </div>
+
+      <!-- Insert Options -->
+      <div class="section insert-options hidden" id="insert-options">
+        <h3>Einfügen</h3>
+        <label>
+          Ziel-Komposition auswählen:
+          <select id="target-comp">
+            <option value="new">Neue Komposition erstellen</option>
+          </select>
+        </label>
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" id="sequential-placement" checked>
+            Hintereinander platzieren
+          </label>
+        </div>
+        <label class="hidden" id="gap-container">
+          Abstand (Frames):
+          <input type="number" id="gap-frames" value="0" min="0">
+        </label>
+        <button id="insert-btn" class="btn-primary btn-insert">
+          Szenen zu AE hinzufügen (<span id="selected-count">0</span>)
+        </button>
+      </div>
+
+      <!-- Status/Progress -->
+      <div id="status-bar" class="status-bar hidden">
+        <div class="status-content">
+          <span id="status-text"></span>
+          <button id="cancel-btn" class="btn-cancel">Abbrechen</button>
+        </div>
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
+

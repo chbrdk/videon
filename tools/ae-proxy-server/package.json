@@ -1,0 +1,14 @@
+{
+  "name": "prismvid-ae-proxy",
+  "version": "1.0.0",
+  "description": "Proxy server for After Effects ExtendScript to access PrismVid backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["prismvid", "after-effects", "proxy"],
+  "author": "",
+  "license": "ISC"
+}
+

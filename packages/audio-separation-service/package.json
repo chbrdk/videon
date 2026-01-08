@@ -1,0 +1,24 @@
+{
+  "name": "@prismvid/audio-separation-service",
+  "version": "1.0.0",
+  "description": "Audio separation service for PrismVid - handles Spleeter and Demucs separation",
+  "main": "src/api/server.py",
+  "scripts": {
+    "dev": "python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8003 --reload",
+    "start": "python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8003",
+    "test": "python -m pytest tests/",
+    "install-deps": "pip install -r requirements.txt"
+  },
+  "keywords": [
+    "audio",
+    "separation",
+    "spleeter",
+    "demucs",
+    "music",
+    "vocals"
+  ],
+  "author": "PrismVid Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}

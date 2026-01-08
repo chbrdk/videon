@@ -1,0 +1,26 @@
+{
+  "manifestVersion": 4,
+  "id": "prismvid.sceneSearch",
+  "name": "PrismVid Scene Search",
+  "version": "1.0.0",
+  "main": "src/index.html",
+  "host": {
+    "app": "AEFT",
+    "minVersion": "23.0"
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "prismvidSearchPanel",
+      "label": {
+        "default": "PrismVid Search"
+      },
+      "minimumSize": {"width": 300, "height": 200},
+      "maximumSize": {"width": 2000, "height": 2000},
+      "preferredDockedSize": {"width": 400, "height": 600}
+    }
+  ],
+  "uiAccess": {
+    "access": "automatic"
+  }
+}

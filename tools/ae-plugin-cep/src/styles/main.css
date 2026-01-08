@@ -1,0 +1,287 @@
+:root {
+  --bg-color: #2a2a2a;
+  --panel-bg: #1e1e1e;
+  --text-color: #e0e0e0;
+  --text-muted: #999;
+  --button-color: #0078d4;
+  --button-hover: #106ebe;
+  --button-danger: #d13438;
+  --border-color: #404040;
+  --accent-color: #00bcf2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Adobe Clean', 'Segoe UI', -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Settings Panel */
+#settings-panel {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--panel-bg);
+}
+
+#settings-panel h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 6px 8px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.form-group input[type="text"]:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+/* Search Section */
+.search-section {
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+#search-input {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+/* Results */
+#results-title {
+  padding: 12px 16px;
+  font-weight: 500;
+  background-color: var(--panel-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.results-count {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.results-container {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 16px;
+}
+
+.result-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.result-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.result-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--accent-color);
+}
+
+.result-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.result-duration {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: rgba(0, 188, 242, 0.2);
+  border-radius: 3px;
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--accent-color);
+}
+
+/* Insert Options */
+#insert-options {
+  padding: 16px;
+  background-color: var(--panel-bg);
+  border-top: 1px solid var(--border-color);
+}
+
+#insert-options h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+button {
+  background-color: var(--button-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--button-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background-color: var(--accent-color);
+}
+
+button.primary:hover {
+  background-color: #0099cc;
+}
+
+button.danger {
+  background-color: var(--button-danger);
+}
+
+button.danger:hover {
+  background-color: #c12d2f;
+}
+
+#search-btn {
+  white-space: nowrap;
+}
+
+.selected-count {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Status Bar */
+.status-bar {
+  padding: 12px 16px;
+  background-color: var(--panel-bg);
+  border-top: 2px solid var(--accent-color);
+  position: sticky;
+  bottom: 0;
+}
+
+.status-text {
+  margin-bottom: 8px;
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 4px;
+  background-color: var(--bg-color);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease;
+}
+

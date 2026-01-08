@@ -1,0 +1,162 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+build/
+.next/
+out/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db*
+
+# Storage directories - ignore all content
+storage/videos/*
+storage/keyframes/*
+storage/scenes/*
+storage/audio_stems/*
+storage/thumbnails/*
+storage/waveforms/*
+storage/projects/*
+storage/saliency/*
+storage/reframed_videos/*
+storage/botox/*
+storage/botox_tmp/*
+storage/Test Ordner/*
+storage/e/*
+
+# Model files - ignore large AI models
+packages/saliency-service/models/*.pt
+packages/saliency-service/models/*.pth
+packages/saliency-service/storage/models/*.pt
+packages/saliency-service/storage/models/*.pth
+
+# Keep directory structure
+!storage/videos/.gitkeep
+!storage/keyframes/.gitkeep
+!storage/scenes/.gitkeep
+!storage/audio_stems/.gitkeep
+!storage/thumbnails/.gitkeep
+!storage/waveforms/.gitkeep
+!storage/projects/.gitkeep
+!storage/saliency/.gitkeep
+!storage/reframed_videos/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.venv*/
+ENV/
+env.bak/
+venv.bak/
+
+# SvelteKit
+.svelte-kit/
+
+# Vite
+.vite/
+
+# Swift
+.build/
+packages/vision-service/Packages/
+packages/vision-service/Models/
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+
+*storybook.log
+storybook-static

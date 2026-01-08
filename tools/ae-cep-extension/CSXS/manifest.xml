@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="11.0" ExtensionBundleId="com.prismvid.sceneSearch" 
+                   ExtensionBundleVersion="1.0.0" ExtensionBundleName="PrismVid Scene Search">
+  
+  <ExtensionList>
+    <Extension Id="com.prismvid.sceneSearch" Version="1.0.0" />
+  </ExtensionList>
+  
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="AEFT" Version="[25.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="11.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  
+  <DispatchInfoList>
+    <Extension Id="com.prismvid.sceneSearch">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./host/index.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--allow-file-access</Parameter>
+            <Parameter>--disable-web-security</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>PrismVid Scene Search</Menu>
+          <Geometry>
+            <Size>
+              <Height>600</Height>
+              <Width>400</Width>
+            </Size>
+          </Geometry>
+        </UI>
+        <Icons>
+          <Icon Type="Normal">Resources/icon/icon_normal.png</Icon>
+          <Icon Type="RollOver">Resources/icon/icon_rollover.png</Icon>
+          <Icon Type="DarkNormal">Resources/icon/icon_dark_normal.png</Icon>
+          <Icon Type="DarkRollOver">Resources/icon/icon_dark_rollover.png</Icon>
+        </Icons>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+  
+</ExtensionManifest>
+

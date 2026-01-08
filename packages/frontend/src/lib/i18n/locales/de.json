@@ -1,0 +1,260 @@
+{
+  "nav": {
+    "videos": "Videos",
+    "upload": "Upload"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "PrismVid - Dashboard",
+      "description": "PrismVid Video Analysis Dashboard",
+      "redirecting": "Weiterleitung...",
+      "redirectMessage": "Sie werden zur Video Gallery weitergeleitet."
+    },
+    "videoGallery": {
+      "title": "Video Gallery",
+      "description": "Alle Ihre hochgeladenen Videos",
+      "newVideo": "Neues Video hochladen",
+      "newFolder": "Neuer Ordner",
+      "emptyState": {
+        "noResults": "Keine Ergebnisse gefunden",
+        "emptyFolder": "Ordner ist leer",
+        "noResultsMessage": "Versuchen Sie andere Suchbegriffe.",
+        "emptyFolderMessage": "Erstellen Sie einen Ordner oder laden Sie ein Video hoch!",
+        "createFolder": "Ordner erstellen",
+        "uploadVideo": "Video hochladen"
+      }
+    },
+    "upload": {
+      "title": "Video Upload",
+      "description": "Laden Sie Ihre Videos hoch für Analyse",
+      "uploadVideo": "Video hochladen",
+      "uploadMessage": "Laden Sie Ihr Video hoch und starten Sie die automatische Analyse",
+      "selectFile": "Datei auswählen",
+      "fileSelected": "Datei ausgewählt",
+      "dragDropMessage": "Video hier ablegen oder klicken zum Auswählen",
+      "supportedFormats": "Unterstützte Formate: MP4, AVI, MOV, WMV, MKV",
+      "maxFileSize": "Maximale Dateigröße: 1GB",
+      "selectedFile": "Ausgewählte Datei:",
+      "name": "Name:",
+      "size": "Größe:",
+      "type": "Typ:",
+      "uploadProgress": "Upload läuft...",
+      "uploadButton": "Video hochladen und analysieren",
+      "help": {
+        "title": "Hilfe",
+        "formats": "Unterstützte Video-Formate: MP4, AVI, MOV, WMV, MKV",
+        "maxSize": "Maximale Dateigröße: 1GB",
+        "analysis": "Nach dem Upload startet automatisch die Vision-Analyse",
+        "duration": "Die Analyse kann einige Minuten dauern"
+      }
+    }
+  },
+  "video": {
+    "status": {
+      "uploaded": "Hochgeladen",
+      "analyzing": "Analysiert...",
+      "analyzed": "Analysiert",
+      "complete": "Abgeschlossen",
+      "error": "Fehler"
+    },
+    "details": {
+      "size": "Größe:",
+      "uploaded": "Hochgeladen:",
+      "analyzed": "Analysiert:",
+      "duration": "Dauer:",
+      "clickToOpen": "Klicken zum Öffnen"
+    }
+  },
+  "folder": {
+    "create": "Ordner erstellen",
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "move": "In Ordner verschieben",
+    "parentFolder": "Zurück",
+    "type": "Ordner",
+    "name": "Ordnername",
+    "namePlaceholder": "Ordnername eingeben..."
+  },
+  "actions": {
+    "select": "Auswählen",
+    "deselect": "Abwählen",
+    "move": "Verschieben",
+    "delete": "Löschen",
+    "rename": "Umbenennen",
+    "create": "Erstellen",
+    "upload": "Hochladen",
+    "retry": "Erneut versuchen",
+    "cancel": "Abbrechen",
+    "save": "Speichern"
+  },
+  "selection": {
+    "selected": "ausgewählt",
+    "selectAll": "Alle auswählen"
+  },
+  "contextMenu": {
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "moveToFolder": "In Ordner verschieben"
+  },
+  "errors": {
+    "loadingError": "Fehler beim Laden",
+    "uploadError": "Upload fehlgeschlagen",
+    "deleteError": "Fehler beim Löschen",
+    "moveError": "Fehler beim Verschieben",
+    "selectValidVideo": "Bitte wählen Sie eine gültige Video-Datei aus",
+    "fileTooLarge": "Die Datei ist zu groß. Maximum: 1GB",
+    "deleteConfirm": "Ordner \"{name}\" wirklich löschen?",
+    "deleteError": "Fehler: {message}",
+    "moveError": "Fehler beim Verschieben: {message}"
+  },
+  "loading": {
+    "loading": "Lädt...",
+    "processing": "Bitte warten Sie, während Ihr Video hochgeladen und analysiert wird..."
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kb": "KB",
+    "mb": "MB",
+    "gb": "GB"
+  },
+  "breadcrumb": {
+    "root": "Hauptordner"
+  },
+  "videoDetails": {
+    "status": "Status",
+    "size": "Größe",
+    "duration": "Dauer",
+    "uploaded": "Hochgeladen",
+    "analyzed": "Analysiert",
+    "saliency": "Saliency",
+    "frames": "Frames",
+    "refresh": "Aktualisieren",
+    "refreshing": "Aktualisiere...",
+    "unknown": "Unbekannt"
+  },
+  "controls": {
+    "previousScene": "Vorherige Szene",
+    "nextScene": "Nächste Szene",
+    "play": "Abspielen",
+    "pause": "Pause",
+    "mute": "Stummschalten",
+    "unmute": "Stummschaltung aufheben",
+    "undo": "Rückgängig (Cmd+Z)",
+    "redo": "Wiederholen (Cmd+Shift+Z)",
+    "split": "Szene an Playhead teilen (S)",
+    "addScene": "Szene hinzufügen",
+    "volume": "Lautstärke"
+  },
+  "export": {
+    "exportFailed": "Export fehlgeschlagen",
+    "xmlExportFailed": "XML Export fehlgeschlagen",
+    "unknownError": "Unbekannter Fehler",
+    "exportPremiere": "Export Premiere",
+    "exportXml": "Nur XML",
+    "exportSrt": "SRT",
+    "exporting": "Exportiere..."
+  },
+  "audio": {
+    "separating": "Trenne...",
+    "separateAudio": "Audio trennen",
+    "separateStem": "Stem trennen",
+    "deleting": "Lösche...",
+    "deleteStem": "Stem löschen"
+  },
+  "reframe": {
+    "title": "Video umrahmen",
+    "deleteConfirm": "Wirklich löschen?",
+    "deleteFailed": "Fehler beim Löschen des reframed Videos"
+  },
+  "delete": {
+    "deleteError": "Fehler beim Löschen",
+    "confirmDelete": "Wirklich löschen?"
+  },
+  "move": {
+    "moveError": "Verschiebungsfehler"
+  },
+  "search": {
+    "title": "Videos durchsuchen",
+    "placeholder": "Nach Szenen, Themen oder Objekten suchen...",
+    "button": "Suchen",
+    "searching": "Suche...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "resultsFound": "Ergebnisse gefunden",
+    "videoNotSupported": "Ihr Browser unterstützt das Video-Element nicht.",
+    "playsFrom": "Spielt 5 Sekunden ab",
+    "addToProject": "Zu Projekt hinzufügen",
+    "viewVideo": "Video ansehen",
+    "createNewProject": "Neues Projekt erstellen",
+    "projectName": "Projektname:",
+    "searchScenes": "Szenen suchen",
+    "searchingInModal": "Suchen...",
+    "searchPlaceholder": "Suchen..."
+  },
+  "project": {
+    "currentScene": "Aktuelle Szene:",
+    "noScenesAdded": "Noch keine Szenen hinzugefügt",
+    "exporting": "Exportiere...",
+    "separating": "Trenne...",
+    "addToProject": "Zu Projekt hinzufügen"
+  },
+  "status": {
+    "uploaded": "Hochgeladen",
+    "analyzing": "Analysiere...",
+    "analyzed": "Analysiert",
+    "complete": "Abgeschlossen",
+    "error": "Fehler",
+    "unknown": "Unbekannt"
+  },
+  "projects": {
+    "title": "Meine Projekte",
+    "newProject": "Neues Projekt",
+    "createProject": "Projekt erstellen",
+    "noProjects": "Noch keine Projekte",
+    "createFirstProject": "Erstelle dein erstes Projekt",
+    "name": "Projektname:",
+    "loading": "Lädt...",
+    "currentScene": "Aktuelle Szene:",
+    "noScenesAdded": "Noch keine Szenen hinzugefügt"
+  },
+  "voiceClone": {
+    "title": "🎤 Stimme klonen",
+    "name": "Name",
+    "namePlaceholder": "Name des Voice Clones",
+    "description": "Beschreibung (optional)",
+    "uploadAudio": "Audio hochladen",
+    "selectFile": "Datei auswählen...",
+    "clone": "Stimme klonen",
+    "cloning": "Klone Stimme...",
+    "success": "Voice Clone erstellt!",
+    "error": "Fehler beim Klonen"
+  },
+  "revoice": {
+    "title": "🎤 Neu vertonen",
+    "editText": "Text bearbeiten",
+    "selectVoice": "Stimme auswählen",
+    "voiceSettings": "Voice-Einstellungen",
+    "stability": "Stabilität",
+    "similarity": "Ähnlichkeit",
+    "style": "Stil",
+    "speakerBoost": "Speaker Boost",
+    "preview": "Vorschau",
+    "regenerate": "Neu generieren",
+    "apply": "Anwenden",
+    "cancel": "Abbrechen",
+    "applying": "Wende an...",
+    "previewing": "Generiere Vorschau..."
+  },
+  "reframe": {
+    "title": "Video umrahmen",
+    "aspectRatio": "Seitenverhältnis",
+    "custom": "Benutzerdefiniert",
+    "smoothing": "Glättung",
+    "noSmoothing": "Keine Glättung",
+    "lightSmoothing": "Leichte Glättung",
+    "mediumSmoothing": "Mittlere Glättung",
+    "heavySmoothing": "Starke Glättung",
+    "enterDimensions": "Bitte geben Sie Breite und Höhe ein",
+    "close": "Schließen",
+    "start": "Start"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "errors": {
+    "notFound": "Ressource nicht gefunden",
+    "internalError": "Interner Server-Fehler",
+    "validationError": "Validierung fehlgeschlagen",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Verboten",
+    "conflict": "Ressourcenkonflikt",
+    "rateLimitExceeded": "Zu viele Anfragen",
+    "serviceUnavailable": "Service ist derzeit nicht verfügbar",
+    "uploadFailed": "Upload fehlgeschlagen",
+    "deleteError": "Fehler beim Löschen der Ressource",
+    "moveError": "Fehler beim Verschieben der Ressource"
+  },
+  "success": {
+    "created": "Ressource erfolgreich erstellt",
+    "updated": "Ressource erfolgreich aktualisiert",
+    "deleted": "Ressource erfolgreich gelöscht",
+    "moved": "Ressource erfolgreich verschoben"
+  },
+  "api": {
+    "videos": {
+      "uploaded": "Video erfolgreich hochgeladen",
+      "deleted": "Video erfolgreich gelöscht",
+      "moved": "Video erfolgreich verschoben",
+      "analyzing": "Video wird analysiert",
+      "analysisComplete": "Video-Analyse abgeschlossen"
+    },
+    "folders": {
+      "created": "Ordner erfolgreich erstellt",
+      "deleted": "Ordner erfolgreich gelöscht",
+      "renamed": "Ordner erfolgreich umbenannt"
+    }
+  }
+}

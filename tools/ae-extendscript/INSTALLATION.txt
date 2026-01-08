@@ -1,0 +1,55 @@
+PrismVid Scene Search - After Effects Script
+Installations-Anleitung
+
+SCHRITT 1: Scripts-Verzeichnis finden
+======================================
+
+macOS:
+~/Applications/Adobe After Effects 2024/Scripts/
+oder
+~/Applications/Adobe After Effects 2025/Scripts/
+
+Windows:
+C:\Program Files\Adobe\Adobe After Effects 2024\Support Files\Scripts\
+oder
+C:\Program Files\Adobe\Adobe After Effects 2025\Support Files\Scripts\
+
+SCHRITT 2: Script kopieren
+============================
+
+Option A: Via Dateisystem
+- Script-Datei (PrismVidSceneSearch.jsx) ins Scripts-Verzeichnis kopieren
+
+Option B: Via After Effects
+1. File > Browse Templates
+2. Scripts-Ordner öffnen
+3. PrismVidSceneSearch.jsx hineinkopieren
+
+SCHRITT 3: Scripts aktivieren
+==============================
+
+In After Effects:
+Preferences > General > "Allow Scripts to Write Files and Access Network"
+Aktivieren!
+
+SCHRITT 4: Script ausführen
+==============================
+
+File > Scripts > PrismVidSceneSearch
+
+SCHRITT 5: Backend starten (falls nötig)
+=========================================
+
+cd /Users/m4mini/Desktop/DOCKER-local
+./deploy.sh backend start
+
+ODER
+
+cd /Volumes/DOCKER_EXTERN/prismvid
+# Backend läuft bereits
+
+FERTIG!
+========
+
+Das Script ist jetzt verfügbar in After Effects.
+

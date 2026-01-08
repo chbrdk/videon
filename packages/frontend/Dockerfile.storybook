@@ -1,0 +1,39 @@
+# Storybook Dockerfile
+# Development container for Storybook - optimized for hot reload
+# Storybook 8.6+ requires Node.js 20.19+ or 22.12+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY package.json package-lock.json* ./
+
+# Install dependencies (including Storybook)
+# Using --legacy-peer-deps to resolve Storybook/Svelte version conflicts
+RUN npm install --legacy-peer-deps
+
+# Copy configuration files
+COPY .storybook ./.storybook
+COPY svelte.config.js ./
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+COPY postcss.config.js ./
+COPY tailwind.config.js ./
+
+# Copy source code (will be overridden by volume mount, but needed for initial build)
+COPY src ./src
+
+# Ensure .storybook directory exists and has correct permissions
+RUN chmod -R 755 .storybook
+
+# Create dummy .svelte-kit/tsconfig.json for Vite/TypeScript processing
+RUN mkdir -p .svelte-kit && echo '{"compilerOptions":{"moduleResolution":"bundler","target":"ES2022","lib":["ES2022","DOM"],"module":"ESNext","strict":true}}' > .svelte-kit/tsconfig.json
+
+# Note: Storybook 10+ no longer needs the patch script for @storybook/core exports
+
+# Expose Storybook port
+EXPOSE 6006
+
+# Start Storybook directly (no patching needed for Storybook 10+)
+CMD ["npm", "run", "storybook", "--", "--host", "0.0.0.0"]
+

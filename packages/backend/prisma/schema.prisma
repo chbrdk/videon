@@ -1,0 +1,403 @@
+// This is your Prisma schema file for PostgreSQL,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Video {
+  id           String @id @default(cuid())
+  filename     String
+  originalName String
+  duration     Float?
+  fileSize     Int
+  mimeType     String
+  status       String @default("UPLOADED") // UPLOADED, ANALYZING, ANALYZED, AUDIO_SEPARATING, AUDIO_SEPARATED, AUDIO_SEPARATION_FAILED, ERROR
+
+  // Folder relation
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  uploadedAt       DateTime           @default(now())
+  analyzedAt       DateTime?
+  scenes           Scene[]
+  analysisLogs     AnalysisLog[]
+  transcriptions   Transcription[]
+  audioStems       AudioStem[]
+  searchIndices    SearchIndex[]
+  projectScenes    ProjectScene[]
+  saliencyAnalyses SaliencyAnalysis[]
+  reframedVideos   ReframedVideo[]
+
+  @@index([folderId])
+  @@map("videos")
+}
+
+model Scene {
+  id               String            @id @default(cuid())
+  videoId          String
+  video            Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  startTime        Float
+  endTime          Float
+  keyframePath     String?
+  visionData       String? // JSON as string
+  visionAnalysis   VisionAnalysis?
+  saliencyAnalysis SaliencyAnalysis?
+  searchIndices    SearchIndex[]
+  audioStems       AudioStem[]
+  createdAt        DateTime          @default(now())
+
+  @@index([videoId])
+  @@map("scenes")
+}
+
+model AnalysisLog {
+  id        String   @id @default(cuid())
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  level     String // INFO, WARNING, ERROR
+  message   String
+  metadata  String? // JSON as string
+  createdAt DateTime @default(now())
+
+  @@index([videoId])
+  @@map("analysis_logs")
+}
+
+model VisionAnalysis {
+  id      String @id @default(cuid())
+  sceneId String @unique
+  scene   Scene  @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  // Object Detection Results
+  objects     String? // JSON as string
+  objectCount Int     @default(0)
+
+  // Face Detection Results
+  faces     String? // JSON as string
+  faceCount Int     @default(0)
+
+  // Core ML Results
+  sceneClassification String? // JSON as string
+  customObjects       String? // JSON as string
+  sceneCategory       String?
+  customObjectCount   Int     @default(0)
+
+  // Apple Intelligence (optional)
+  aiDescription String?
+  aiTags        String? // JSON as string
+
+  // Text Recognition (OCR) Results (macOS 15+)
+  textRecognitions String? // JSON as string - OCR Results with bounding boxes
+  textCount        Int     @default(0) // Anzahl erkannte Text-Regionen
+
+  // Human Detection (macOS 13+)
+  humanRectangles String? // JSON as string - Human rectangles with bounding boxes
+  humanCount      Int     @default(0) // Anzahl erkannte Personen
+
+  // Human Body Pose Detection (macOS 14+)
+  humanBodyPoses String? // JSON as string - Body pose keypoints [x, y, confidence]
+  poseCount      Int     @default(0) // Anzahl erkannte Posen
+
+  // Metadata
+  processingTime Float?
+  visionVersion  String // e.g., "macOS 15.0"
+  coreMLVersion  String? // e.g., "1.0.0"
+  createdAt      DateTime @default(now())
+
+  // Qwen VL Semantic Analysis (optional)
+  qwenVLDescription    String? // Semantic video description from Qwen 3VL
+  qwenVLProcessed      Boolean @default(false)
+  qwenVLModel          String? // e.g., "Qwen3-VL-8B-Instruct-3bit"
+  qwenVLProcessingTime Float? // Processing time in seconds
+
+  @@index([sceneId])
+  @@index([sceneCategory])
+  @@map("vision_analyses")
+}
+
+model Folder {
+  id       String   @id @default(cuid())
+  name     String
+  parentId String? // null = root level
+  parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Folder[] @relation("FolderHierarchy")
+
+  // Physical path for file system
+  path String // e.g., "/root/projects/2024"
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  videos Video[]
+
+  @@index([parentId])
+  @@map("folders")
+}
+
+model Transcription {
+  id      String @id @default(cuid())
+  videoId String
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  language String // Detected language (de, en, etc.)
+  segments String // JSON as string - Array of transcription segments
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([videoId])
+  @@map("transcriptions")
+}
+
+model AudioStem {
+  id      String @id @default(cuid())
+  videoId String
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  // Scene-spezifische Audio-Stems (optional)
+  sceneId String?
+  scene   Scene?  @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  // Project-Scene-spezifische Audio-Stems (optional)
+  projectSceneId String?
+  projectScene   ProjectScene? @relation(fields: [projectSceneId], references: [id], onDelete: Cascade)
+
+  stemType String // "vocals", "music", "drums", "bass", "original", "other"
+  filePath String // Pfad zur separaten Audio-Datei
+  fileSize Int
+  duration Float?
+
+  // Timerange für Scene-spezifische Stems
+  startTime Float? // Start-Zeit der Scene
+  endTime   Float? // End-Zeit der Scene
+
+  createdAt DateTime @default(now())
+
+  // Voice Segments
+  voiceSegments VoiceSegment[]
+
+  @@index([videoId])
+  @@index([sceneId])
+  @@index([projectSceneId])
+  @@index([stemType])
+  @@map("audio_stems")
+}
+
+model SearchIndex {
+  id      String  @id @default(cuid())
+  videoId String
+  video   Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  sceneId String?
+  scene   Scene?  @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  // Suchbarer Content
+  content   String // Kombinierter Text aus Transkription + Vision-Tags
+  startTime Float? // Wenn Scene zugeordnet
+  endTime   Float? // Wenn Scene zugeordnet
+
+  // OpenAI Embedding (1536 Dimensionen als JSON String)
+  embedding String // JSON Array von Float-Werten
+
+  // Metadaten
+  contentType String // "transcription", "vision", "metadata"
+  language    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([videoId])
+  @@index([sceneId])
+  @@index([contentType])
+  @@map("search_indices")
+}
+
+model Project {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  // Project scenes (ordered)
+  scenes ProjectScene[]
+
+  // Edit history for undo/redo functionality
+  history ProjectHistory[]
+
+  // Metadata
+  duration  Float? // Berechnet aus allen Szenen
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model ProjectScene {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Reference zur Original-Szene
+  videoId   String
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  startTime Float // Aus Suchergebnis
+  endTime   Float // Aus Suchergebnis
+
+  // Position im Projekt
+  order Int @default(0)
+
+  // Optional: Anpassungen
+  trimStart Float? // User kann Szene trimmen
+  trimEnd   Float?
+
+  // Audio-Level für individuelle Lautstärke-Kontrolle
+  audioLevel Float @default(1.0) // 0.0 - 2.0 (0% - 200%)
+
+  // Audio-Stems für diese Project-Scene
+  audioStems AudioStem[]
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([order])
+  @@map("project_scenes")
+}
+
+model ProjectHistory {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  action    String // 'add_scene', 'delete_scene', 'split_scene', 'reorder', 'audio_level', 'resize'
+  data      String // JSON with undo/redo data
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("project_history")
+}
+
+model SaliencyAnalysis {
+  id      String  @id @default(cuid())
+  sceneId String? @unique
+  scene   Scene?  @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  videoId String
+  video   Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  // Saliency Daten
+  dataPath    String // Pfad zu JSON mit Frame-Daten
+  heatmapPath String? // Pfad zu Heatmap-Video
+
+  // ROI Vorschläge für Reframing
+  roiData String // JSON: [{"x":,"y":,"w":,"h":,"score":}]
+
+  // Metadata
+  frameCount     Int
+  sampleRate     Int    @default(1)
+  modelVersion   String // "sam2.1-large-coreml"
+  processingTime Float
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  reframedVideos ReframedVideo[]
+
+  @@index([sceneId])
+  @@index([videoId])
+  @@map("saliency_analyses")
+}
+
+model ReframedVideo {
+  id               String           @id @default(cuid())
+  videoId          String
+  video            Video            @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  saliencyId       String
+  saliencyAnalysis SaliencyAnalysis @relation(fields: [saliencyId], references: [id], onDelete: Cascade)
+
+  aspectRatio     String // "9:16", "16:9", "1:1", "custom"
+  customWidth     Int?
+  customHeight    Int?
+  smoothingFactor Float  @default(0.3)
+
+  outputPath String
+  fileSize   Int
+  duration   Float
+
+  status   String @default("PROCESSING") // PROCESSING, COMPLETED, ERROR
+  progress Float  @default(0.0)
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  @@index([videoId])
+  @@index([saliencyId])
+  @@map("reframed_videos")
+}
+
+model VoiceSegment {
+  id          String    @id @default(cuid())
+  audioStemId String
+  audioStem   AudioStem @relation(fields: [audioStemId], references: [id], onDelete: Cascade)
+
+  // Timing aus Transkription
+  startTime Float // Segment-Start in Sekunden
+  endTime   Float // Segment-End in Sekunden
+  duration  Float // Berechnete Dauer
+
+  // Original-Daten
+  originalText     String // Original transkribierter Text
+  originalFilePath String // Pfad zum Original-Audio-Segment
+
+  // Bearbeitbare Daten
+  editedText String? // User-editierter Text (null = original)
+
+  // ElevenLabs Voice-Einstellungen
+  voiceId         String? // ElevenLabs Voice ID
+  voiceName       String? // Name der gewählten Voice
+  stability       Float   @default(0.5) // 0.0 - 1.0
+  similarityBoost Float   @default(0.75) // 0.0 - 1.0
+  style           Float   @default(0.0) // 0.0 - 1.0
+  useSpeakerBoost Boolean @default(true)
+
+  // Generierte Version
+  reVoicedFilePath String? // Pfad zur neu generierten Audio-Datei
+  reVoicedAt       DateTime?
+
+  // Status
+  status       String  @default("ORIGINAL") // ORIGINAL, EDITED_TEXT, GENERATING, COMPLETED, ERROR
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([audioStemId])
+  @@index([status])
+  @@map("voice_segments")
+}
+
+model VoiceClone {
+  id          String  @id @default(cuid())
+  name        String // User-definierter Name
+  description String?
+
+  // ElevenLabs Voice Clone
+  elevenLabsVoiceId String @unique
+
+  // Source Audio für Clone
+  sourceAudioPath String? // Optional: Pfad zu Original-Audio
+
+  // Metadaten
+  language String? // "de", "en", etc.
+  gender   String? // "male", "female", "neutral"
+  ageRange String? // "young", "adult", "senior"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("voice_clones")
+}

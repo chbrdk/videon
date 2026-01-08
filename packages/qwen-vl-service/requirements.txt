@@ -1,0 +1,30 @@
+# Qwen VL Service - MLX VLM Dependencies
+# Optimiert für Apple Silicon mit MLX
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# MLX Vision Language Models
+# MLX must be installed from Apple's index
+# Run: pip install mlx mlx-lm --index-url https://mlx.github.io/MLX/releases/python/
+mlx-vlm>=0.3.0
+transformers>=4.52.4
+
+# Image Processing
+pillow>=10.1.0
+numpy>=1.24.0
+
+# HTTP Client
+httpx==0.25.2
+
+# Utilities
+python-dotenv==1.0.1
+loguru==0.7.2
+
+# Testing (optional)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
