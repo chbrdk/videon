@@ -1,0 +1,219 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Frontend Tests
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/frontend
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: packages/frontend/package-lock.json
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Run linting
+      run: pnpm run lint
+    
+    - name: Run type checking
+      run: pnpm run type-check
+    
+    - name: Run unit tests
+      run: pnpm run test
+    
+    - name: Build frontend
+      run: pnpm run build
+
+  # Backend Tests
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/backend
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: prismvid_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: packages/backend/package-lock.json
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    
+    - name: Install dependencies
+      run: pnpm install
+    
+    - name: Setup database
+      run: |
+        npx prisma generate
+        npx prisma db push
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prismvid_test
+    
+    - name: Run linting
+      run: pnpm run lint
+    
+    - name: Run type checking
+      run: pnpm run type-check
+    
+    - name: Run unit tests
+      run: pnpm run test
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prismvid_test
+    
+    - name: Build backend
+      run: pnpm run build
+
+  # Python Analyzer Tests
+  analyzer:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/analyzer
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+    
+    - name: Install Python dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio
+    
+    - name: Run Python tests
+      run: pytest
+    
+    - name: Run linting
+      run: |
+        pip install flake8 black
+        flake8 src/
+        black --check src/
+
+  # Swift Vision Service Tests
+  vision-service:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./packages/vision-service
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Swift
+      uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: "5.9"
+    
+    - name: Build Swift service
+      run: swift build
+    
+    - name: Run Swift tests
+      run: swift test
+
+  # E2E Tests
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+    
+    - name: Install dependencies
+      run: |
+        pnpm install
+        pnpm --filter @prismvid/frontend install playwright
+    
+    - name: Install Playwright browsers
+      run: |
+        cd packages/frontend
+        npx playwright install
+    
+    - name: Start services
+      run: |
+        pnpm --filter @prismvid/backend start &
+        pnpm --filter @prismvid/frontend start &
+        sleep 10
+    
+    - name: Run E2E tests
+      run: |
+        cd packages/frontend
+        pnpm run test:e2e
+
+  # Build and Deploy
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend, analyzer]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker images
+      run: |
+        docker build -t prismvid-frontend ./packages/frontend
+        docker build -t prismvid-backend ./packages/backend
+        docker build -t prismvid-analyzer ./packages/analyzer
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production..."
+        # Add your deployment commands here
