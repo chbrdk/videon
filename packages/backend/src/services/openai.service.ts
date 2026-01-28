@@ -3,17 +3,20 @@ import logger from '../utils/logger';
 
 export class OpenAIService {
   private client: OpenAI;
-  
+
   constructor() {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+      logger.warn('OPENAI_API_KEY is not set. OpenAI features will be disabled.');
+      // Create a dummy client or handle it in methods
     }
-    this.client = new OpenAI({ apiKey });
+    // Initialize client only if key exists, or handle in methods
+    this.client = apiKey ? new OpenAI({ apiKey }) : (null as any);
   }
-  
+
   async createEmbedding(text: string): Promise<number[]> {
     try {
+      if (!this.client) throw new Error('OpenAI client is not initialized (missing API key)');
       const response = await this.client.embeddings.create({
         model: 'text-embedding-3-small',
         input: text,
@@ -24,7 +27,7 @@ export class OpenAIService {
       throw error;
     }
   }
-  
+
   /**
    * Creates a chat completion using GPT-5-mini
    * @param messages Array of chat messages with role and content
@@ -33,38 +36,39 @@ export class OpenAIService {
    */
   async createChatCompletion(
     messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
-    options?: { 
-      temperature?: number; 
+    options?: {
+      temperature?: number;
       maxTokens?: number;
       responseFormat?: 'text' | 'json_object';
     }
   ): Promise<string> {
     try {
+      if (!this.client) throw new Error('OpenAI client is not initialized (missing API key)');
       // GPT-5-mini only supports temperature: 1 (default), so we omit it
       const completionParams: any = {
         model: 'gpt-5-mini',
         messages: messages,
         max_completion_tokens: options?.maxTokens ?? 16000, // High limit for GPT-5-mini reasoning + output
       };
-      
+
       if (options?.responseFormat === 'json_object') {
         completionParams.response_format = { type: 'json_object' };
       }
-      
+
       const response = await this.client.chat.completions.create(completionParams);
-      
+
       const content = response.choices[0].message.content;
       if (!content) {
         throw new Error('No content in GPT-5-mini response');
       }
-      
+
       return content;
     } catch (error: any) {
       logger.error('Error creating chat completion:', error);
       throw new Error(`GPT-5-mini chat completion failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Creates a structured JSON response from GPT-5-mini
    * @param systemPrompt System instructions
@@ -87,7 +91,7 @@ export class OpenAIService {
         responseFormat: 'json_object'
       }
     );
-    
+
     try {
       return JSON.parse(response) as T;
     } catch (error) {
@@ -95,7 +99,7 @@ export class OpenAIService {
       throw new Error('Invalid JSON response from GPT-5-mini');
     }
   }
-  
+
   // Cosine similarity für Vektor-Vergleich
   cosineSimilarity(a: number[], b: number[]): number {
     const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
