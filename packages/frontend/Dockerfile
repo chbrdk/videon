@@ -38,20 +38,17 @@ ENV VITE_BASE_PATH=$VITE_BASE_PATH
 RUN pnpm run build
 
 # Production stage
-FROM node:18-alpine AS production
-WORKDIR /app
+# Production stage
+FROM nginx:alpine AS production
 
-# Install serve for static file serving
-RUN npm install -g serve
+# Copy built application to Nginx web root
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy built application
-COPY --from=build /app/build ./build
-
-# Verify build directory exists
-RUN ls -la build || echo "Build directory check"
+# Copy Nginx configuration
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
 EXPOSE 3003
 
-# Start the application
-CMD ["serve", "-s", "build", "-l", "3003"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
