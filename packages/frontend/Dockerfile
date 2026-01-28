@@ -23,10 +23,6 @@ COPY frontend/postcss.config.js ./
 COPY frontend/tailwind.config.mjs ./
 COPY frontend/playwright.config.ts ./
 COPY frontend/vitest.config.ts ./
-# Copy MSQDX Design System (needed for tailwind.config.mjs)
-# Note: Build context is from packages/ directory
-COPY msqdx-design-system ./msqdx-design-system
-
 # Build stage
 FROM base AS build
 WORKDIR /app
@@ -35,7 +31,8 @@ ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-RUN pnpm run build
+# Use verbose logging to debug build failures
+RUN pnpm run build --logLevel info
 
 # Production stage
 # Production stage
