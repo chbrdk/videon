@@ -5,8 +5,8 @@ FROM node:18-alpine AS base
 COPY frontend/package.json ./
 COPY frontend/package-lock.json ./
 
-# Install dependencies using npm ci for deterministic builds
-RUN npm ci
+# Install dependencies using npm install (more permissive than ci)
+RUN npm install --legacy-peer-deps
 
 # Copy source code (exclude node_modules and build)
 COPY frontend/src ./src
