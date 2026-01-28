@@ -95,6 +95,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Locale detection middleware
 app.use(localeMiddleware);
 
+// Auth & Session Imports
+import session from 'express-session';
+import RedisStore from 'connect-redis';
+import { createClient } from 'redis';
+import passport from './config/auth';
+import authRoutes from './routes/auth.routes';
+
 // Request logging
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.url}`, {
@@ -103,6 +110,34 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// Trust Proxy (required for secure cookies behind Nginx)
+app.set('trust proxy', 1);
+
+// Redis Client for Session
+const redisClient = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
+redisClient.connect().catch(err => logger.error('Redis Session Client Error', err));
+
+// Session Middleware
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'changeme_in_production_secret_key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax'
+  }
+}));
+
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Auth Routes
+app.use('/api/auth', authRoutes);
 
 // Qwen VL Route - MUST BE BEFORE ALL OTHER ROUTES!
 app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
@@ -125,7 +160,7 @@ app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
     if (!isAvailable) {
       const serviceUrl = qwenVLService.getServiceUrl();
       logger.error(`Qwen VL service is not available at ${serviceUrl}`);
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Qwen VL service unavailable',
         message: 'The Qwen VL analysis service is not running or not reachable. Please check if the service is started. This service runs locally (outside Docker) on port 8081.',
         serviceUrl: serviceUrl,
@@ -137,7 +172,7 @@ app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
     }
 
     logger.info(`Triggering Qwen VL analysis for video: ${id}`);
-    
+
     // Trigger analysis asynchronously (don't await to avoid blocking)
     qwenVLService.analyzeVideo(id)
       .then(() => {
@@ -147,7 +182,7 @@ app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
         logger.error(`❌ Qwen VL analysis failed for video ${id}:`, error);
       });
 
-    res.json({ 
+    res.json({
       message: 'Qwen VL analysis started',
       videoId: id,
       status: 'ANALYZING'
@@ -155,7 +190,7 @@ app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
 
   } catch (error: any) {
     logger.error(`Error starting Qwen VL analysis for video ${req.params?.id}:`, error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to start Qwen VL analysis',
       message: error?.message || 'An unexpected error occurred while starting Qwen VL analysis',
       statusCode: 500,

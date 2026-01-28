@@ -12,7 +12,37 @@
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
   
   // Load videos on mount only if not on a video detail page
-  onMount(() => {
+  import { goto } from '$app/navigation';
+  import { api } from '$lib/config/environment';
+
+  // Load videos on mount only if not on a video detail page
+  onMount(async () => {
+    // Check Authentication
+    try {
+      const res = await fetch(`${api.baseUrl}/auth/me`);
+      const authData = await res.json();
+      
+      const publicRoutes = ['/videon/login', '/videon/register', '/login', '/register'];
+      const currentPath = $page.url.pathname;
+      const isPublic = publicRoutes.some(route => currentPath.startsWith(route));
+
+      if (!authData.isAuthenticated && !isPublic) {
+        // Redirect to Login
+        window.location.href = '/videon/login';
+        return;
+      }
+      
+      if (authData.isAuthenticated && isPublic) {
+         // Already logged in, go home
+         goto('/videon');
+         return;
+      }
+
+    } catch (e) {
+      console.error('Auth Check Failed', e);
+      // Fallback on error? Maybe assume unauthenticated?
+    }
+
     if (!$page.params.id) {
       loadVideos();
     }

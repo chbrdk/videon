@@ -401,3 +401,19 @@ model VoiceClone {
 
   @@map("voice_clones")
 }
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?   // Nullable for OAuth users
+  name          String?
+  role          String    @default("USER") // USER, ADMIN
+  provider      String    @default("LOCAL") // LOCAL, MICROSOFT
+  providerId    String?   // ID from Microsoft
+  avatarUrl     String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("users")
+}
