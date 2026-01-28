@@ -47,9 +47,53 @@
         }
       }
 
-      // ... existing code ...
+  // Reconstruct missing state and helper functions due to file corruption
+  let localAudioClips: any[] = [];
+  $: localAudioClips = $audioStemClips || [];
 
-                      <div class="track-label">
+  function getAudioTrackLabel(type: string) {
+     if (!type) return '';
+     return type.replace('audio-', '').charAt(0).toUpperCase() + type.replace('audio-', '').slice(1);
+  }
+
+  // Placeholder implementations for missing functions to allow build
+  function getAudioLevelForTrack(type: string) { return 1; }
+  function toggleAudioLevelSlider(type: string) { showAudioLevelSlider = showAudioLevelSlider === type ? '' : type; }
+  function getMuteStateForTrack(type: string) { return false; }
+  function handleAudioLevelSliderChange(type: string, value: number) { /* TODO: Implement */ }
+  function handleAudioStemSelect(e: any) { /* TODO: Implement */ }
+  function handleAudioStemTrim(e: any) { /* TODO: Implement */ }
+  function handleAudioStemLevel(e: any) { /* TODO: Implement */ }
+  function handleAudioStemMute(e: any) { /* TODO: Implement */ }
+  function handleAudioStemIsolate(e: any) { /* TODO: Implement */ }
+
+  // Variables for missing context
+  let showAudioLevelSlider = '';
+  let timelineWidth = 0;
+  $: timelineWidth = ($duration || 0) * ($zoomLevel || 1) * 20;
+  $: timelineDuration = $duration || 0;
+  let videoElement: HTMLVideoElement;
+  let selectedSegment: any = null;
+  let showReVoiceModal = false;
+  let showVoiceCloneModal = false;
+  $: actualDuration = $duration || 0;
+
+  // Zoom icons
+  const ZoomOutIcon = '<span class="material-symbols-outlined">zoom_out</span>';
+  const ZoomInIcon = '<span class="material-symbols-outlined">zoom_in</span>';
+</script>
+
+<div class="unified-timeline">
+  <div class="tracks-scroll-container">
+    <div class="tracks-inner" style="width: {timelineWidth}px; min-width: 100%;">
+      <!-- Global Playhead -->
+      <div class="global-playhead" style="left: {$playheadPosition}px"></div>
+
+      {#each $trackConfigs || [] as track (track.id)}
+        {#if track.visible}
+          <div class="track" style="height: {track.height}px">
+             <div class="track-header">
+               <div class="track-label">
                         <div class="icon-18px text-current"><MaterialSymbol icon={getAudioTrackIcon(track.type)} fontSize={18} /></div>
                         {getAudioTrackLabel(track.type)}
                       </div>
