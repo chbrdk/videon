@@ -5,7 +5,9 @@ FROM node:18-alpine AS base
 COPY frontend/package.json ./
 COPY frontend/package-lock.json ./
 
-# Install dependencies using npm install (more permissive than ci)
+# Force development environment to ensure devDependencies (vite, tailwind) are installed
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_ENV=development
 RUN npm install --legacy-peer-deps
 
 # Copy source code (exclude node_modules and build)
@@ -26,10 +28,8 @@ ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-# Increase memory limit for build
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-# Run build and print logs on failure
-RUN npm run build -- --logLevel info > build.log 2>&1 || (cat build.log && exit 1)
+# Run build directly to stdout (verbose)
+RUN npm run build -- --logLevel info
 
 # Production stage
 # Production stage
