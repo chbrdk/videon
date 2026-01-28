@@ -52,8 +52,11 @@ RUN npx svelte-kit sync
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync
 
-# Run build (skip type check to unblock deployment)
-RUN npm run build
+# Debug: Print NODE_OPTIONS to ensure memory limit is applied
+RUN printenv NODE_OPTIONS
+
+# Run build and capture logs to ensure visibility on failure
+RUN npm run build > build.log 2>&1 || { cat build.log; exit 1; }
 
 # Production stage
 # Production stage
