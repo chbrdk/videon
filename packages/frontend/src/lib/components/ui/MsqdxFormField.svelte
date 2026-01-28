@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY, MSQDX_EFFECTS } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import MaterialSymbol from './MaterialSymbol.svelte';
 
   interface Props {
     label: string;
@@ -65,20 +65,14 @@
     if (error) return MSQDX_COLORS.status.error;
     if (success) return MSQDX_COLORS.status.success;
     if (isFocused) return MSQDX_COLORS.brand.green;
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.1)' 
-      : 'rgba(0, 0, 0, 0.1)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   });
 
   const backgroundColor = $derived(() => {
     if (isFocused) {
-      return currentTheme === 'dark' 
-        ? 'rgba(255, 255, 255, 0.1)' 
-        : 'rgba(0, 0, 0, 0.1)';
+      return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     }
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.05)' 
-      : 'rgba(0, 0, 0, 0.05)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
   });
 
   const boxShadow = $derived(() => {
@@ -97,31 +91,32 @@
 
 <div class="msqdx-form-field-wrapper {className}">
   <label class="msqdx-form-field-label">
-    {label} {#if required}*{/if}
+    {label}
+    {#if required}*{/if}
   </label>
 
-  <div 
+  <div
     class="msqdx-form-field-input-wrapper"
-    class:error={error}
-    class:success={success}
+    class:error
+    class:success
     class:focused={isFocused}
-    class:disabled={disabled}
+    class:disabled
   >
     {#if icon}
       <div class="msqdx-form-field-icon-start">
-        <MaterialSymbol icon={icon} fontSize={20} weight={MSQDX_TYPOGRAPHY.fontWeight.regular} />
+        <MaterialSymbol {icon} fontSize={20} weight={MSQDX_TYPOGRAPHY.fontWeight.regular} />
       </div>
     {/if}
 
     <input
-      type={type}
+      {type}
       class="msqdx-form-field-input"
-      placeholder={placeholder}
+      {placeholder}
       value={internalValue}
-      disabled={disabled}
+      {disabled}
       on:input={handleInput}
-      on:focus={() => isFocused = true}
-      on:blur={() => isFocused = false}
+      on:focus={() => (isFocused = true)}
+      on:blur={() => (isFocused = false)}
       style="
         background-color: {backgroundColor};
         border-color: {borderColor};
@@ -132,16 +127,16 @@
 
     <div class="msqdx-form-field-icon-end">
       {#if error}
-        <MaterialSymbol 
-          icon="error" 
-          fontSize={20} 
+        <MaterialSymbol
+          icon="error"
+          fontSize={20}
           weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
           style="color: {MSQDX_COLORS.status.error};"
         />
       {:else if success}
-        <MaterialSymbol 
-          icon="check_circle" 
-          fontSize={20} 
+        <MaterialSymbol
+          icon="check_circle"
+          fontSize={20}
           weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
           style="color: {MSQDX_COLORS.status.success};"
         />

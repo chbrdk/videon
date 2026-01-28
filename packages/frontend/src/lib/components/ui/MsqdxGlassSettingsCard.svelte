@@ -2,7 +2,8 @@
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY, MSQDX_SPACING } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
   import MsqdxGlassCard from './MsqdxGlassCard.svelte';
-  import { MaterialSymbol, MsqdxTypography } from '$lib/components/ui';
+  import MaterialSymbol from './MaterialSymbol.svelte';
+  import MsqdxTypography from './MsqdxTypography.svelte';
 
   interface Props {
     title: string;
@@ -10,7 +11,7 @@
     icon: string;
     href?: string;
     count?: number;
-    status?: "active" | "inactive" | "error";
+    status?: 'active' | 'inactive' | 'error';
     accentColor?: string;
     class?: string;
     onClick?: () => void;
@@ -42,8 +43,8 @@
   const statusColor = $derived(() => {
     if (status === 'active') return MSQDX_COLORS.status.success;
     if (status === 'error') return MSQDX_COLORS.status.error;
-    return currentTheme === 'dark' 
-      ? MSQDX_COLORS.dark.textSecondary 
+    return currentTheme === 'dark'
+      ? MSQDX_COLORS.dark.textSecondary
       : MSQDX_COLORS.light.textSecondary;
   });
 
@@ -55,17 +56,26 @@
 </script>
 
 {#if href}
-  <a href={href} class="msqdx-settings-card-link {className}" style="text-decoration: none; color: inherit;">
+  <a
+    {href}
+    class="msqdx-settings-card-link {className}"
+    style="text-decoration: none; color: inherit;"
+  >
     <MsqdxGlassCard hoverable={true} {...rest}>
       <div class="msqdx-settings-card-content">
-        <div 
+        <div
           class="msqdx-settings-card-icon"
           style="
             background: {accentColor};
             box-shadow: 0 8px 24px {accentColor}40;
           "
         >
-          <MaterialSymbol icon={icon} fontSize={28} weight={MSQDX_TYPOGRAPHY.fontWeight.regular} style="color: #ffffff;" />
+          <MaterialSymbol
+            {icon}
+            fontSize={28}
+            weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
+            style="color: #ffffff;"
+          />
         </div>
 
         <div class="msqdx-settings-card-text">
@@ -81,12 +91,14 @@
                 </div>
               {/if}
               {#if status}
-                <div 
+                <div
                   class="msqdx-settings-card-status"
                   class:active={status === 'active'}
                   style="
                     background-color: {statusColor};
-                    box-shadow: {status === 'active' ? `0 0 12px ${MSQDX_COLORS.status.success}` : 'none'};
+                    box-shadow: {status === 'active'
+                    ? `0 0 12px ${MSQDX_COLORS.status.success}`
+                    : 'none'};
                   "
                 ></div>
               {/if}
@@ -98,9 +110,9 @@
           </MsqdxTypography>
         </div>
 
-        <MaterialSymbol 
-          icon="chevron_right" 
-          fontSize={24} 
+        <MaterialSymbol
+          icon="chevron_right"
+          fontSize={24}
           weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
           style="color: var(--icon-color, rgba(255, 255, 255, 0.3)); flex-shrink: 0; margin-top: 0.5rem;"
         />
@@ -108,8 +120,8 @@
     </MsqdxGlassCard>
   </a>
 {:else}
-  <MsqdxGlassCard 
-    hoverable={!!onClick} 
+  <MsqdxGlassCard
+    hoverable={!!onClick}
     class={className}
     on:click={handleClick}
     role={onClick ? 'button' : undefined}
@@ -117,14 +129,19 @@
     {...rest}
   >
     <div class="msqdx-settings-card-content">
-      <div 
+      <div
         class="msqdx-settings-card-icon"
         style="
           background: {accentColor};
           box-shadow: 0 8px 24px {accentColor}40;
         "
       >
-        <MaterialSymbol icon={icon} fontSize={28} weight={MSQDX_TYPOGRAPHY.fontWeight.regular} style="color: #ffffff;" />
+        <MaterialSymbol
+          {icon}
+          fontSize={28}
+          weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
+          style="color: #ffffff;"
+        />
       </div>
 
       <div class="msqdx-settings-card-text">
@@ -140,12 +157,14 @@
               </div>
             {/if}
             {#if status}
-              <div 
+              <div
                 class="msqdx-settings-card-status"
                 class:active={status === 'active'}
                 style="
                   background-color: {statusColor};
-                  box-shadow: {status === 'active' ? `0 0 12px ${MSQDX_COLORS.status.success}` : 'none'};
+                  box-shadow: {status === 'active'
+                  ? `0 0 12px ${MSQDX_COLORS.status.success}`
+                  : 'none'};
                 "
               ></div>
             {/if}
@@ -157,9 +176,9 @@
         </MsqdxTypography>
       </div>
 
-      <MaterialSymbol 
-        icon="chevron_right" 
-        fontSize={24} 
+      <MaterialSymbol
+        icon="chevron_right"
+        fontSize={24}
         weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
         style="color: var(--icon-color, rgba(255, 255, 255, 0.3)); flex-shrink: 0; margin-top: 0.5rem;"
       />
@@ -233,7 +252,8 @@
   }
 
   @keyframes pulse-status {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 12px var(--msqdx-color-status-success);
     }
     50% {

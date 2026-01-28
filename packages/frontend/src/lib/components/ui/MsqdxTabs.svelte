@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY, MSQDX_EFFECTS } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import MaterialSymbol from './MaterialSymbol.svelte';
 
   interface Tab {
     value: string | number;
@@ -16,12 +16,7 @@
     class?: string;
   }
 
-  let {
-    value,
-    onChange,
-    tabs,
-    class: className = '',
-  }: Props = $props();
+  let { value, onChange, tabs, class: className = '' }: Props = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
   let internalValue = $state(value);
@@ -50,9 +45,7 @@
   });
 
   const borderColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.08)' 
-      : 'rgba(0, 0, 0, 0.08)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
   });
 
   function handleTabClick(tabValue: string | number) {
@@ -71,9 +64,9 @@
         type="button"
       >
         {#if tab.icon}
-          <MaterialSymbol 
-            icon={tab.icon} 
-            fontSize={20} 
+          <MaterialSymbol
+            icon={tab.icon}
+            fontSize={20}
             weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
             style="margin-right: 0.5rem;"
           />
@@ -82,7 +75,7 @@
       </button>
     {/each}
   </div>
-  <div 
+  <div
     class="msqdx-tabs-indicator"
     style="
       width: {indicatorWidth};

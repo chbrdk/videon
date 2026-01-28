@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
-  import { MsqdxTypography } from '$lib/components/ui';
+  import MsqdxTypography from './MsqdxTypography.svelte';
 
   interface Props {
     label?: string;
@@ -36,7 +36,9 @@
   }: Props = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let internalValue = $state(typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0);
+  let internalValue = $state(
+    typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0
+  );
 
   $effect(() => {
     const unsubscribe = theme.subscribe(t => {
@@ -67,9 +69,7 @@
   });
 
   const railColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.1)' 
-      : 'rgba(0, 0, 0, 0.1)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   });
 </script>
 
@@ -82,17 +82,21 @@
         </MsqdxTypography>
       {/if}
       {#if displayValue}
-        <MsqdxTypography variant="body2" weight="bold" style="color: var(--msqdx-color-brand-orange);">
+        <MsqdxTypography
+          variant="body2"
+          weight="bold"
+          style="color: var(--msqdx-color-brand-orange);"
+        >
           {displayValue}
         </MsqdxTypography>
       {/if}
     </div>
   {/if}
 
-  <div class="msqdx-slider-container" class:disabled={disabled}>
+  <div class="msqdx-slider-container" class:disabled>
     <div class="msqdx-slider-rail" style="background-color: {railColor};"></div>
-    <div 
-      class="msqdx-slider-track" 
+    <div
+      class="msqdx-slider-track"
       style="
         width: {percentage}%;
         background-color: var(--msqdx-color-brand-orange);
@@ -101,11 +105,11 @@
     <input
       type="range"
       class="msqdx-slider-input"
-      min={min}
-      max={max}
-      step={step}
+      {min}
+      {max}
+      {step}
       value={internalValue}
-      disabled={disabled}
+      {disabled}
       on:input={handleInput}
       on:change={handleInput}
       style="
@@ -119,7 +123,10 @@
   </div>
 
   {#if helperText}
-    <MsqdxTypography variant="caption" style="margin-top: 0.5rem; margin-left: 0.5rem; opacity: 0.7; display: block;">
+    <MsqdxTypography
+      variant="caption"
+      style="margin-top: 0.5rem; margin-left: 0.5rem; opacity: 0.7; display: block;"
+    >
       {helperText}
     </MsqdxTypography>
   {/if}

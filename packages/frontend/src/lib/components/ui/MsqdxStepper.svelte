@@ -1,7 +1,8 @@
 <script lang="ts">
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
-  import { MaterialSymbol, MsqdxTypography } from '$lib/components/ui';
+  import MaterialSymbol from './MaterialSymbol.svelte';
+  import MsqdxTypography from './MsqdxTypography.svelte';
 
   interface Step {
     label: string;
@@ -36,25 +37,19 @@
   });
 
   const connectorColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.2)' 
-      : 'rgba(0, 0, 0, 0.2)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
   });
 
   const stepIconBg = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.1)' 
-      : 'rgba(0, 0, 0, 0.1)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   });
 
   const stepIconColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.5)' 
-      : 'rgba(0, 0, 0, 0.5)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
   });
 </script>
 
-<div 
+<div
   class="msqdx-stepper {className}"
   class:horizontal={orientation === 'horizontal'}
   class:vertical={orientation === 'vertical'}
@@ -62,33 +57,53 @@
   {#each steps as step, index}
     <div class="msqdx-step">
       <div class="msqdx-step-content">
-        <div 
+        <div
           class="msqdx-step-icon"
           class:active={index === activeStep}
           class:completed={index < activeStep}
           style="
-            background-color: {index === activeStep ? MSQDX_COLORS.brand.green : index < activeStep ? MSQDX_COLORS.status.success : stepIconBg};
+            background-color: {index === activeStep
+            ? MSQDX_COLORS.brand.green
+            : index < activeStep
+              ? MSQDX_COLORS.status.success
+              : stepIconBg};
             color: {index === activeStep || index < activeStep ? '#ffffff' : stepIconColor};
-            box-shadow: {index === activeStep ? `0 0 0 4px rgba(${MSQDX_COLORS.brand.orangeRgb}, 0.16)` : 'none'};
+            box-shadow: {index === activeStep
+            ? `0 0 0 4px rgba(${MSQDX_COLORS.brand.orangeRgb}, 0.16)`
+            : 'none'};
           "
         >
           {#if index < activeStep}
             <MaterialSymbol icon="check" fontSize={16} weight={MSQDX_TYPOGRAPHY.fontWeight.bold} />
           {:else if step.icon}
-            <MaterialSymbol icon={step.icon} fontSize={16} weight={MSQDX_TYPOGRAPHY.fontWeight.bold} />
+            <MaterialSymbol
+              icon={step.icon}
+              fontSize={16}
+              weight={MSQDX_TYPOGRAPHY.fontWeight.bold}
+            />
           {:else}
             {index + 1}
           {/if}
         </div>
 
         <div class="msqdx-step-label-wrapper">
-          <div 
+          <div
             class="msqdx-step-label"
             class:active={index === activeStep}
             class:completed={index < activeStep}
             style="
-              color: {index === activeStep ? (currentTheme === 'dark' ? '#ffffff' : '#0f172a') : index < activeStep ? MSQDX_COLORS.status.success : (currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)')};
-              font-weight: {index === activeStep || index < activeStep ? MSQDX_TYPOGRAPHY.fontWeight.semibold : MSQDX_TYPOGRAPHY.fontWeight.medium};
+              color: {index === activeStep
+              ? currentTheme === 'dark'
+                ? '#ffffff'
+                : '#0f172a'
+              : index < activeStep
+                ? MSQDX_COLORS.status.success
+                : currentTheme === 'dark'
+                  ? 'rgba(255, 255, 255, 0.7)'
+                  : 'rgba(0, 0, 0, 0.7)'};
+              font-weight: {index === activeStep || index < activeStep
+              ? MSQDX_TYPOGRAPHY.fontWeight.semibold
+              : MSQDX_TYPOGRAPHY.fontWeight.medium};
             "
           >
             {step.label}
@@ -105,13 +120,15 @@
       </div>
 
       {#if showConnector && index < steps.length - 1}
-        <div 
+        <div
           class="msqdx-step-connector"
           class:horizontal={orientation === 'horizontal'}
           class:vertical={orientation === 'vertical'}
           style="
             border-color: {connectorColor};
-            {orientation === 'horizontal' ? 'left: calc(-50% + 12px); right: calc(50% + 12px);' : 'top: calc(50% + 12px); bottom: calc(-50% + 12px);'}
+            {orientation === 'horizontal'
+            ? 'left: calc(-50% + 12px); right: calc(50% + 12px);'
+            : 'top: calc(50% + 12px); bottom: calc(-50% + 12px);'}
           "
         ></div>
       {/if}

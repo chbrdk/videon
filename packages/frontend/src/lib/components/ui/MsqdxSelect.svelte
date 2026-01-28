@@ -1,7 +1,7 @@
 <script lang="ts">
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY, MSQDX_EFFECTS } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import MaterialSymbol from './MaterialSymbol.svelte';
 
   interface Option {
     value: string | number;
@@ -62,20 +62,14 @@
   const borderColor = $derived(() => {
     if (error) return MSQDX_COLORS.status.error;
     if (isFocused) return MSQDX_COLORS.brand.green;
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.1)' 
-      : 'rgba(0, 0, 0, 0.1)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
   });
 
   const backgroundColor = $derived(() => {
     if (isFocused) {
-      return currentTheme === 'dark' 
-        ? 'rgba(255, 255, 255, 0.1)' 
-        : 'rgba(0, 0, 0, 0.1)';
+      return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     }
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.05)' 
-      : 'rgba(0, 0, 0, 0.05)';
+    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
   });
 
   const boxShadow = $derived(() => {
@@ -96,31 +90,23 @@
   });
 </script>
 
-<div 
-  class="msqdx-select-wrapper {className}"
-  class:full-width={fullWidth}
->
-  <label 
+<div class="msqdx-select-wrapper {className}" class:full-width={fullWidth}>
+  <label
     class="msqdx-select-label"
     for={id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`}
   >
     {label}
   </label>
 
-  <div 
-    class="msqdx-select-container"
-    class:error={error}
-    class:focused={isFocused}
-    class:disabled={disabled}
-  >
+  <div class="msqdx-select-container" class:error class:focused={isFocused} class:disabled>
     <select
       id={id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`}
       class="msqdx-select"
       value={internalValue}
-      disabled={disabled}
+      {disabled}
       on:change={handleChange}
-      on:focus={() => isFocused = true}
-      on:blur={() => isFocused = false}
+      on:focus={() => (isFocused = true)}
+      on:blur={() => (isFocused = false)}
       style="
         background-color: {backgroundColor};
         border-color: {borderColor};
@@ -133,13 +119,10 @@
       {/each}
     </select>
 
-    <div 
-      class="msqdx-select-icon"
-      style="color: {iconColor};"
-    >
-      <MaterialSymbol 
-        icon="expand_more" 
-        fontSize={20} 
+    <div class="msqdx-select-icon" style="color: {iconColor};">
+      <MaterialSymbol
+        icon="expand_more"
+        fontSize={20}
         weight={MSQDX_TYPOGRAPHY.fontWeight.regular}
       />
     </div>
