@@ -49,8 +49,8 @@ ENV VITE_BASE_PATH=$VITE_BASE_PATH
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync
 
-# Run Type Checks (Fail fast on code errors)
-RUN npx svelte-check --tsconfig ./tsconfig.json --threshold error
+# Run Type Checks (Fail fast on code errors) and capture output
+RUN npx svelte-check --tsconfig ./tsconfig.json --threshold error > check.log 2>&1 || { cat check.log; exit 1; }
 
 # Run build and capture logs to ensure visibility on failure
 RUN npm run build > build.log 2>&1 || { cat build.log; exit 1; }
