@@ -1,35 +1,41 @@
-# Real vision analysis with Swift Vision Service integration
+# Real vision analysis with Local Python implementation
+# Replaces external Swift Vision Service integration
 
 import logging
-import requests
-import json
 import os
 from typing import Optional, Dict, Any, List
+# Import our new local backend
+try:
+    from .local_vision import LocalVisionBackend
+    LOCAL_BACKEND_AVAILABLE = True
+except ImportError:
+    LOCAL_BACKEND_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
 class VisionAnalyzer:
-    """Real vision analysis using Swift Vision Service"""
+    """
+    Vision Analyzer using Local Python Backend (YOLO/MediaPipe/EasyOCR)
+    """
     
     def __init__(self, swift_vision_url: str = None):
-        # Priority: 1) explicit parameter (if provided), 2) environment variable, 3) auto-detect Docker default
-        is_docker = os.path.exists('/.dockerenv') or os.path.exists('/proc/1/cgroup')
-        env_url = os.getenv('VISION_SERVICE_URL')
+        # We keep the init signature for compatibility but ignore the URL
+        self.use_local_backend = True
         
-        # Check if explicit parameter was provided (not None)
-        if swift_vision_url is not None:
-            self.swift_vision_url = swift_vision_url
-        elif env_url:
-            self.swift_vision_url = env_url
+        if LOCAL_BACKEND_AVAILABLE:
+            try:
+                self.backend = LocalVisionBackend()
+                logger.info("VisionAnalyzer initialized with Local Python Backend")
+            except Exception as e:
+                logger.error(f"Failed to initialize Local Vision Backend: {e}")
+                self.use_local_backend = False
         else:
-            # Auto-detect: Docker containers need host.docker.internal
-            self.swift_vision_url = 'http://host.docker.internal:8080' if is_docker else 'http://localhost:8080'
-        
-        logger.info(f"VisionAnalyzer initialized with Swift Vision Service at {self.swift_vision_url} (docker={is_docker}, env_set={'VISION_SERVICE_URL' in os.environ})")
+            logger.warning("LocalVisionBackend module not found")
+            self.use_local_backend = False
     
     def analyze_scene(self, keyframe_path: str, scene_id: str) -> Optional[Dict[str, Any]]:
         """
-        Analyze scene keyframe with Swift Vision Service
+        Analyze scene keyframe locally
         
         Args:
             keyframe_path: Path to keyframe image (container path)
@@ -42,57 +48,23 @@ class VisionAnalyzer:
             logger.error(f"Keyframe not found: {keyframe_path}")
             return None
         
+        if not self.use_local_backend:
+            logger.warning("Local backend unavailable, skipping analysis")
+            return None
+            
         try:
             logger.info(f"Analyzing scene {scene_id} with keyframe: {keyframe_path}")
             
-            # Convert container path to host path for Vision Service (runs on host, not in container)
-            # Container: /app/storage/keyframes/... -> Host: storage/keyframes/... (relative to project root)
-            host_keyframe_path = keyframe_path.replace('/app/storage', 'storage')
-            # Make it absolute path for Vision Service
-            if not os.path.exists('/.dockerenv'):
-                # We're not in Docker, use path as-is
-                host_keyframe_path = keyframe_path
-            else:
-                # We're in Docker, need to convert to host path
-                # The storage is mounted at ./storage on host, so relative paths work
-                # But Vision Service might need absolute path - use current working directory + relative path
-                import os as os_module
-                project_root = os_module.getenv('PROJECT_ROOT', '/Users/m4-dev/Development/prismvid')
-                if host_keyframe_path.startswith('storage'):
-                    host_keyframe_path = os_module.path.join(project_root, host_keyframe_path)
+            # Analyze using local backend
+            vision_data = self.backend.analyze_image(keyframe_path)
             
-            logger.info(f"Using host path for Vision Service: {host_keyframe_path}")
+            # Add scene metadata
+            vision_data["sceneId"] = scene_id
+            vision_data["keyframePath"] = keyframe_path
             
-            # Call Swift Vision Service for vision analysis (using /analyze/vision endpoint)
-            response = requests.post(
-                f"{self.swift_vision_url}/analyze/vision",
-                json={
-                    "sceneId": scene_id,
-                    "keyframePath": host_keyframe_path
-                },
-                headers={"Content-Type": "application/json"},
-                timeout=30
-            )
+            logger.info(f"Vision analysis completed for scene {scene_id}: {len(vision_data.get('objects', []))} objects, {len(vision_data.get('faces', []))} faces")
             
-            if response.status_code == 200:
-                vision_data = response.json()
-                logger.info(f"Vision analysis completed for scene {scene_id}: {len(vision_data.get('objects', []))} objects, {len(vision_data.get('faces', []))} faces, {len(vision_data.get('textRecognitions', []))} text regions, {len(vision_data.get('humanRectangles', []))} humans, {len(vision_data.get('humanBodyPoses', []))} poses")
-                
-                return {
-                    "objects": vision_data.get("objects", []),
-                    "faces": vision_data.get("faces", []),
-                    "textRecognitions": vision_data.get("textRecognitions", []),
-                    "humanRectangles": vision_data.get("humanRectangles", []),
-                    "humanBodyPoses": vision_data.get("humanBodyPoses", []),
-                    "processingTime": vision_data.get("processingTime", 0.0),
-                    "visionVersion": vision_data.get("visionVersion", "unknown"),
-                    "timestamp": vision_data.get("timestamp", ""),
-                    "sceneId": scene_id,
-                    "keyframePath": keyframe_path
-                }
-            else:
-                logger.error(f"Swift Vision Service error: {response.status_code} - {response.text}")
-                return None
+            return vision_data
                 
         except Exception as e:
             logger.error(f"Error analyzing scene {scene_id}: {e}")
@@ -100,14 +72,7 @@ class VisionAnalyzer:
     
     def batch_analyze_scenes(self, keyframes: List[str], scene_ids: List[str] = None) -> List[Dict[str, Any]]:
         """
-        Analyze multiple scenes in batch
-        
-        Args:
-            keyframes: List of keyframe paths
-            scene_ids: Optional list of scene IDs
-            
-        Returns:
-            List of vision analysis results
+        Analyze multiple scenes in batch (sequentially for now)
         """
         results = []
         scene_ids = scene_ids or [f"scene_{i}" for i in range(len(keyframes))]
@@ -130,16 +95,5 @@ class VisionAnalyzer:
         return results
     
     def test_connection(self) -> bool:
-        """Test connection to Swift Vision Service"""
-        try:
-            response = requests.get(f"{self.swift_vision_url}/health", timeout=5)
-            if response.status_code == 200:
-                health_data = response.json()
-                logger.info(f"Swift Vision Service is healthy: {health_data}")
-                return True
-            else:
-                logger.error(f"Swift Vision Service health check failed: {response.status_code}")
-                return False
-        except Exception as e:
-            logger.error(f"Cannot connect to Swift Vision Service: {e}")
-            return False
+        """Test if backend is initialized"""
+        return self.use_local_backend and LOCAL_BACKEND_AVAILABLE
