@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { zoomLevel } from '$lib/stores/timeline.store';
-  import MicIcon from '@material-icons/svg/svg/mic/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
 
   const dispatch = createEventDispatcher();
@@ -11,17 +11,15 @@
     start: number;
     end: number;
   }> = [];
-  
+
   export let currentTime: number = 0;
   export let duration: number = 0;
   export let videoId: string = '';
-  
+
   let transcriptionContainer: HTMLDivElement;
-  
-  $: activeSegment = segments.find(
-    seg => currentTime >= seg.start && currentTime <= seg.end
-  );
-  
+
+  $: activeSegment = segments.find(seg => currentTime >= seg.start && currentTime <= seg.end);
+
   function handleSegmentClick(segment: { start: number; end: number; text: string }) {
     dispatch('seekTo', { time: segment.start });
   }
@@ -61,7 +59,7 @@
 
   function exportTranscription(format: 'srt' | 'vtt' | 'txt') {
     let content = '';
-    
+
     if (format === 'srt') {
       segments.forEach((seg, i) => {
         content += `${i + 1}\n`;
@@ -77,7 +75,7 @@
     } else {
       content = segments.map(seg => seg.text).join('\n');
     }
-    
+
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -91,28 +89,28 @@
 <div class="transcription-track">
   <div class="track-header">
     <div style="display: flex; align-items: center; gap: var(--msqdx-spacing-xs);">
-      <div class="icon-20px">{@html MicIcon}</div>
+      <div class="icon-20px"><MaterialSymbol icon="mic" fontSize={20} /></div>
       <MsqdxTypography variant="h6" weight="semibold">Transcription</MsqdxTypography>
     </div>
     <div class="track-info">
       <span class="text-xs text-white/60">{segments.length} segments</span>
       <div class="export-buttons">
-        <button 
-          class="export-btn" 
+        <button
+          class="export-btn"
           on:click={() => exportTranscription('srt')}
           title="Export SRT subtitles"
         >
           SRT
         </button>
-        <button 
-          class="export-btn" 
+        <button
+          class="export-btn"
           on:click={() => exportTranscription('vtt')}
           title="Export VTT subtitles"
         >
           VTT
         </button>
-        <button 
-          class="export-btn" 
+        <button
+          class="export-btn"
           on:click={() => exportTranscription('txt')}
           title="Export plain text"
         >
@@ -121,11 +119,11 @@
       </div>
     </div>
   </div>
-  
+
   <div class="segments-container" bind:this={transcriptionContainer}>
     <div class="segments-track" style="width: {Math.max(1000, duration * $zoomLevel * 20)}px;">
       {#each segments as segment, i (i)}
-        <div 
+        <div
           class="segment"
           class:active={activeSegment === segment}
           style="
@@ -145,12 +143,9 @@
           </div>
         </div>
       {/each}
-      
+
       <!-- Current time indicator -->
-      <div 
-        class="time-indicator"
-        style="left: {currentTime * $zoomLevel * 20}px"
-      ></div>
+      <div class="time-indicator" style="left: {currentTime * $zoomLevel * 20}px"></div>
     </div>
   </div>
 </div>
@@ -164,25 +159,25 @@
     padding: 0.75rem;
     margin-top: 0.5rem;
   }
-  
+
   .track-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
   }
-  
+
   .track-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   .export-buttons {
     display: flex;
     gap: 0.25rem;
   }
-  
+
   .export-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -193,12 +188,12 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
-  
+
   .export-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
   }
-  
+
   .segments-container {
     position: relative;
     height: 80px;
@@ -235,7 +230,7 @@
     align-items: center;
     gap: 2px;
   }
-  
+
   .segment {
     position: absolute;
     height: 100%;
@@ -251,18 +246,18 @@
     padding: 4px;
     min-width: 80px;
   }
-  
+
   .segment:hover {
     background: rgba(100, 150, 255, 0.5);
     border-color: rgba(100, 150, 255, 0.8);
     transform: translateY(-1px);
   }
-  
+
   .segment.active {
     background: rgba(255, 107, 107, 0.4);
     border-color: rgba(255, 107, 107, 0.8);
   }
-  
+
   .segment-text {
     font-size: 0.65rem;
     color: white;
@@ -274,14 +269,14 @@
     -webkit-box-orient: vertical;
     flex: 1;
   }
-  
+
   .segment-time {
     font-size: 0.5rem;
     color: rgba(255, 255, 255, 0.7);
     text-align: right;
     margin-top: 2px;
   }
-  
+
   .time-indicator {
     position: absolute;
     top: 0;

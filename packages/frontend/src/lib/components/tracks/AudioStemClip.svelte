@@ -1,9 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import AudioWaveform from './AudioWaveform.svelte';
-  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
-  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
-  
+  import { MaterialSymbol } from '$lib/components/ui';
+
   export let audioStemId: string;
   export let stemType: 'vocals' | 'music' | 'original' | 'drums' | 'bass';
   export let startTime: number;
@@ -16,46 +15,52 @@
   export let showWaveform: boolean = true;
   export let width: number = 200;
   export let height: number = 40;
-  
+
   // Watch for width/height changes
   $: if (width > 0 && trimWidth > 0) {
-    console.log('🎵 Clip dimensions updated:', { width, height, trimWidth, trimStartPx, trimEndPx });
+    console.log('🎵 Clip dimensions updated:', {
+      width,
+      height,
+      trimWidth,
+      trimStartPx,
+      trimEndPx,
+    });
   }
-  
+
   const dispatch = createEventDispatcher();
-  
+
   // Berechne tatsächliche Start/End-Zeiten basierend auf Trim
-  $: actualStartTime = startTime + (trimStart * (endTime - startTime));
-  $: actualEndTime = startTime + (trimEnd * (endTime - startTime));
+  $: actualStartTime = startTime + trimStart * (endTime - startTime);
+  $: actualEndTime = startTime + trimEnd * (endTime - startTime);
   $: actualDuration = actualEndTime - actualStartTime;
-  
+
   // Berechne Trim-Positionen als Pixel
   $: trimStartPx = trimStart * width;
   $: trimEndPx = trimEnd * width;
   $: trimWidth = trimEndPx - trimStartPx;
-  
+
   // Farben für verschiedene Stem-Typen (gedämpft, weniger knallig)
   const stemColors = {
     vocals: '#cc7777',
-    music: 'rgb(119, 204, 119)', 
+    music: 'rgb(119, 204, 119)',
     original: '#7777cc',
     drums: '#cc9966',
-    bass: '#9966cc'
+    bass: '#9966cc',
   };
-  
+
   $: stemColor = stemColors[stemType] || '#666666';
-  
+
   // Event-Handler
   function handleMouseDown(event: MouseEvent) {
     event.stopPropagation();
     dispatch('select', { audioStemId, stemType });
   }
-  
+
   function handleDoubleClick(event: MouseEvent) {
     event.stopPropagation();
     dispatch('isolate', { audioStemId, stemType });
   }
-  
+
   function handleTrimStart(event: MouseEvent) {
     event.stopPropagation();
     const target = event.currentTarget as HTMLElement;
@@ -63,14 +68,14 @@
     const rect = target.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const newTrimStart = Math.max(0, Math.min(1, x / width));
-    
-    dispatch('trim', { 
-      audioStemId, 
-      trimStart: newTrimStart, 
-      trimEnd 
+
+    dispatch('trim', {
+      audioStemId,
+      trimStart: newTrimStart,
+      trimEnd,
     });
   }
-  
+
   function handleTrimEnd(event: MouseEvent) {
     event.stopPropagation();
     const target = event.currentTarget as HTMLElement;
@@ -78,23 +83,23 @@
     const rect = target.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const newTrimEnd = Math.max(0, Math.min(1, x / width));
-    
-    dispatch('trim', { 
-      audioStemId, 
-      trimStart, 
-      trimEnd: newTrimEnd 
+
+    dispatch('trim', {
+      audioStemId,
+      trimStart,
+      trimEnd: newTrimEnd,
     });
   }
-  
+
   function handleMuteToggle() {
-    dispatch('mute', { 
-      audioStemId, 
-      isMuted: !isMuted 
+    dispatch('mute', {
+      audioStemId,
+      isMuted: !isMuted,
     });
   }
 </script>
 
-<div 
+<div
   class="audio-stem-clip"
   class:selected={isSelected}
   class:muted={isMuted}
@@ -105,26 +110,16 @@
   tabindex="0"
 >
   <!-- Hintergrund mit Stem-Farbe -->
-  <div 
-    class="stem-background"
-    style="background-color: {stemColor}20;"
-  >
+  <div class="stem-background" style="background-color: {stemColor}20;">
     <!-- Waveform -->
     {#if showWaveform}
       <div class="waveform-container" style="width: {width}px; left: 0px;">
-        <AudioWaveform 
-          {audioStemId}
-          {stemType}
-          startTime={startTime}
-          endTime={endTime}
-          width={width}
-          height={height}
-        />
+        <AudioWaveform {audioStemId} {stemType} {startTime} {endTime} {width} {height} />
       </div>
     {/if}
-    
+
     <!-- Trim-Handles -->
-    <div 
+    <div
       class="trim-handle trim-handle-start"
       style="left: {trimStartPx}px;"
       on:mousedown={handleTrimStart}
@@ -132,7 +127,7 @@
       tabindex="0"
       title="Trim start"
     ></div>
-    <div 
+    <div
       class="trim-handle trim-handle-end"
       style="left: {trimEndPx}px;"
       on:mousedown={handleTrimEnd}
@@ -140,27 +135,26 @@
       tabindex="0"
       title="Trim end"
     ></div>
-    
+
     <!-- Audio-Level Indicator -->
-    <div 
-      class="audio-level-indicator"
-      style="opacity: {audioLevel};"
-    ></div>
-    
+    <div class="audio-level-indicator" style="opacity: {audioLevel};"></div>
+
     <!-- Stem-Label -->
     <div class="stem-label" style="color: {stemColor};">
       {stemType.toUpperCase()}
     </div>
-    
+
     <!-- Mute Button -->
-    <button 
+    <button
       class="mute-button"
       class:muted={isMuted}
       on:click={handleMuteToggle}
       on:mousedown|stopPropagation
       title={isMuted ? 'Unmute' : 'Mute'}
     >
-      <div class="icon-16px">{@html (isMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
+      <div class="icon-16px">
+        <MaterialSymbol icon={isMuted ? 'volume_off' : 'volume_up'} fontSize={16} />
+      </div>
     </button>
   </div>
 </div>
@@ -175,20 +169,20 @@
     transition: all var(--msqdx-transition-standard);
     height: 100%;
   }
-  
+
   .audio-stem-clip:hover {
     transform: translateY(-1px);
   }
-  
+
   .audio-stem-clip.selected {
     outline: 2px solid var(--msqdx-color-brand-blue);
     outline-offset: -2px;
   }
-  
+
   .audio-stem-clip.muted {
     opacity: 0.5;
   }
-  
+
   .stem-background {
     position: relative;
     width: 100%;
@@ -197,7 +191,7 @@
     border-radius: var(--msqdx-radius-xs);
     background: transparent;
   }
-  
+
   .waveform-container {
     position: absolute;
     top: 4px;
@@ -205,7 +199,7 @@
     overflow: hidden;
     border-radius: 2px;
   }
-  
+
   .trim-handle {
     position: absolute;
     top: 0;
@@ -216,20 +210,20 @@
     border-radius: 2px;
     z-index: 10;
   }
-  
+
   .trim-handle:hover {
     background: rgba(255, 255, 255, 1);
     width: 6px;
   }
-  
+
   .trim-handle-start {
     left: 0;
   }
-  
+
   .trim-handle-end {
     right: 0;
   }
-  
+
   .audio-level-indicator {
     position: absolute;
     bottom: 2px;
@@ -240,7 +234,7 @@
     background-color: rgba(255, 255, 255, 0.6);
     transition: opacity 0.2s ease;
   }
-  
+
   .stem-label {
     position: absolute;
     top: 2px;
@@ -251,7 +245,7 @@
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     z-index: 5;
   }
-  
+
   .mute-button {
     position: absolute;
     top: 2px;
@@ -268,11 +262,11 @@
     justify-content: center;
     color: var(--msqdx-color-dark-text-primary);
   }
-  
+
   .mute-button:hover {
     opacity: 1;
   }
-  
+
   .mute-button.muted {
     opacity: 1;
     color: var(--msqdx-color-status-error);

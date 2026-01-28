@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { 
-    timelineClips, 
-    selectedClip, 
-    currentTime, 
-    duration, 
+  import {
+    timelineClips,
+    selectedClip,
+    currentTime,
+    duration,
     zoomLevel,
     initializeClips,
     selectClip,
@@ -18,16 +18,10 @@
     toggleClipLock,
     toggleClipMute,
     type TimelineClip,
-    type SceneData
+    type SceneData,
   } from '$lib/stores/timeline.store';
   import { api } from '$lib/config/environment';
-  import EditIcon from '@material-icons/svg/svg/edit/baseline.svg?raw';
-  import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
-  import SplitIcon from '@material-icons/svg/svg/content_cut/baseline.svg?raw';
-  import MergeIcon from '@material-icons/svg/svg/merge/baseline.svg?raw';
-  import InfoIcon from '@material-icons/svg/svg/info/baseline.svg?raw';
-  import LockIcon from '@material-icons/svg/svg/lock/baseline.svg?raw';
-  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   const dispatch = createEventDispatcher();
 
@@ -66,14 +60,14 @@
     try {
       // Initialize clips in store
       initializeClips(scenes);
-      
+
       // Set up video synchronization
       if (videoElement) {
         videoElement.addEventListener('timeupdate', handleVideoTimeUpdate);
         videoElement.addEventListener('play', () => setPlaying(true));
         videoElement.addEventListener('pause', () => setPlaying(false));
       }
-      
+
       // Set initial zoom level based on video duration
       if (videoDuration > 120) {
         zoomLevel.set(0.8); // Zoom out for very long videos
@@ -82,7 +76,7 @@
       } else {
         zoomLevel.set(1.5); // Zoom in for shorter videos
       }
-      
+
       isInitialized = true;
       console.log('✅ Enhanced Timeline initialized with', scenes.length, 'scenes');
     } catch (error) {
@@ -112,7 +106,7 @@
     splitClipId = clipId;
     const clip = $timelineClips.find(c => c.id === clipId);
     if (clip) {
-      splitTime = clip.startTime + (clip.duration / 2);
+      splitTime = clip.startTime + clip.duration / 2;
     }
     splitModalOpen = true;
   }
@@ -200,9 +194,15 @@
         <button class="control-btn" on:click={handleZoomIn} title="Zoom In">+</button>
       </div>
       <div class="export-controls">
-        <button class="control-btn" on:click={() => exportTimeline('json')} title="Export JSON">JSON</button>
-        <button class="control-btn" on:click={() => exportTimeline('edl')} title="Export EDL">EDL</button>
-        <button class="control-btn" on:click={() => exportTimeline('csv')} title="Export CSV">CSV</button>
+        <button class="control-btn" on:click={() => exportTimeline('json')} title="Export JSON"
+          >JSON</button
+        >
+        <button class="control-btn" on:click={() => exportTimeline('edl')} title="Export EDL"
+          >EDL</button
+        >
+        <button class="control-btn" on:click={() => exportTimeline('csv')} title="Export CSV"
+          >CSV</button
+        >
       </div>
     </div>
   </div>
@@ -211,29 +211,20 @@
   <div class="timeline-track" bind:this={waveformContainer}>
     <!-- Time Ruler -->
     <div class="time-ruler">
-      {#each Array.from({length: Math.ceil(videoDuration / 10)}) as _, i}
-        <div 
-          class="time-marker" 
-          style="left: {(i * 10 / videoDuration) * 100}%"
-        >
+      {#each Array.from({ length: Math.ceil(videoDuration / 10) }) as _, i}
+        <div class="time-marker" style="left: {((i * 10) / videoDuration) * 100}%">
           {formatTime(i * 10)}
         </div>
       {/each}
       {#if videoDuration > 0}
-        <div 
-          class="time-marker" 
-          style="left: 100%"
-        >
+        <div class="time-marker" style="left: 100%">
           {formatTime(videoDuration)}
         </div>
       {/if}
     </div>
 
     <!-- Playhead -->
-    <div 
-      class="playhead" 
-      style="left: {($currentTime / videoDuration) * 100}%"
-    ></div>
+    <div class="playhead" style="left: {($currentTime / videoDuration) * 100}%"></div>
 
     <!-- Clips Container with Horizontal Scroll -->
     <div class="clips-container" style="overflow-x: auto; overflow-y: hidden;">
@@ -256,100 +247,113 @@
             role="button"
             tabindex="0"
           >
-          <!-- Clip Content -->
-          <div class="clip-content">
-            <div class="thumbnail-container">
-              <img 
-                src={`${api.baseUrl}/videos/${videoId}/scenes/${clip.sceneId}/thumbnail`}
-                alt="Scene thumbnail" 
-                class="clip-thumbnail"
-                loading="lazy"
-                on:error={(e) => {
-                  e.target.style.display = 'none';
-                  const container = e.target.parentElement;
-                  const placeholder = container.querySelector('.clip-placeholder');
-                  if (placeholder) placeholder.style.display = 'flex';
-                }}
-              />
-              <div class="clip-placeholder" style="display: none;">
-                Scene {clip.order + 1}
+            <!-- Clip Content -->
+            <div class="clip-content">
+              <div class="thumbnail-container">
+                <img
+                  src={`${api.baseUrl}/videos/${videoId}/scenes/${clip.sceneId}/thumbnail`}
+                  alt="Scene thumbnail"
+                  class="clip-thumbnail"
+                  loading="lazy"
+                  on:error={e => {
+                    e.target.style.display = 'none';
+                    const container = e.target.parentElement;
+                    const placeholder = container.querySelector('.clip-placeholder');
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+                <div class="clip-placeholder" style="display: none;">
+                  Scene {clip.order + 1}
+                </div>
+              </div>
+
+              <div class="clip-info">
+                <span class="clip-duration">{formatTime(clip.duration)}</span>
+                <span class="clip-time"
+                  >{formatTime(clip.startTime)} - {formatTime(clip.endTime)}</span
+                >
+                <span class="clip-number">#{clip.order + 1}</span>
               </div>
             </div>
-            
-            <div class="clip-info">
-              <span class="clip-duration">{formatTime(clip.duration)}</span>
-              <span class="clip-time">{formatTime(clip.startTime)} - {formatTime(clip.endTime)}</span>
-              <span class="clip-number">#{clip.order + 1}</span>
-            </div>
-          </div>
 
-          <!-- Clip Controls -->
-          {#if hoveredClip === clip.id || $selectedClip === clip.id}
-            <div class="clip-controls">
-              <!-- Move Controls -->
-              <button 
-                class="control-btn small"
-                on:click|stopPropagation={() => handleMoveClip(clip.id, 'left')}
-                title="Move Left"
-                disabled={clip.order === 0}
-              >
-                ←
-              </button>
-              <button 
-                class="control-btn small"
-                on:click|stopPropagation={() => handleMoveClip(clip.id, 'right')}
-                title="Move Right"
-                disabled={clip.order === $timelineClips.length - 1}
-              >
-                →
-              </button>
-              
-              <!-- Split Control -->
-              <button 
-                class="control-btn small"
-                on:click|stopPropagation={() => handleSplitClip(clip.id)}
-                title="Split Clip"
-              >
-                {@html SplitIcon}
-              </button>
-              
-              <!-- Lock Control -->
-              <button 
-                class="control-btn small"
-                class:active={clip.locked}
-                on:click|stopPropagation={() => toggleClipLock(clip.id)}
-                title={clip.locked ? 'Unlock Clip' : 'Lock Clip'}
-              >
-                {@html LockIcon}
-              </button>
-              
-              <!-- Mute Control -->
-              <button 
-                class="control-btn small"
-                class:active={clip.muted}
-                on:click|stopPropagation={() => toggleClipMute(clip.id)}
-                title={clip.muted ? 'Unmute Clip' : 'Mute Clip'}
-              >
-                {@html VolumeOffIcon}
-              </button>
-              
-              <!-- Delete Control -->
-              <button 
-                class="control-btn small danger"
-                on:click|stopPropagation={() => handleDeleteClip(clip.id)}
-                title="Delete Clip"
-              >
-                {@html DeleteIcon}
-              </button>
-            </div>
-          {/if}
+            <!-- Clip Controls -->
+            {#if hoveredClip === clip.id || $selectedClip === clip.id}
+              <div class="clip-controls">
+                <!-- Move Controls -->
+                <button
+                  class="control-btn small"
+                  on:click|stopPropagation={() => handleMoveClip(clip.id, 'left')}
+                  title="Move Left"
+                  disabled={clip.order === 0}
+                >
+                  ←
+                </button>
+                <button
+                  class="control-btn small"
+                  on:click|stopPropagation={() => handleMoveClip(clip.id, 'right')}
+                  title="Move Right"
+                  disabled={clip.order === $timelineClips.length - 1}
+                >
+                  →
+                </button>
 
-          <!-- Merge Indicators -->
-          {#if hoveredClip === clip.id && $selectedClip && $selectedClip !== clip.id}
-            <div class="merge-indicator" on:click|stopPropagation={() => handleMergeClips($selectedClip, clip.id)}>
-              Merge with selected
-            </div>
-          {/if}
+                <!-- Split Control -->
+                <button
+                  class="control-btn small"
+                  on:click|stopPropagation={() => handleSplitClip(clip.id)}
+                  title="Split Clip"
+                >
+                  <div class="flex items-center justify-center w-full h-full">
+                    <MaterialSymbol icon="content_cut" fontSize={14} />
+                  </div>
+                </button>
+
+                <!-- Lock Control -->
+                <button
+                  class="control-btn small"
+                  class:active={clip.locked}
+                  on:click|stopPropagation={() => toggleClipLock(clip.id)}
+                  title={clip.locked ? 'Unlock Clip' : 'Lock Clip'}
+                >
+                  <div class="flex items-center justify-center w-full h-full">
+                    <MaterialSymbol icon={clip.locked ? 'lock' : 'lock_open'} fontSize={14} />
+                  </div>
+                </button>
+
+                <!-- Mute Control -->
+                <button
+                  class="control-btn small"
+                  class:active={clip.muted}
+                  on:click|stopPropagation={() => toggleClipMute(clip.id)}
+                  title={clip.muted ? 'Unmute Clip' : 'Mute Clip'}
+                >
+                  <div class="flex items-center justify-center w-full h-full">
+                    <MaterialSymbol icon={clip.muted ? 'volume_off' : 'volume_up'} fontSize={14} />
+                  </div>
+                </button>
+
+                <!-- Delete Control -->
+                <button
+                  class="control-btn small danger"
+                  on:click|stopPropagation={() => handleDeleteClip(clip.id)}
+                  title="Delete Clip"
+                >
+                  <div class="flex items-center justify-center w-full h-full">
+                    <MaterialSymbol icon="delete" fontSize={14} />
+                  </div>
+                </button>
+              </div>
+            {/if}
+
+            <!-- Merge Indicators -->
+            {#if hoveredClip === clip.id && $selectedClip && $selectedClip !== clip.id}
+              <div
+                class="merge-indicator"
+                on:click|stopPropagation={() => handleMergeClips($selectedClip, clip.id)}
+              >
+                Merge with selected
+              </div>
+            {/if}
           </div>
         {/each}
       </div>
@@ -362,23 +366,22 @@
       Current: {formatTime($currentTime)} / {formatTime(videoDuration)}
     </div>
     <div class="clip-stats">
-      Clips: {$timelineClips.length} | 
-      Locked: {$timelineClips.filter(c => c.locked).length} | 
-      Muted: {$timelineClips.filter(c => c.muted).length}
+      Clips: {$timelineClips.length} | Locked: {$timelineClips.filter(c => c.locked).length} | Muted:
+      {$timelineClips.filter(c => c.muted).length}
     </div>
   </div>
 </div>
 
 <!-- Split Modal -->
 {#if splitModalOpen}
-  <div class="modal-overlay" on:click={() => splitModalOpen = false}>
+  <div class="modal-overlay" on:click={() => (splitModalOpen = false)}>
     <div class="modal" on:click|stopPropagation>
       <h3>Split Clip</h3>
       <p>Select the time to split this clip:</p>
       <div class="split-controls">
-        <input 
-          type="range" 
-          bind:value={splitTime} 
+        <input
+          type="range"
+          bind:value={splitTime}
           min={$timelineClips.find(c => c.id === splitClipId)?.startTime || 0}
           max={$timelineClips.find(c => c.id === splitClipId)?.endTime || videoDuration}
           step="0.1"
@@ -386,7 +389,7 @@
         <span class="split-time">{formatTime(splitTime)}</span>
       </div>
       <div class="modal-actions">
-        <button class="btn-secondary" on:click={() => splitModalOpen = false}>Cancel</button>
+        <button class="btn-secondary" on:click={() => (splitModalOpen = false)}>Cancel</button>
         <button class="btn-primary" on:click={confirmSplit}>Split</button>
       </div>
     </div>
@@ -395,20 +398,26 @@
 
 <!-- Merge Modal -->
 {#if mergeModalOpen}
-  <div class="modal-overlay" on:click={() => mergeModalOpen = false}>
+  <div class="modal-overlay" on:click={() => (mergeModalOpen = false)}>
     <div class="modal" on:click|stopPropagation>
       <h3>Merge Clips</h3>
       <p>Are you sure you want to merge these two clips?</p>
       <div class="merge-info">
         <div class="clip-info-item">
-          <strong>Clip 1:</strong> {formatTime($timelineClips.find(c => c.id === mergeClip1)?.startTime || 0)} - {formatTime($timelineClips.find(c => c.id === mergeClip1)?.endTime || 0)}
+          <strong>Clip 1:</strong>
+          {formatTime($timelineClips.find(c => c.id === mergeClip1)?.startTime || 0)} - {formatTime(
+            $timelineClips.find(c => c.id === mergeClip1)?.endTime || 0
+          )}
         </div>
         <div class="clip-info-item">
-          <strong>Clip 2:</strong> {formatTime($timelineClips.find(c => c.id === mergeClip2)?.startTime || 0)} - {formatTime($timelineClips.find(c => c.id === mergeClip2)?.endTime || 0)}
+          <strong>Clip 2:</strong>
+          {formatTime($timelineClips.find(c => c.id === mergeClip2)?.startTime || 0)} - {formatTime(
+            $timelineClips.find(c => c.id === mergeClip2)?.endTime || 0
+          )}
         </div>
       </div>
       <div class="modal-actions">
-        <button class="btn-secondary" on:click={() => mergeModalOpen = false}>Cancel</button>
+        <button class="btn-secondary" on:click={() => (mergeModalOpen = false)}>Cancel</button>
         <button class="btn-primary" on:click={confirmMerge}>Merge</button>
       </div>
     </div>
@@ -746,7 +755,7 @@
     margin-bottom: 2rem;
   }
 
-  .split-controls input[type="range"] {
+  .split-controls input[type='range'] {
     flex: 1;
   }
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { MaterialSymbol } from '$lib/components/ui';
   // Svelte 5 Props
   interface Props {
     objects?: Array<{label: string, confidence: number}>;
@@ -141,51 +142,28 @@
   }
 </script>
 
+<script lang="ts">
+  import { MaterialSymbol } from '$lib/components/ui';
+  // ... existing code ...
+</script>
+
 <div class="vision-tags glass-card">
   <h3>Vision Analysis</h3>
   
   {#if faces.length > 0}
     <div class="tag-group">
       <span class="tag face-tag">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-        </svg>
+        <span class="w-4 h-4 flex items-center justify-center"><MaterialSymbol icon="face" fontSize={16} /></span>
         {faces.length} {faces.length === 1 ? 'Person' : 'Persons'}
       </span>
     </div>
   {/if}
   
   {#if topObjects.length > 0}
-    <div class="tag-group">
-      {#each topObjects as obj}
-        <span class="tag object-tag" title="{(obj.confidence * 100).toFixed(1)}% confidence">
-          {obj.label}
-        </span>
-      {/each}
-    </div>
+  <!-- ... code ... -->
   {/if}
   
-  {#if topSceneClassification.length > 0}
-    <div class="tag-group">
-      <span class="tag-label">Scene:</span>
-      {#each topSceneClassification as scene}
-        <span class="tag scene-tag" title="{(scene.confidence * 100).toFixed(1)}% confidence">
-          {scene.label}
-        </span>
-      {/each}
-    </div>
-  {/if}
-  
-  {#if topCustomObjects.length > 0}
-    <div class="tag-group">
-      <span class="tag-label">Custom:</span>
-      {#each topCustomObjects as customObj}
-        <span class="tag custom-tag" title="{(customObj.confidence * 100).toFixed(1)}% confidence">
-          {customObj.label}
-        </span>
-      {/each}
-    </div>
-  {/if}
+  <!-- ... code ... -->
   
   {#if qwenVLDescription}
     <div class="ai-description qwen-vl">
@@ -197,7 +175,7 @@
         <!-- Scene Info -->
         {#if parsedQwenVL.sceneInfo}
           <div class="qwen-scene-info">
-            <span class="material-icons-outlined">videocam</span>
+            <MaterialSymbol icon="videocam" fontSize={16} class="text-green-300/80 mr-2" />
             {parsedQwenVL.sceneInfo}
           </div>
         {/if}
@@ -209,9 +187,7 @@
               class="qwen-section-header"
               onclick={() => summaryExpanded = !summaryExpanded}
             >
-              <span class="material-icons-outlined">
-                {summaryExpanded ? 'expand_more' : 'chevron_right'}
-              </span>
+              <MaterialSymbol icon={summaryExpanded ? 'expand_more' : 'chevron_right'} fontSize={18} class="text-green-300/80" />
               <span class="section-title">Zusammenfassung</span>
             </button>
             
@@ -230,9 +206,7 @@
               class="qwen-section-header"
               onclick={() => detailsExpanded = !detailsExpanded}
             >
-              <span class="material-icons-outlined">
-                {detailsExpanded ? 'expand_more' : 'chevron_right'}
-              </span>
+              <MaterialSymbol icon={detailsExpanded ? 'expand_more' : 'chevron_right'} fontSize={18} class="text-green-300/80" />
               <span class="section-title">
                 {parsedQwenVL.detailsTitle}
                 {parsedQwenVL.details.length > 0 ? ` (${parsedQwenVL.details.length})` : ''}
@@ -244,7 +218,7 @@
                 {#each parsedQwenVL.details as detail}
                   <div class="qwen-detail-item">
                     <div class="detail-title">
-                      <span class="material-icons-outlined">label</span>
+                      <MaterialSymbol icon="label" fontSize={16} class="text-green-300/70" />
                       {detail.title}
                     </div>
                     <p class="detail-content">{detail.content}</p>

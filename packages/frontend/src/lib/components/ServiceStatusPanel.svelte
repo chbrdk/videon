@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { api } from '$lib/config/environment';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   let isExpanded = false;
   let services = {
@@ -114,15 +116,15 @@
   function getStatusIcon(status: string): string {
     switch (status) {
       case 'healthy':
-        return '✓';
+        return 'check_circle';
       case 'unhealthy':
-        return '✗';
+        return 'cancel';
       case 'unavailable':
-        return '⚠';
+        return 'warning';
       case 'checking':
-        return '⟳';
+        return 'refresh';
       default:
-        return '?';
+        return 'help';
     }
   }
 
@@ -258,15 +260,7 @@
   >
     <div class="w-2 h-2 rounded-full {getStatusColor(services.backend.status)} bg-current"></div>
     <span class="text-xs font-medium">Services</span>
-    <svg
-      class="w-3 h-3 transition-transform duration-200 {isExpanded ? 'rotate-180' : ''}"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"
-      ></path>
-    </svg>
+    <MaterialSymbol icon={isExpanded ? 'expand_more' : 'expand_less'} fontSize={16} />
   </button>
 
   <!-- Expanded Panel -->
@@ -279,14 +273,7 @@
           class="glass-button p-1 rounded"
           title="Refresh Status"
         >
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            ></path>
-          </svg>
+          <MaterialSymbol icon="refresh" fontSize={16} />
         </button>
       </div>
 
@@ -311,9 +298,9 @@
             title="Restart Backend"
           >
             {#if isOperating('backend')}
-              <div class="animate-spin">⟳</div>
+              <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
             {:else}
-              ⟳
+              <MaterialSymbol icon="restart_alt" fontSize={14} />
             {/if}
           </button>
         </div>
@@ -425,9 +412,9 @@
               title="Stop Audio Separation"
             >
               {#if isOperating('audioSeparation')}
-                <div class="animate-spin">⟳</div>
+                <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
               {:else}
-                ⏸
+                <MaterialSymbol icon="pause" fontSize={14} />
               {/if}
             </button>
           {:else}
@@ -438,9 +425,9 @@
               title="Start Audio Separation"
             >
               {#if isOperating('audioSeparation')}
-                <div class="animate-spin">⟳</div>
+                <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
               {:else}
-                ▶
+                <MaterialSymbol icon="play_arrow" fontSize={14} />
               {/if}
             </button>
           {/if}
@@ -464,19 +451,19 @@
       <div class="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
         <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
           <div class="flex items-center gap-1">
-            <span class="text-green-400">✓</span>
+            <span class="text-green-400"><MaterialSymbol icon="check_circle" fontSize={12} /></span>
             <span>Healthy</span>
           </div>
           <div class="flex items-center gap-1">
-            <span class="text-red-400">✗</span>
+            <span class="text-red-400"><MaterialSymbol icon="cancel" fontSize={12} /></span>
             <span>Error</span>
           </div>
           <div class="flex items-center gap-1">
-            <span class="text-yellow-400">⚠</span>
+            <span class="text-yellow-400"><MaterialSymbol icon="warning" fontSize={12} /></span>
             <span>Unavailable</span>
           </div>
           <div class="flex items-center gap-1">
-            <span class="text-blue-400">⟳</span>
+            <span class="text-blue-400"><MaterialSymbol icon="refresh" fontSize={12} /></span>
             <span>Checking</span>
           </div>
         </div>

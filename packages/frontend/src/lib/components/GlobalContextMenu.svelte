@@ -1,10 +1,6 @@
 <script lang="ts">
   import { contextMenuStore } from '$lib/stores/context-menu.store';
-  
-  import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-  import EditIcon from '@material-icons/svg/svg/edit/baseline.svg?raw';
-  import MicIcon from '@material-icons/svg/svg/mic/baseline.svg?raw';
-  import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   
   function handleAction(action: string, segment: any) {
     window.dispatchEvent(new CustomEvent(`contextmenu-${action}`, { detail: segment }));
@@ -21,17 +17,17 @@
     on:click|stopPropagation
   >
     <button on:click={() => handleAction('play', $contextMenuStore!.segment)}>
-      <span class="icon-18px">{@html PlayArrowIcon}</span> Play Segment
+      <span class="icon-18px"><MaterialSymbol icon="play_arrow" fontSize={18} /></span> Play Segment
     </button>
     <button on:click={() => handleAction('edit', $contextMenuStore!.segment)}>
-      <span class="icon-18px">{@html EditIcon}</span> Edit Text
+      <span class="icon-18px"><MaterialSymbol icon="edit" fontSize={18} /></span> Edit Text
     </button>
     <button on:click={() => handleAction('revoice', $contextMenuStore!.segment)}>
-      <span class="icon-18px">{@html MicIcon}</span> Re-Voice
+      <span class="icon-18px"><MaterialSymbol icon="mic" fontSize={18} /></span> Re-Voice
     </button>
     <div class="divider"></div>
     <button class="danger" on:click={() => handleAction('delete', $contextMenuStore!.segment)}>
-      <span class="icon-18px">{@html DeleteIcon}</span> Delete
+      <span class="icon-18px"><MaterialSymbol icon="delete" fontSize={18} /></span> Delete
     </button>
   </div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->

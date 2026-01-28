@@ -3,11 +3,8 @@
   import { currentLocale } from '$lib/i18n';
   import { voiceSegmentApi } from '$lib/api/voice-segment';
   import type { VoiceSegment, ElevenLabsVoice, VoiceClone } from '$lib/api/voice-segment';
-  
-  import MicIcon from '@material-icons/svg/svg/mic/baseline.svg?raw';
-  import EditIcon from '@material-icons/svg/svg/edit/baseline.svg?raw';
-  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
-  import CloseIcon from '@material-icons/svg/svg/close/baseline.svg?raw';
+
+  import { MaterialSymbol } from '$lib/components/ui';
 
   export let segment: VoiceSegment | null;
   export let show: boolean = false;
@@ -82,8 +79,8 @@
           stability,
           similarityBoost,
           style,
-          useSpeakerBoost
-        }
+          useSpeakerBoost,
+        },
       });
 
       if (previewAudio) {
@@ -121,8 +118,8 @@
           stability,
           similarityBoost,
           style,
-          useSpeakerBoost
-        }
+          useSpeakerBoost,
+        },
       });
 
       // Dispatch success with updated segment
@@ -130,7 +127,10 @@
       handleClose();
     } catch (error) {
       console.error('Re-Voice failed:', error);
-      alert(($currentLocale === 'en' ? 'Re-Voice failed: ' : 'Neu-Vertonung fehlgeschlagen: ') + (error as Error).message);
+      alert(
+        ($currentLocale === 'en' ? 'Re-Voice failed: ' : 'Neu-Vertonung fehlgeschlagen: ') +
+          (error as Error).message
+      );
     }
   }
 
@@ -145,140 +145,160 @@
 </script>
 
 {#if show && segment}
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="modal-overlay" on:click={handleClose}>
-  <div class="modal-content glass-card" on:click|stopPropagation>
-    <div class="modal-header">
-      <h2>
-        <span class="icon-24px">{@html MicIcon}</span>
-        {$currentLocale === 'en' ? 'Re-Voice Segment' : 'Segment neu vertonen'}
-      </h2>
-      <button class="close-btn" on:click={handleClose} title="Close">
-        <span class="icon-32px">{@html CloseIcon}</span>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Text Editor -->
-      <div class="form-group">
-        <label for={textAreaId}>{$currentLocale === 'en' ? 'Text:' : 'Text:'}</label>
-        <textarea
-          id={textAreaId}
-          bind:value={editedText}
-          rows="4"
-          placeholder={$currentLocale === 'en' ? 'Enter text to speak...' : 'Text zum Sprechen eingeben...'}
-          class="text-editor"
-        ></textarea>
-        <small class="text-info">
-          {$currentLocale === 'en' ? 'Original:' : 'Original:'} "{segment.originalText}"
-        </small>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div class="modal-overlay" on:click={handleClose}>
+    <div class="modal-content glass-card" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>
+          <span class="icon-24px"><MaterialSymbol icon="mic" fontSize={24} /></span>
+          {$currentLocale === 'en' ? 'Re-Voice Segment' : 'Segment neu vertonen'}
+        </h2>
+        <button class="close-btn" on:click={handleClose} title="Close">
+          <span class="icon-32px"><MaterialSymbol icon="close" fontSize={32} /></span>
+        </button>
       </div>
 
-      <!-- Voice Selection -->
-      <div class="form-group">
-        <label for={voiceSelectId}>{$currentLocale === 'en' ? 'Voice:' : 'Stimme:'}</label>
-        <select id={voiceSelectId} bind:value={selectedVoiceId}>
-          <option value="">{$currentLocale === 'en' ? 'Select a voice...' : 'Stimme auswählen...'}</option>
+      <div class="modal-body">
+        <!-- Text Editor -->
+        <div class="form-group">
+          <label for={textAreaId}>{$currentLocale === 'en' ? 'Text:' : 'Text:'}</label>
+          <textarea
+            id={textAreaId}
+            bind:value={editedText}
+            rows="4"
+            placeholder={$currentLocale === 'en'
+              ? 'Enter text to speak...'
+              : 'Text zum Sprechen eingeben...'}
+            class="text-editor"
+          ></textarea>
+          <small class="text-info">
+            {$currentLocale === 'en' ? 'Original:' : 'Original:'} "{segment.originalText}"
+          </small>
+        </div>
 
-          {#if voiceClones.length > 0}
-            <optgroup label={$currentLocale === 'en' ? 'Your Cloned Voices' : 'Ihre geklonten Stimmen'}>
-              {#each voiceClones as clone}
-                <option value={clone.elevenLabsVoiceId}>
-                  {clone.name}
+        <!-- Voice Selection -->
+        <div class="form-group">
+          <label for={voiceSelectId}>{$currentLocale === 'en' ? 'Voice:' : 'Stimme:'}</label>
+          <select id={voiceSelectId} bind:value={selectedVoiceId}>
+            <option value=""
+              >{$currentLocale === 'en' ? 'Select a voice...' : 'Stimme auswählen...'}</option
+            >
+
+            {#if voiceClones.length > 0}
+              <optgroup
+                label={$currentLocale === 'en' ? 'Your Cloned Voices' : 'Ihre geklonten Stimmen'}
+              >
+                {#each voiceClones as clone}
+                  <option value={clone.elevenLabsVoiceId}>
+                    {clone.name}
+                  </option>
+                {/each}
+              </optgroup>
+            {/if}
+
+            <optgroup label={$currentLocale === 'en' ? 'ElevenLabs Voices' : 'ElevenLabs Stimmen'}>
+              {#each voices as voice}
+                <option value={voice.voice_id}>
+                  {voice.name}
                 </option>
               {/each}
             </optgroup>
-          {/if}
-
-          <optgroup label={$currentLocale === 'en' ? 'ElevenLabs Voices' : 'ElevenLabs Stimmen'}>
-            {#each voices as voice}
-              <option value={voice.voice_id}>
-                {voice.name}
-              </option>
-            {/each}
-          </optgroup>
-        </select>
-      </div>
-
-      <!-- Voice Settings -->
-      <div class="voice-settings">
-        <h3>{$currentLocale === 'en' ? 'Voice Settings' : 'Voice-Einstellungen'}</h3>
-
-        <div class="setting">
-          <label for={stabilityRangeId}>{$currentLocale === 'en' ? 'Stability:' : 'Stabilität:'} {stability.toFixed(2)}</label>
-          <input
-            id={stabilityRangeId}
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            bind:value={stability}
-          />
-          <small>{$currentLocale === 'en' ? 'More stable = less expressive' : 'Stabiler = weniger ausdrucksvoll'}</small>
+          </select>
         </div>
 
-        <div class="setting">
-          <label for={similarityRangeId}>{$currentLocale === 'en' ? 'Similarity Boost:' : 'Ähnlichkeitsverstärkung:'} {similarityBoost.toFixed(2)}</label>
-          <input
-            id={similarityRangeId}
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            bind:value={similarityBoost}
-          />
-          <small>{$currentLocale === 'en' ? 'Higher = closer to original voice' : 'Höher = näher an Original-Stimme'}</small>
-        </div>
+        <!-- Voice Settings -->
+        <div class="voice-settings">
+          <h3>{$currentLocale === 'en' ? 'Voice Settings' : 'Voice-Einstellungen'}</h3>
 
-        <div class="setting">
-          <label for={styleRangeId}>{$currentLocale === 'en' ? 'Style:' : 'Stil:'} {style.toFixed(2)}</label>
-          <input
-            id={styleRangeId}
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            bind:value={style}
-          />
-          <small>{$currentLocale === 'en' ? 'Exaggeration of speaking style' : 'Übertreibung des Sprechstils'}</small>
-        </div>
-
-        <div class="setting">
-          <label class="checkbox-label" for={speakerBoostId}>
+          <div class="setting">
+            <label for={stabilityRangeId}
+              >{$currentLocale === 'en' ? 'Stability:' : 'Stabilität:'}
+              {stability.toFixed(2)}</label
+            >
             <input
-              id={speakerBoostId}
-              type="checkbox"
-              bind:checked={useSpeakerBoost}
+              id={stabilityRangeId}
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              bind:value={stability}
             />
-            {$currentLocale === 'en' ? 'Use Speaker Boost (better clarity)' : 'Speaker Boost verwenden (bessere Klarheit)'}
-          </label>
+            <small
+              >{$currentLocale === 'en'
+                ? 'More stable = less expressive'
+                : 'Stabiler = weniger ausdrucksvoll'}</small
+            >
+          </div>
+
+          <div class="setting">
+            <label for={similarityRangeId}
+              >{$currentLocale === 'en' ? 'Similarity Boost:' : 'Ähnlichkeitsverstärkung:'}
+              {similarityBoost.toFixed(2)}</label
+            >
+            <input
+              id={similarityRangeId}
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              bind:value={similarityBoost}
+            />
+            <small
+              >{$currentLocale === 'en'
+                ? 'Higher = closer to original voice'
+                : 'Höher = näher an Original-Stimme'}</small
+            >
+          </div>
+
+          <div class="setting">
+            <label for={styleRangeId}
+              >{$currentLocale === 'en' ? 'Style:' : 'Stil:'} {style.toFixed(2)}</label
+            >
+            <input id={styleRangeId} type="range" min="0" max="1" step="0.01" bind:value={style} />
+            <small
+              >{$currentLocale === 'en'
+                ? 'Exaggeration of speaking style'
+                : 'Übertreibung des Sprechstils'}</small
+            >
+          </div>
+
+          <div class="setting">
+            <label class="checkbox-label" for={speakerBoostId}>
+              <input id={speakerBoostId} type="checkbox" bind:checked={useSpeakerBoost} />
+              {$currentLocale === 'en'
+                ? 'Use Speaker Boost (better clarity)'
+                : 'Speaker Boost verwenden (bessere Klarheit)'}
+            </label>
+          </div>
         </div>
+
+        <!-- Live Preview Status -->
+        {#if isPreviewPlaying}
+          <div class="preview-status">
+            <span class="inline-icon-18px"><MaterialSymbol icon="volume_up" fontSize={18} /></span>
+            {$currentLocale === 'en' ? 'Playing preview...' : 'Vorschau läuft...'}
+            <button class="stop-preview-btn" on:click={stopPreview}
+              >{$currentLocale === 'en' ? 'Stop' : 'Stoppen'}</button
+            >
+          </div>
+        {/if}
       </div>
 
-      <!-- Live Preview Status -->
-      {#if isPreviewPlaying}
-        <div class="preview-status">
-          <span class="inline-icon-18px">{@html VolumeUpIcon}</span> {$currentLocale === 'en' ? 'Playing preview...' : 'Vorschau läuft...'}
-          <button class="stop-preview-btn" on:click={stopPreview}>{$currentLocale === 'en' ? 'Stop' : 'Stoppen'}</button>
-        </div>
-      {/if}
-    </div>
-
-    <div class="modal-footer">
-      <button class="glass-button secondary" on:click={handleClose}>
-        {$currentLocale === 'en' ? 'Cancel' : 'Abbrechen'}
-      </button>
-      <button
-        class="glass-button primary"
-        on:click={handleReVoice}
-        disabled={!editedText || !selectedVoiceId}
-      >
-        {$currentLocale === 'en' ? 'Generate Re-Voiced Audio' : 'Neu-Vertontes Audio generieren'}
-      </button>
+      <div class="modal-footer">
+        <button class="glass-button secondary" on:click={handleClose}>
+          {$currentLocale === 'en' ? 'Cancel' : 'Abbrechen'}
+        </button>
+        <button
+          class="glass-button primary"
+          on:click={handleReVoice}
+          disabled={!editedText || !selectedVoiceId}
+        >
+          {$currentLocale === 'en' ? 'Generate Re-Voiced Audio' : 'Neu-Vertontes Audio generieren'}
+        </button>
+      </div>
     </div>
   </div>
-</div>
 {/if}
 
 <style>
@@ -307,47 +327,47 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 24px;
   }
-  
+
   @media (min-width: 769px) {
     .modal-content {
       width: 600px;
     }
   }
-  
+
   @media (max-width: 768px) {
     .modal-content {
       width: 95%;
       max-height: 85vh;
     }
-    
+
     .modal-header {
       padding: 1rem 1rem 0;
     }
-    
+
     .modal-header h2 {
       font-size: 1.25rem;
     }
-    
+
     .modal-body {
       padding: 0 1rem 1rem;
     }
-    
+
     .modal-footer {
       padding: 1rem;
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     .glass-button {
       width: 100%;
     }
-    
+
     textarea,
     select {
       font-size: 16px;
     }
   }
-  
+
   @media (max-width: 640px) {
     .modal-content {
       width: 100%;
@@ -381,23 +401,24 @@
     align-items: center;
     justify-content: center;
   }
-  
-  .icon-24px, .icon-32px {
+
+  .icon-24px,
+  .icon-32px {
     display: inline-flex;
     align-items: center;
     vertical-align: middle;
   }
-  
+
   .icon-24px {
     width: 24px;
     height: 24px;
   }
-  
+
   .icon-32px {
     width: 32px;
     height: 32px;
   }
-  
+
   .inline-icon-18px {
     display: inline-block;
     width: 18px;
@@ -478,7 +499,7 @@
     font-size: 13px;
   }
 
-  .setting input[type="range"] {
+  .setting input[type='range'] {
     width: 100%;
     height: 6px;
     background: rgba(255, 255, 255, 0.2);
@@ -566,7 +587,7 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
-  :global(html.dark) .setting input[type="range"] {
+  :global(html.dark) .setting input[type='range'] {
     background: rgba(255, 255, 255, 0.2);
   }
 
@@ -628,7 +649,7 @@
     color: #111;
   }
 
-  :global(html.light) .setting input[type="range"] {
+  :global(html.light) .setting input[type='range'] {
     background: rgba(0, 0, 0, 0.12);
   }
 

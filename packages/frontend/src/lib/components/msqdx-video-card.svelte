@@ -5,10 +5,7 @@
   import { getVideoUrl } from '$lib/config/environment';
   import { MsqdxChip } from '$lib/components/ui';
   import { base } from '$app/paths';
-  // Import Material Icons as URL for img tags
-  import PlayIcon from '@material-icons/svg/svg/play_arrow/baseline.svg';
-  import ClockIcon from '@material-icons/svg/svg/schedule/baseline.svg';
-  import StorageIcon from '@material-icons/svg/svg/storage/baseline.svg';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   export let video: Video;
 
@@ -50,7 +47,7 @@
         canvas.width = videoElement.videoWidth;
         canvas.height = videoElement.videoHeight;
         const ctx = canvas.getContext('2d');
-        
+
         if (ctx) {
           ctx.drawImage(videoElement, 0, 0);
           thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
@@ -69,7 +66,7 @@
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     if (bytes === 0) return '0 Bytes';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   function formatDuration(seconds?: number): string {
@@ -82,24 +79,35 @@
   function getStatusText(status: Video['status']): string {
     const normalized = status?.toUpperCase?.() ?? 'UNKNOWN';
     switch (normalized) {
-      case 'UPLOADED': return _('status.uploaded');
-      case 'ANALYZING': return _('status.analyzing');
-      case 'ANALYZED': return _('status.analyzed');
-      case 'COMPLETE': return _('status.complete');
-      case 'ERROR': return _('status.error');
-      default: return _('status.unknown');
+      case 'UPLOADED':
+        return _('status.uploaded');
+      case 'ANALYZING':
+        return _('status.analyzing');
+      case 'ANALYZED':
+        return _('status.analyzed');
+      case 'COMPLETE':
+        return _('status.complete');
+      case 'ERROR':
+        return _('status.error');
+      default:
+        return _('status.unknown');
     }
   }
 
   function getStatusColor(status: Video['status']): 'info' | 'warning' | 'success' | 'error' {
     const normalized = status?.toUpperCase?.() ?? 'UNKNOWN';
     switch (normalized) {
-      case 'UPLOADED': return 'info';
-      case 'ANALYZING': return 'warning';
+      case 'UPLOADED':
+        return 'info';
+      case 'ANALYZING':
+        return 'warning';
       case 'ANALYZED':
-      case 'COMPLETE': return 'success';
-      case 'ERROR': return 'error';
-      default: return 'info';
+      case 'COMPLETE':
+        return 'success';
+      case 'ERROR':
+        return 'error';
+      default:
+        return 'info';
     }
   }
 </script>
@@ -109,7 +117,12 @@
   role="button"
   tabindex="0"
   on:click|stopPropagation={handleClick}
-  on:keydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleClick(); } }}
+  on:keydown={e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleClick();
+    }
+  }}
   style="
     --blur: var(--msqdx-glass-blur);
     --opacity: 0.05;
@@ -121,16 +134,26 @@
   "
 >
   <!-- Video Container -->
-  <div 
-    class="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 overflow-hidden relative rounded-t-[2.5rem] pointer-events-none" 
-    style="{thumbnailUrl ? `background-image: url(${thumbnailUrl}); background-size: cover; background-position: center;` : ''}"
+  <div
+    class="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 overflow-hidden relative rounded-t-[2.5rem] pointer-events-none"
+    style={thumbnailUrl
+      ? `background-image: url(${thumbnailUrl}); background-size: cover; background-position: center;`
+      : ''}
   >
     <!-- Gradient overlay for better contrast -->
-    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 pointer-events-none"></div>
-    
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 pointer-events-none"
+    ></div>
+
     <!-- Play Overlay -->
-    <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-200 pointer-events-none">
-      <img src={PlayIcon} alt="Play" class="w-16 h-16 opacity-60 group-hover:opacity-80 transition-opacity play-icon pointer-events-none" />
+    <div
+      class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-200 pointer-events-none"
+    >
+      <div
+        class="w-16 h-16 opacity-60 group-hover:opacity-80 transition-opacity play-icon pointer-events-none flex items-center justify-center"
+      >
+        <MaterialSymbol icon="play_arrow" fontSize={64} />
+      </div>
     </div>
 
     <!-- Info Chips Overlay (Bottom Right) -->
@@ -153,12 +176,16 @@
     <!-- Info Chips -->
     <div class="flex flex-wrap gap-2 pb-4 pointer-events-none">
       <MsqdxChip variant="glass" color="info">
-        <img src={ClockIcon} alt="Duration" class="w-3 h-3 chip-icon" />
+        <span class="w-3 h-3 chip-icon flex items-center justify-center"
+          ><MaterialSymbol icon="schedule" fontSize={12} /></span
+        >
         <span>{formatDuration(video.duration)}</span>
       </MsqdxChip>
-      
+
       <MsqdxChip variant="glass" color="info">
-        <img src={StorageIcon} alt="Size" class="w-3 h-3 chip-icon" />
+        <span class="w-3 h-3 chip-icon flex items-center justify-center"
+          ><MaterialSymbol icon="storage" fontSize={12} /></span
+        >
         <span>{formatFileSize(video.fileSize)}</span>
       </MsqdxChip>
     </div>

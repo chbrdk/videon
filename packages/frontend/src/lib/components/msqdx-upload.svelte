@@ -2,8 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { uploading, uploadProgress, uploadError } from '$lib/stores/videos.store';
   import { MsqdxGlassCard, MsqdxChip, MsqdxProgress } from '$lib/components/ui';
-  import UploadIcon from '@material-icons/svg/svg/upload/baseline.svg?raw';
-  import VideoIcon from '@material-icons/svg/svg/video_library/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   import { _ } from '$lib/i18n';
 
   const dispatch = createEventDispatcher<{
@@ -26,7 +25,7 @@
   function handleDrop(event: DragEvent) {
     event.preventDefault();
     dragOver = false;
-    
+
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       handleFile(files[0]);
@@ -61,7 +60,7 @@
     const sizes = [_('units.bytes'), _('units.kb'), _('units.mb'), _('units.gb')];
     if (bytes === 0) return `0 ${_('units.bytes')}`;
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   }
 </script>
 
@@ -73,14 +72,16 @@
 
   <!-- Upload Area -->
   <div
-    class="relative border-2 border-dashed border-gray-300 dark:border-white/30 rounded-xl p-12 transition-all duration-200 cursor-pointer {dragOver ? 'border-gray-400 dark:border-white/60 bg-gray-50 dark:bg-white/10' : 'hover:border-gray-400 dark:hover:border-white/50 hover:bg-gray-50 dark:hover:bg-white/5'}"
+    class="relative border-2 border-dashed border-gray-300 dark:border-white/30 rounded-xl p-12 transition-all duration-200 cursor-pointer {dragOver
+      ? 'border-gray-400 dark:border-white/60 bg-gray-50 dark:bg-white/10'
+      : 'hover:border-gray-400 dark:hover:border-white/50 hover:bg-gray-50 dark:hover:bg-white/5'}"
     role="button"
     tabindex="0"
     on:dragover={handleDragOver}
     on:dragleave={handleDragLeave}
     on:drop={handleDrop}
     on:click={() => fileInput.click()}
-    on:keydown={(e) => e.key === 'Enter' && fileInput.click()}
+    on:keydown={e => e.key === 'Enter' && fileInput.click()}
   >
     <input
       bind:this={fileInput}
@@ -91,7 +92,9 @@
     />
 
     <div class="text-center">
-      <div class="mx-auto w-16 h-16 mb-4 text-gray-400 dark:text-white/60">{@html UploadIcon}</div>
+      <div class="mx-auto text-gray-400 dark:text-white/60 mb-4">
+        <MaterialSymbol icon="cloud_upload" fontSize={64} />
+      </div>
       <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">
         {dragOver ? _('pages.upload.fileSelected') : _('pages.upload.selectFile')}
       </p>
@@ -104,8 +107,8 @@
   <!-- Upload Progress -->
   {#if $uploading}
     <div class="mt-6">
-      <MsqdxProgress 
-        value={$uploadProgress} 
+      <MsqdxProgress
+        value={$uploadProgress}
         label={_('pages.upload.uploadProgress')}
         showValue={true}
         color="primary"

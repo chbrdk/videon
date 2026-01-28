@@ -2,11 +2,8 @@
   import { createEventDispatcher } from 'svelte';
   import { api } from '$lib/config/environment';
   import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
-  import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-  import PauseIcon from '@material-icons/svg/svg/pause/baseline.svg?raw';
-  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
-  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
-  import MovieIcon from '@material-icons/svg/svg/movie/baseline.svg?raw';
+  import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
+  import { MaterialSymbol } from '$lib/components/ui';
   
   const dispatch = createEventDispatcher();
 
@@ -294,9 +291,9 @@
           on:click={(e) => handleDeleteScene(scene, e)}
           title="Delete scene"
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-          </svg>
+          <div class="delete-icon flex items-center justify-center w-full h-full">
+            <MaterialSymbol icon="close" fontSize={12} />
+          </div>
         </button>
       {/if}
       
@@ -319,7 +316,7 @@
   <!-- Video Audio Controls (wie bei anderen Tracks) -->
   <div class="track-header">
     <div class="track-label">
-      <div class="icon-18px text-current">{@html MovieIcon}</div> Video Audio
+      <div class="icon-18px text-current"><MaterialSymbol icon="movie" fontSize={18} /></div> Video Audio
     </div>
     <div class="track-controls">
       <MsqdxButton
@@ -328,7 +325,7 @@
         title="Audio Level: {videoAudioLevel}%"
         class="icon-button-small"
       >
-        <div class="icon-18px">{@html (videoMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
+        <div class="icon-18px"><MaterialSymbol icon={videoMuted ? "volume_off" : "volume_up"} fontSize={18} /></div>
       </MsqdxButton>
       
       <!-- Audio Level Controls direkt in der Toolbar -->

@@ -1,21 +1,22 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { VoiceSegment } from '$lib/api/voice-segment';
-  
-  import MicIcon from '@material-icons/svg/svg/mic/baseline.svg?raw';
+
+  import { MaterialSymbol } from '$lib/components/ui';
 
   export let segment: VoiceSegment;
   export let isActive: boolean = false;
 
   const dispatch = createEventDispatcher();
 
-  $: statusColor = {
-    'ORIGINAL': '#4a9eff',
-    'EDITED_TEXT': '#ffa500',
-    'GENERATING': '#ffff00',
-    'COMPLETED': '#00ff00',
-    'ERROR': '#ff0000'
-  }[segment.status] || '#666';
+  $: statusColor =
+    {
+      ORIGINAL: '#4a9eff',
+      EDITED_TEXT: '#ffa500',
+      GENERATING: '#ffff00',
+      COMPLETED: '#00ff00',
+      ERROR: '#ff0000',
+    }[segment.status] || '#666';
 
   $: hasReVoiced = segment.reVoicedFilePath !== null;
 
@@ -39,7 +40,7 @@
 
   {#if hasReVoiced}
     <div class="revoice-indicator" title="Re-Voiced">
-      <span class="icon-16px">{@html MicIcon}</span>
+      <span class="icon-16px"><MaterialSymbol icon="mic" fontSize={16} /></span>
     </div>
   {/if}
 
@@ -101,7 +102,7 @@
     top: 4px;
     right: 4px;
   }
-  
+
   .icon-16px {
     display: inline-block;
     width: 16px;
@@ -125,8 +126,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .segment-duration {

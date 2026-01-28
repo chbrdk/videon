@@ -1,14 +1,12 @@
 <script lang="ts">
   import { canUndo, canRedo, undo, redo } from '$lib/stores/edit-history.store';
   import { createEventDispatcher } from 'svelte';
-  import UndoIcon from '@material-icons/svg/svg/undo/baseline.svg?raw';
-  import RedoIcon from '@material-icons/svg/svg/redo/baseline.svg?raw';
-  import ContentCutIcon from '@material-icons/svg/svg/content_cut/baseline.svg?raw';
-  
+  import { MaterialSymbol } from '$lib/components/ui';
+
   const dispatch = createEventDispatcher();
-  
+
   export let canSplit: boolean = false;
-  
+
   async function handleUndo() {
     try {
       await undo();
@@ -17,7 +15,7 @@
       console.error('Undo failed:', error);
     }
   }
-  
+
   async function handleRedo() {
     try {
       await redo();
@@ -26,7 +24,7 @@
       console.error('Redo failed:', error);
     }
   }
-  
+
   function handleSplit() {
     dispatch('split');
   }
@@ -35,38 +33,38 @@
 <div class="editing-toolbar glass-effect">
   <!-- Undo/Redo -->
   <div class="toolbar-section">
-    <button 
-      class="toolbar-btn" 
+    <button
+      class="toolbar-btn"
       on:click={handleUndo}
       disabled={!$canUndo}
       title="Rückgängig (Cmd+Z)"
     >
-      <div class="icon-20px">{@html UndoIcon}</div>
+      <div class="icon-20px"><MaterialSymbol icon="undo" fontSize={20} /></div>
       <span>Undo</span>
     </button>
-    
-    <button 
-      class="toolbar-btn" 
+
+    <button
+      class="toolbar-btn"
       on:click={handleRedo}
       disabled={!$canRedo}
       title="Wiederholen (Cmd+Shift+Z)"
     >
-      <div class="icon-20px">{@html RedoIcon}</div>
+      <div class="icon-20px"><MaterialSymbol icon="redo" fontSize={20} /></div>
       <span>Redo</span>
     </button>
   </div>
-  
+
   <div class="toolbar-divider"></div>
-  
+
   <!-- Split Tool -->
   <div class="toolbar-section">
-    <button 
-      class="toolbar-btn" 
+    <button
+      class="toolbar-btn"
       on:click={handleSplit}
       disabled={!canSplit}
       title="Szene an Playhead teilen (S)"
     >
-      <div class="icon-20px">{@html ContentCutIcon}</div>
+      <div class="icon-20px"><MaterialSymbol icon="content_cut" fontSize={20} /></div>
       <span>Split</span>
     </button>
   </div>
@@ -84,18 +82,18 @@
     backdrop-filter: blur(var(--msqdx-glass-blur));
     border: 1px solid var(--msqdx-color-dark-border);
   }
-  
+
   .toolbar-section {
     display: flex;
     gap: var(--msqdx-spacing-xxs);
   }
-  
+
   .toolbar-divider {
     width: 1px;
     height: 24px;
     background: var(--msqdx-color-dark-border);
   }
-  
+
   .toolbar-btn {
     display: flex;
     align-items: center;
@@ -111,28 +109,28 @@
     transition: all var(--msqdx-transition-standard);
     font-weight: var(--msqdx-font-weight-medium);
   }
-  
+
   .toolbar-btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-1px);
   }
-  
+
   .toolbar-btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;
   }
-  
+
   .toolbar-btn:active:not(:disabled) {
     transform: translateY(0);
     background: rgba(255, 255, 255, 0.15);
   }
-  
+
   .icon-20px {
     font-size: 1.25rem;
     line-height: 1;
   }
-  
+
   .toolbar-btn span {
     font-size: var(--msqdx-font-size-body1);
     font-weight: var(--msqdx-font-weight-medium);

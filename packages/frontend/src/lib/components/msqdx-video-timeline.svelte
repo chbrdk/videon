@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte';
-  import { 
-    timelineClips, 
-    selectedClip, 
-    currentTime, 
-    duration, 
+  import {
+    timelineClips,
+    selectedClip,
+    currentTime,
+    duration,
     zoomLevel,
     initializeClips,
     selectClip,
@@ -14,14 +14,10 @@
     splitClip,
     mergeClips,
     type TimelineClip,
-    type SceneData
+    type SceneData,
   } from '$lib/stores/timeline.store';
   import { api } from '$lib/config/environment';
-  import EditIcon from '@material-icons/svg/svg/edit/baseline.svg?raw';
-  import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
-  import SplitIcon from '@material-icons/svg/svg/content_cut/baseline.svg?raw';
-  import MergeIcon from '@material-icons/svg/svg/merge/baseline.svg?raw';
-  import InfoIcon from '@material-icons/svg/svg/info/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   const dispatch = createEventDispatcher();
 
@@ -63,14 +59,14 @@
     try {
       // Initialize clips in store
       initializeClips(scenes);
-      
+
       // Set up video synchronization
       if (videoElement) {
         videoElement.addEventListener('timeupdate', handleVideoTimeUpdate);
         videoElement.addEventListener('play', () => setPlaying(true));
         videoElement.addEventListener('pause', () => setPlaying(false));
       }
-      
+
       // Set initial zoom level based on video duration
       if (videoDuration > 120) {
         zoomLevel.set(0.8); // Zoom out for very long videos
@@ -79,7 +75,7 @@
       } else {
         zoomLevel.set(1.5); // Zoom in for shorter videos
       }
-      
+
       isInitialized = true;
       console.log('✅ Timeline initialized with', scenes.length, 'scenes');
       console.log('🎬 Video ID:', videoId);
@@ -88,7 +84,6 @@
       console.error('Failed to initialize timeline:', error);
     }
   }
-
 
   function handleVideoTimeUpdate() {
     if (videoElement) {
@@ -103,7 +98,7 @@
     const timelineWidth = timelineContainer?.clientWidth || 1000;
     const timeRatio = time / videoDuration;
     const playheadPosition = timeRatio * timelineWidth;
-    
+
     // Update playhead element position
     const playhead = timelineContainer?.querySelector('.playhead') as HTMLElement;
     if (playhead) {
@@ -127,7 +122,7 @@
     splitClipId = clipId;
     const clip = $timelineClips.find(c => c.id === clipId);
     if (clip) {
-      splitTime = clip.startTime + (clip.duration / 2);
+      splitTime = clip.startTime + clip.duration / 2;
     }
     splitModalOpen = true;
   }
@@ -175,11 +170,7 @@
   <div class="timeline-header">
     <h3 class="text-lg font-semibold text-white mb-2">Timeline Editor</h3>
     <div class="timeline-controls">
-      <button 
-        class="control-btn" 
-        on:click={() => dispatch('export')}
-        title="Export Timeline"
-      >
+      <button class="control-btn" on:click={() => dispatch('export')} title="Export Timeline">
         Export
       </button>
     </div>
@@ -189,29 +180,20 @@
   <div class="timeline-track" bind:this={waveformContainer}>
     <!-- Time Ruler -->
     <div class="time-ruler">
-      {#each Array.from({length: Math.ceil(videoDuration / 10)}) as _, i}
-        <div 
-          class="time-marker" 
-          style="left: {(i * 10 / videoDuration) * 100}%"
-        >
+      {#each Array.from({ length: Math.ceil(videoDuration / 10) }) as _, i}
+        <div class="time-marker" style="left: {((i * 10) / videoDuration) * 100}%">
           {formatTime(i * 10)}
         </div>
       {/each}
       {#if videoDuration > 0}
-        <div 
-          class="time-marker" 
-          style="left: 100%"
-        >
+        <div class="time-marker" style="left: 100%">
           {formatTime(videoDuration)}
         </div>
       {/if}
     </div>
 
     <!-- Playhead -->
-    <div 
-      class="playhead" 
-      style="left: {($currentTime / videoDuration) * 100}%"
-    ></div>
+    <div class="playhead" style="left: {($currentTime / videoDuration) * 100}%"></div>
 
     <!-- Clips Container with Horizontal Scroll -->
     <div class="clips-container" style="overflow-x: auto; overflow-y: hidden;">
@@ -231,72 +213,72 @@
             role="button"
             tabindex="0"
           >
-          <!-- Clip Content -->
-          <div class="clip-content">
-            <div class="thumbnail-container">
-              <img 
-                src={`${api.baseUrl}/videos/${videoId}/scenes/${clip.sceneId}/thumbnail`}
-                alt="Scene thumbnail" 
-                class="clip-thumbnail"
-                loading="lazy"
-                on:loadstart={() => console.log('🖼️ Loading thumbnail for scene:', clip.sceneId)}
-                on:load={(e) => {
-                  // Hide loading indicator when image loads
-                  const container = e.target.parentElement;
-                  const loading = container.querySelector('.thumbnail-loading');
-                  if (loading) loading.style.display = 'none';
-                }}
-                on:error={(e) => {
-                  console.error('❌ Thumbnail failed to load for scene:', clip.sceneId, 'URL:', e.target.src);
-                  // Fallback to placeholder if thumbnail fails to load
-                  e.target.style.display = 'none';
-                  const container = e.target.parentElement;
-                  const loading = container.querySelector('.thumbnail-loading');
-                  const placeholder = container.querySelector('.clip-placeholder');
-                  if (loading) loading.style.display = 'none';
-                  if (placeholder) placeholder.style.display = 'flex';
-                }}
-              />
-              <div class="thumbnail-loading">
-                <div class="loading-spinner"></div>
+            <!-- Clip Content -->
+            <div class="clip-content">
+              <div class="thumbnail-container">
+                <img
+                  src={`${api.baseUrl}/videos/${videoId}/scenes/${clip.sceneId}/thumbnail`}
+                  alt="Scene thumbnail"
+                  class="clip-thumbnail"
+                  loading="lazy"
+                  on:loadstart={() => console.log('🖼️ Loading thumbnail for scene:', clip.sceneId)}
+                  on:load={e => {
+                    // Hide loading indicator when image loads
+                    const container = e.target.parentElement;
+                    const loading = container.querySelector('.thumbnail-loading');
+                    if (loading) loading.style.display = 'none';
+                  }}
+                  on:error={e => {
+                    console.error(
+                      '❌ Thumbnail failed to load for scene:',
+                      clip.sceneId,
+                      'URL:',
+                      e.target.src
+                    );
+                    // Fallback to placeholder if thumbnail fails to load
+                    e.target.style.display = 'none';
+                    const container = e.target.parentElement;
+                    const loading = container.querySelector('.thumbnail-loading');
+                    const placeholder = container.querySelector('.clip-placeholder');
+                    if (loading) loading.style.display = 'none';
+                    if (placeholder) placeholder.style.display = 'flex';
+                  }}
+                />
+                <div class="thumbnail-loading">
+                  <div class="loading-spinner"></div>
+                </div>
+                <div class="clip-placeholder" style="display: none;">
+                  Scene {clip.order + 1}
+                </div>
               </div>
-              <div class="clip-placeholder" style="display: none;">
-                Scene {clip.order + 1}
-              </div>
-            </div>
-            
-            <div class="clip-info">
-              <span class="clip-duration">{formatTime(clip.duration)}</span>
-              <span class="clip-time">{formatTime(clip.startTime)} - {formatTime(clip.endTime)}</span>
-              <span class="clip-number">#{clip.order + 1}</span>
-            </div>
-          </div>
 
-          <!-- Clip Controls -->
-          {#if hoveredClip === clip.id || $selectedClip === clip.id}
+              <div class="clip-info">
+                <span class="clip-duration">{formatTime(clip.duration)}</span>
+                <span class="clip-time"
+                  >{formatTime(clip.startTime)} - {formatTime(clip.endTime)}</span
+                >
+                <span class="clip-number">#{clip.order + 1}</span>
+              </div>
+            </div>
+
+            <!-- Clip Controls -->
             <div class="clip-controls">
-              <button 
+              <button
                 class="control-btn small"
                 on:click|stopPropagation={() => handleSplitClip(clip.id)}
                 title="Split Clip"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                </svg>
+                <div class="icon-16px"><MaterialSymbol icon="content_cut" fontSize={16} /></div>
               </button>
-              
-              <button 
+
+              <button
                 class="control-btn small"
                 on:click|stopPropagation={() => handleDeleteClip(clip.id)}
                 title="Delete Clip"
               >
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"/>
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
+                <div class="icon-16px"><MaterialSymbol icon="delete" fontSize={16} /></div>
               </button>
             </div>
-          {/if}
           </div>
         {/each}
       </div>
@@ -309,23 +291,28 @@
       Current: {formatTime($currentTime)} / {formatTime(videoDuration)}
     </div>
     <div class="zoom-controls">
-      <button class="control-btn small" on:click={() => zoomLevel.update(z => Math.max(0.5, z - 0.2))}>-</button>
+      <button
+        class="control-btn small"
+        on:click={() => zoomLevel.update(z => Math.max(0.5, z - 0.2))}>-</button
+      >
       <span class="zoom-level">{Math.round($zoomLevel * 100)}%</span>
-      <button class="control-btn small" on:click={() => zoomLevel.update(z => Math.min(3, z + 0.2))}>+</button>
+      <button class="control-btn small" on:click={() => zoomLevel.update(z => Math.min(3, z + 0.2))}
+        >+</button
+      >
     </div>
   </div>
 </div>
 
 <!-- Split Modal -->
 {#if splitModalOpen}
-  <div class="modal-overlay" on:click={() => splitModalOpen = false}>
+  <div class="modal-overlay" on:click={() => (splitModalOpen = false)}>
     <div class="modal" on:click|stopPropagation>
       <h3>Split Clip</h3>
       <p>Select the time to split this clip:</p>
       <div class="split-controls">
-        <input 
-          type="range" 
-          bind:value={splitTime} 
+        <input
+          type="range"
+          bind:value={splitTime}
           min={$timelineClips.find(c => c.id === splitClipId)?.startTime || 0}
           max={$timelineClips.find(c => c.id === splitClipId)?.endTime || videoDuration}
           step="0.1"
@@ -333,7 +320,7 @@
         <span class="split-time">{formatTime(splitTime)}</span>
       </div>
       <div class="modal-actions">
-        <button class="btn-secondary" on:click={() => splitModalOpen = false}>Cancel</button>
+        <button class="btn-secondary" on:click={() => (splitModalOpen = false)}>Cancel</button>
         <button class="btn-primary" on:click={confirmSplit}>Split</button>
       </div>
     </div>
@@ -486,8 +473,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .clip-thumbnail {
@@ -623,7 +614,7 @@
     margin-bottom: 2rem;
   }
 
-  .split-controls input[type="range"] {
+  .split-controls input[type='range'] {
     flex: 1;
   }
 
