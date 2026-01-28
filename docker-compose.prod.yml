@@ -12,7 +12,7 @@ services:
     networks:
       - prismvid-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prismvid}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prismvid}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,7 +27,7 @@ services:
     networks:
       - prismvid-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,9 +49,9 @@ services:
       AUDIO_SEPARATION_SERVICE_URL: http://audio-separation-service:8003
       AUDIO_SERVICE_URL: http://audio-service:5679
       SALIENCY_SERVICE_URL: http://saliency-service:8002
-      VISION_SERVICE_URL: http://vision-service:8080
+      VISION_SERVICE_URL: "" # Disabled in production (macOS required)
       # Qwen VL is disabled in production unless a suitable replacement is configured
-      QWEN_VL_SERVICE_URL: ${QWEN_VL_SERVICE_URL} 
+      QWEN_VL_SERVICE_URL: ${QWEN_VL_SERVICE_URL}
       CORS_ORIGINS: ${CORS_ORIGINS}
       VIDEOS_STORAGE_PATH: /app/storage/videos
       KEYFRAMES_STORAGE_PATH: /app/storage/keyframes
@@ -71,7 +71,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:4001/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -107,8 +107,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
       STORAGE_PATH: /app/storage
       BACKEND_URL: http://backend:4001
-      # Vision service is on vision-service host in prod
-      VISION_SERVICE_URL: http://vision-service:8080
+      # Vision service is disabled in prod (macOS required)
+      VISION_SERVICE_URL: ""
     volumes:
       - app_data:/app/storage
     networks:
@@ -118,7 +118,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8001/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -146,7 +146,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8002/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -173,7 +173,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8003/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -197,25 +197,24 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5679/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5679/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
-
   # Vision Service (Swift)
-  vision-service:
-    build:
-      context: .
-      dockerfile: docker/vision.Dockerfile
-    container_name: prismvid-vision-service
-    volumes:
-      - app_data:/app/storage
-    networks:
-      - prismvid-network
-    restart: always
-    # Swift Vapor/Vision service typically runs on 8080 or similar.
-    # Dockerfile exposes 8080.
-    
+  # NOTE: This service requires macOS-proprietary frameworks (Vision, CoreML, AppKit)
+  # and cannot run on standard Linux containers. It is disabled for production deployment.
+  # vision-service:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/vision.Dockerfile
+  #   container_name: prismvid-vision-service
+  #   volumes:
+  #     - app_data:/app/storage
+  #   networks:
+  #     - prismvid-network
+  #   restart: always
+
   # Qwen VL Service (MLX)
   # NOTE: This service runs on MLX (Apple Silicon) so it cannot be containerized
   # easily for standard Linux servers. It is commented out for deployment.
@@ -225,7 +224,8 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  app_data: # Shared volume for all services
+  app_data:
+    # Shared volume for all services
 
 networks:
   prismvid-network:
