@@ -11,8 +11,11 @@ RUN rm -f package-lock.json
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=development
-# Install dependencies fresh with legacy peer deps to avoid conflicts
-RUN npm install --legacy-peer-deps --loglevel verbose
+# Check actual configuration
+RUN npm config list
+
+# Install dependencies fresh with legacy peer deps AND explicitly include dev dependencies
+RUN npm install --legacy-peer-deps --include=dev --loglevel verbose
 
 # Copy source code (exclude node_modules and build)
 COPY frontend/src ./src
@@ -37,7 +40,7 @@ RUN node -v && npm -v
 
 # Debug: Verify vite installation
 RUN npm list vite || true
-RUN ls -la node_modules/.bin/vite || echo "vite binary not found"
+RUN ls -la node_modules/.bin || echo "node_modules/.bin missing"
 
 # Debug: List ALL files in current directory to verify COPY worked
 RUN ls -la
@@ -49,8 +52,8 @@ RUN cat vite.config.ts || echo "vite.config.ts missing"
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync || echo "svelte-kit sync failed"
 
-# Run build with debug logging using direct binary
-RUN ./node_modules/.bin/vite build --debug
+# Run build with debug logging using npx (safer than direct path)
+RUN npx vite build --debug
 
 # Production stage
 # Production stage
