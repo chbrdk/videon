@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { onMount, onDestroy } from 'svelte';
+
   import { api } from '$lib/config/environment';
   import { MaterialSymbol } from '$lib/components/ui';
 
