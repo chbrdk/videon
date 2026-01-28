@@ -1,5 +1,6 @@
 # Multi-stage build for SvelteKit frontend
 FROM node:18-alpine AS base
+WORKDIR /app
 
 # Copy package files
 COPY frontend/package.json ./
