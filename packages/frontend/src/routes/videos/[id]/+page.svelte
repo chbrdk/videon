@@ -8,7 +8,7 @@
   import { saliencyApi } from '$lib/api/saliency';
   import { currentLocale, _ } from '$lib/i18n';
   import { api } from '$lib/config/environment';
-  import { showAudioTracks, updateAudioClipsWithScenes } from '$lib/stores/timeline.store';
+  import { showAudioTracks, updateAudioClipsWithScenes, loadAudioStems } from '$lib/stores/timeline.store';
   import logger from '$lib/utils/logger';
   import MsqdxVisionTags from '$lib/components/msqdx-vision-tags.svelte';
   import MsqdxVideoPlayerWrapper from '$lib/components/msqdx-video-player-wrapper.svelte';
@@ -41,6 +41,9 @@
   let currentReframingJobId: string | null = null;
   let reframedVideos: ReframedVideo[] = [];
   let loadingReframedVideos = false;
+  let qwenVLStatus: any = null;
+  let qwenVLProgress = 0;
+  let analyzingQwenVL = false;
   
   // Dropdown states
   let servicesOpen = false;

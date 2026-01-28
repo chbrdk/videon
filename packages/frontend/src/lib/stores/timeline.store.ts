@@ -113,7 +113,7 @@ export function startPlayheadAnimation(
     }
     animationFrameId = requestAnimationFrame(animate);
   }
-  
+
   animate();
 }
 
@@ -140,7 +140,7 @@ export const timelineOperations = {
       locked: false,
       muted: false
     }));
-    
+
     timelineClips.set(clips);
     console.log('✅ Timeline clips initialized:', clips.length);
   },
@@ -174,8 +174,8 @@ export const timelineOperations = {
 
       const clip = clips[clipIndex];
       if (splitTime <= clip.startTime || splitTime >= clip.endTime) {
-          console.warn('Split time must be within clip bounds');
-          return clips;
+        console.warn('Split time must be within clip bounds');
+        return clips;
       }
 
       // Create two new clips
@@ -197,7 +197,7 @@ export const timelineOperations = {
       // Update order of subsequent clips
       const newClips = [...clips];
       newClips.splice(clipIndex, 1, clip1, clip2);
-      
+
       // Update order numbers
       newClips.forEach((c, i) => {
         c.order = i;
@@ -216,10 +216,10 @@ export const timelineOperations = {
       newClips.forEach((c, i) => {
         c.order = i;
       });
-      
+
       // Clear selection if deleted clip was selected
       selectedClip.update(selected => selected === clipId ? null : selected);
-      
+
       console.log('🗑️ Clip deleted:', clipId);
       return newClips;
     });
@@ -230,7 +230,7 @@ export const timelineOperations = {
     timelineClips.update(clips => {
       const clip1Index = clips.findIndex(c => c.id === clipId1);
       const clip2Index = clips.findIndex(c => c.id === clipId2);
-      
+
       if (clip1Index === -1 || clip2Index === -1) {
         console.warn('One or both clips not found for merge');
         return clips;
@@ -262,7 +262,7 @@ export const timelineOperations = {
       // Remove original clips and add merged clip
       const newClips = clips.filter(c => c.id !== clipId1 && c.id !== clipId2);
       newClips.push(mergedClip);
-      
+
       // Sort by order and update order numbers
       newClips.sort((a, b) => a.order - b.order);
       newClips.forEach((c, i) => {
@@ -282,10 +282,10 @@ export const timelineOperations = {
 
       const newClips = [...clips];
       const [clip] = newClips.splice(clipIndex, 1);
-      
+
       // Insert at new position
       newClips.splice(newOrder, 0, clip);
-      
+
       // Update order numbers
       newClips.forEach((c, i) => {
         c.order = i;
@@ -304,7 +304,7 @@ export const timelineOperations = {
 
       const newClips = [...clips];
       newClips[clipIndex] = { ...newClips[clipIndex], ...updates };
-      
+
       console.log('📝 Clip updated:', clipId, updates);
       return newClips;
     });
@@ -318,7 +318,7 @@ export const timelineOperations = {
 
       const newClips = [...clips];
       newClips[clipIndex].locked = !newClips[clipIndex].locked;
-      
+
       console.log('🔒 Clip lock toggled:', clipId, newClips[clipIndex].locked);
       return newClips;
     });
@@ -332,7 +332,7 @@ export const timelineOperations = {
 
       const newClips = [...clips];
       newClips[clipIndex].muted = !newClips[clipIndex].muted;
-      
+
       console.log('🔇 Clip mute toggled:', clipId, newClips[clipIndex].muted);
       return newClips;
     });
@@ -406,32 +406,77 @@ function getRandomColor(): string {
 
 // Audio Stem Management
 export const audioStemOperations = {
+  // Load audio stems for a single video
+  loadAudioStems: async (videoId: string) => {
+    try {
+      console.log('🎵 Loading audio stems for video:', videoId);
+      const response = await fetch(`${api.baseUrl}/videos/${videoId}/audio-stems`);
+
+      if (response.ok) {
+        const audioStems = await response.json();
+        console.log('🎵 Loaded audio stems for video:', audioStems);
+
+        // Add duration if missing (fetch video details if needed)
+        // For now, assume stems might need duration from video or calculated
+
+        // Convert to AudioStemClips
+        const audioStemClipsData: AudioStemClip[] = audioStems.map((stem: any, index: number) => {
+          const startTime = stem.startTime || 0;
+          const endTime = stem.endTime || stem.duration || 0;
+          const duration = endTime > startTime ? endTime - startTime : 0;
+
+          return {
+            id: `stem-clip-${stem.id}`,
+            audioStemId: stem.id,
+            stemType: stem.stemType,
+            startTime: startTime,
+            endTime: endTime,
+            duration: duration,
+            trimStart: 0,
+            trimEnd: 1,
+            audioLevel: 1.0,
+            isSelected: false,
+            isMuted: false,
+            showWaveform: true,
+            order: index,
+            sceneId: stem.sceneId
+          };
+        });
+
+        audioStemClips.set(audioStemClipsData);
+        audioTrackOperations.showAudioTracks(audioStems);
+      }
+    } catch (error) {
+      console.error('Failed to load audio stems:', error);
+    }
+  },
+
   // Load audio stems for project
   loadAudioStemsForProject: async (projectId: string) => {
     try {
       // Zuerst versuche Scene-spezifische Audio-Stems zu laden
       const response = await fetch(`${api.baseUrl}/projects/${projectId}/audio-stems`);
       let audioStems = [];
-      
+
       if (response.ok) {
         audioStems = await response.json();
         console.log('🎵 Loaded scene-specific audio stems for project:', audioStems);
       }
-      
+
       // Falls keine Scene-spezifischen Stems vorhanden, lade Video-spezifische Stems
       if (audioStems.length === 0) {
         console.log('🎵 No scene-specific stems found, loading video-specific stems...');
-        
+
         // Hole Project-Daten um Video-IDs zu bekommen
         const projectResponse = await fetch(`${api.baseUrl}/projects/${projectId}`);
         if (projectResponse.ok) {
           const project = await projectResponse.json();
-          
+
           if (project.scenes && project.scenes.length > 0) {
             // Sammle alle Audio-Stems von allen Videos im Project
             const allStems = [];
             const uniqueVideoIds = [...new Set(project.scenes.map((scene: any) => scene.videoId))];
-            
+
             for (const videoId of uniqueVideoIds) {
               try {
                 const videoStemsResponse = await fetch(`${api.baseUrl}/videos/${videoId}/audio-stems`);
@@ -443,10 +488,10 @@ export const audioStemOperations = {
                 console.warn(`Failed to load audio stems for video ${videoId}:`, error);
               }
             }
-            
+
             audioStems = allStems;
             console.log('🎵 Loaded video-specific audio stems for project:', audioStems);
-            
+
             // Füge Video-Duration zu den Stems hinzu
             if (audioStems.length > 0) {
               // Hole Video-Duration vom ersten Video
@@ -455,21 +500,21 @@ export const audioStemOperations = {
                 const videoResponse = await fetch(`${api.baseUrl}/videos/${firstVideoId}`);
                 if (videoResponse.ok) {
                   const videoData = await videoResponse.json();
-                  
+
                   // Berechne Video-Duration aus Scenes falls nicht verfügbar
                   let videoDuration = videoData.duration || 0;
                   if (videoDuration === 0 && videoData.scenes && videoData.scenes.length > 0) {
                     videoDuration = Math.max(...videoData.scenes.map((scene: any) => scene.endTime));
                     console.log('🎵 Calculated video duration from scenes:', videoDuration);
                   }
-                  
+
                   // Setze Duration für alle Stems ohne Duration
                   audioStems = audioStems.map(stem => ({
                     ...stem,
                     duration: stem.duration || videoDuration,
                     endTime: stem.endTime || videoDuration
                   }));
-                  
+
                   console.log('🎵 Added video duration to audio stems:', videoDuration);
                 }
               } catch (error) {
@@ -479,14 +524,14 @@ export const audioStemOperations = {
           }
         }
       }
-      
+
       // Konvertiere zu AudioStemClips
       const audioStemClipsData: AudioStemClip[] = audioStems.map((stem: any, index: number) => {
         // Für Video-spezifische Stems ohne Scene-Timerange, verwende die gesamte Video-Duration
         const startTime = stem.startTime || 0;
         const endTime = stem.endTime || stem.duration || 0;
         const duration = endTime > startTime ? endTime - startTime : 0;
-        
+
         return {
           id: `stem-clip-${stem.id}`,
           audioStemId: stem.id,
@@ -503,17 +548,17 @@ export const audioStemOperations = {
           order: index
         };
       });
-      
+
       audioStemClips.set(audioStemClipsData);
-      
+
       // Aktualisiere Track-Konfiguration
       audioTrackOperations.showAudioTracks(audioStems);
-      
+
     } catch (error) {
       console.error('Failed to load audio stems:', error);
     }
   },
-  
+
   // Update audio stem timing
   updateAudioStemTiming: (stemId: string, trimStart: number, trimEnd: number) => {
     audioStemClips.update(clips => {
@@ -525,7 +570,7 @@ export const audioStemOperations = {
       });
     });
   },
-  
+
   // Update audio stem level
   updateAudioStemLevel: (stemId: string, audioLevel: number) => {
     audioStemClips.update(clips => {
@@ -537,7 +582,7 @@ export const audioStemOperations = {
       });
     });
   },
-  
+
   // Toggle audio stem mute
   toggleAudioStemMute: (stemId: string) => {
     audioStemClips.update(clips => {
@@ -549,7 +594,7 @@ export const audioStemOperations = {
       });
     });
   },
-  
+
   // Isolate audio stem (mute all others)
   isolateAudioStem: (stemId: string) => {
     console.log('🎵 Isolating audio stem:', stemId);
@@ -560,7 +605,7 @@ export const audioStemOperations = {
       }));
     });
   },
-  
+
   // Select audio stem
   selectAudioStem: (stemId: string) => {
     selectedAudioStem.set(stemId);
@@ -571,7 +616,7 @@ export const audioStemOperations = {
       }));
     });
   },
-  
+
   // Clear audio stem selection
   clearAudioStemSelection: () => {
     selectedAudioStem.set(null);
@@ -579,17 +624,17 @@ export const audioStemOperations = {
       return clips.map(clip => ({ ...clip, isSelected: false }));
     });
   },
-  
+
   // Toggle audio stem visibility
   toggleAudioStemVisibility: () => {
     showAudioStems.update(visible => !visible);
   },
-  
+
   // Set audio stem mode
   setAudioStemMode: (mode: 'all' | 'vocals' | 'music' | 'original') => {
     audioStemMode.set(mode);
   },
-  
+
   // Toggle waveform visibility
   toggleWaveformVisibility: () => {
     showWaveforms.update(visible => !visible);
@@ -605,7 +650,7 @@ const audioTrackOperations = {
   showAudioTracks: (audioStems: { id: string; stemType: string; sceneId?: string }[]) => {
     console.log('🎵 showAudioTracks called with:', audioStems.length, 'stems');
     console.log('🎵 First few stems:', audioStems.slice(0, 3));
-    
+
     // Group stems by type and get the latest one for each type
     const latestStems = audioStems.reduce((acc, stem) => {
       if (!acc[stem.stemType] || stem.id > acc[stem.stemType].id) {
@@ -613,13 +658,13 @@ const audioTrackOperations = {
       }
       return acc;
     }, {} as Record<string, { id: string; stemType: string; sceneId?: string }>);
-    
+
     console.log('🎵 Latest stems by type:', Object.keys(latestStems));
-    
+
     trackConfigs.update(configs => {
       const newConfigs = [...configs];
       console.log('🎵 Current track configs:', newConfigs.length);
-      
+
       // First, hide all audio tracks
       newConfigs.forEach(config => {
         if (config.type.startsWith('audio-')) {
@@ -627,18 +672,18 @@ const audioTrackOperations = {
           config.audioStemId = undefined;
         }
       });
-      
+
       // Then show only the separated tracks (vocals, music, original)
       Object.values(latestStems).forEach(stem => {
-        const trackType = stem.stemType === 'vocals' ? 'audio-vocals' : 
-                         stem.stemType === 'music' ? 'audio-music' : 
-                         stem.stemType === 'original' ? 'audio-original' : null;
-        
+        const trackType = stem.stemType === 'vocals' ? 'audio-vocals' :
+          stem.stemType === 'music' ? 'audio-music' :
+            stem.stemType === 'original' ? 'audio-original' : null;
+
         if (trackType) {
           const configIndex = newConfigs.findIndex(c => c.type === trackType);
-          
+
           console.log(`🎵 Processing stem ${stem.stemType} -> trackType ${trackType}, configIndex: ${configIndex}`);
-          
+
           if (configIndex !== -1) {
             newConfigs[configIndex] = {
               ...newConfigs[configIndex],
@@ -651,15 +696,15 @@ const audioTrackOperations = {
           }
         }
       });
-      
+
       console.log('🎵 Updated track configs:', newConfigs.length);
       return newConfigs;
     });
-    
+
     // Also update the audio clips store with only the latest stems for each type
     // We need to get scene data to set correct startTime and endTime
     console.log('🎵 Creating audio clips for latest stems only:', Object.keys(latestStems).length);
-    
+
     // Create clips only for the latest stems (one per type)
     const clips = Object.values(latestStems).map((stem, index) => ({
       id: stem.id,
@@ -677,20 +722,20 @@ const audioTrackOperations = {
       order: index,
       sceneId: stem.sceneId || undefined // Store the sceneId for matching (can be undefined for full-video stems)
     }));
-    
+
     console.log('🎵 Setting audio clips:', clips.length);
     console.log('🎵 Clips details:', clips.map(c => ({ id: c.id, stemType: c.stemType, sceneId: c.sceneId })));
     audioClips.set(clips);
-    
+
     // Verify the clips were set
     audioClips.subscribe(currentClips => {
       console.log('🎵 Audio clips store updated:', currentClips.length);
       console.log('🎵 First few clips:', currentClips.slice(0, 3));
     })();
-    
+
     console.log('🎵 Audio clips created:', audioStems.length);
   },
-  
+
   // Hide audio tracks
   hideAudioTracks: () => {
     trackConfigs.update(configs => {
@@ -703,7 +748,7 @@ const audioTrackOperations = {
     });
     audioClips.set([]); // Clear all audio clips
   },
-  
+
   // Toggle audio track visibility
   toggleAudioTrack: (trackType: 'audio-vocals' | 'audio-music' | 'audio-original') => {
     trackConfigs.update(configs => {
@@ -715,17 +760,17 @@ const audioTrackOperations = {
       });
     });
   },
-  
+
   // Update audio clips with scene data
   updateAudioClipsWithScenes: (scenes: any[]) => {
     console.log('🎵 Updating audio clips with scene data:', scenes.length);
     console.log('🎵 Current audio clips before update:', get(audioClips).length);
-    
+
     audioClips.update(clips => {
       console.log('🎵 Processing clips:', clips.length);
       return clips.map(clip => {
         console.log(`🎵 Processing clip ${clip.id}, sceneId: ${clip.sceneId}, stemType: ${clip.stemType}`);
-        
+
         // If clip has no sceneId, it's a full-video stem - use video duration
         if (!clip.sceneId) {
           console.log(`🎵 Full-video stem ${clip.id} - using video duration`);
@@ -744,7 +789,7 @@ const audioTrackOperations = {
           }
           return clip;
         }
-        
+
         // Find the scene that matches this clip's sceneId
         const scene = scenes.find(s => s.id === clip.sceneId);
         if (scene) {
@@ -758,12 +803,12 @@ const audioTrackOperations = {
           console.log(`🎵 Updated scene clip ${clip.id}: ${updatedClip.startTime}-${updatedClip.endTime} (${updatedClip.duration}s)`);
           return updatedClip;
         }
-        
+
         console.log(`🎵 No scene found for clip ${clip.id} with sceneId ${clip.sceneId}`);
         return clip;
       });
     });
-    
+
     // Log updated clips
     audioClips.subscribe(clips => {
       console.log('🎵 Updated audio clips:', clips.length);
@@ -794,3 +839,6 @@ export const {
 
 // Export audioTrackOperations separately for easier access
 export const { showAudioTracks, hideAudioTracks, toggleAudioTrack, updateAudioClipsWithScenes } = audioTrackOperations;
+
+// Export audioStemOperations
+export const { loadAudioStems, loadAudioStemsForProject, updateAudioStemTiming, updateAudioStemLevel, toggleAudioStemMute, isolateAudioStem, selectAudioStem, clearAudioStemSelection, toggleAudioStemVisibility, setAudioStemMode, toggleWaveformVisibility } = audioStemOperations;
