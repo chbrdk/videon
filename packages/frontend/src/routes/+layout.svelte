@@ -16,32 +16,34 @@
   import { api } from '$lib/config/environment';
 
   // Load videos on mount only if not on a video detail page
+  let isCheckingAuth = true;
+  let isAuthenticated = false;
+
+  $: currentPath = $page.url.pathname;
+  $: isPublicRoute = ['/login', '/register'].some(
+    r => currentPath === r || currentPath.startsWith(`${r}/`)
+  );
+
   onMount(async () => {
     try {
       const res = await fetch(`${api.baseUrl}/auth/me`);
       const authData = await res.json();
+      isAuthenticated = authData.isAuthenticated;
 
-      const publicRoutes = ['/login', '/register'];
-      const currentPath = $page.url.pathname;
-      // Check if current path starts with any public route (ignoring trailing slashes)
-      const isPublic = publicRoutes.some(
-        route => currentPath === route || currentPath.startsWith(`${route}/`)
-      );
-
-      if (!authData.isAuthenticated && !isPublic) {
-        // Redirect to Login
+      if (!isAuthenticated && !isPublicRoute) {
         window.location.href = '/login';
         return;
       }
 
-      if (authData.isAuthenticated && isPublic) {
-        // Already logged in, go home
+      if (isAuthenticated && isPublicRoute) {
         goto('/');
         return;
       }
     } catch (e) {
       console.error('Auth Check Failed', e);
-      // Fallback on error? Maybe assume unauthenticated?
+      // If check fails, maybe allow user to see page but it might break api calls
+    } finally {
+      isCheckingAuth = false;
     }
 
     if (!$page.params.id) {
@@ -54,12 +56,26 @@
   });
 </script>
 
-<MsqdxAdminLayout>
+{#if isPublicRoute}
+  <!-- Public Layout (Full Page, no sidebar) -->
   <slot />
-</MsqdxAdminLayout>
+{:else if isAuthenticated && !isCheckingAuth}
+  <!-- Protected Layout (Sidebar, etc.) -->
+  <MsqdxAdminLayout>
+    <slot />
+  </MsqdxAdminLayout>
 
-<!-- Service Status Panel -->
-<ServiceStatusPanel />
+  <!-- Service Status Panel only for authenticated users -->
+  <ServiceStatusPanel />
+{:else}
+  <!-- Loading State -->
+  <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+  </div>
+{/if}
+
+<!-- Global Context Menu (always handy) -->
+<GlobalContextMenu />
 
 <!-- Global Context Menu -->
 <GlobalContextMenu />
