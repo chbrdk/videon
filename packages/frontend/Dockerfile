@@ -10,7 +10,8 @@ COPY frontend/package-lock.json ./
 RUN rm -f package-lock.json
 
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Reduce memory limit to 2GB to prevent OOM kills on smaller servers
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 ENV NODE_ENV=development
 
 # Check actual configuration
@@ -59,7 +60,7 @@ RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 RUN printenv NODE_OPTIONS
 
 # Run build (simple command to ensure logs stream to stdout)
-RUN npm run build
+RUN echo "Starting build process..." && npm run build || { echo "Build failed!"; exit 1; }
 
 # Production stage
 # Production stage
