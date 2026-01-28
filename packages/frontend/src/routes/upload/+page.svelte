@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { videosApi } from '$lib/api/videos';
-  import UdgGlassProgress from '$lib/components/udg-glass-progress.svelte';
+  import MsqdxProgress from '$lib/components/msqdx-progress.svelte';
   import { get } from 'svelte/store';
   import { currentLocale } from '$lib/i18n';
 
@@ -66,7 +67,7 @@
 
       // Redirect to videos page after all uploads complete
       setTimeout(() => {
-        goto('/videos');
+        goto(`${base}/videos`);
       }, 1000);
     } catch (err) {
       error = err instanceof Error ? err.message : (locale === 'en' ? 'Upload failed' : 'Upload fehlgeschlagen');
@@ -219,7 +220,7 @@
           </span>
           <span class="text-gray-600 dark:text-white/60">{Math.round(progress)}%</span>
         </div>
-        <UdgGlassProgress progress={progress} />
+        <MsqdxProgress progress={progress} />
         <p class="text-gray-600 dark:text-white/60 mt-2">
           {$currentLocale === 'en' 
             ? `Please wait while your video${totalFiles > 1 ? 's are' : ' is'} being uploaded...` 

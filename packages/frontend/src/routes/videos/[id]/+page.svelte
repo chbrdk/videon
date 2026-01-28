@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { base, resolve } from '$app/paths';
   import { selectedVideo, videoScenes, loadVideoDetails, refreshVideo } from '$lib/stores/videos.store';
   import { videosApi } from '$lib/api/videos';
   import { saliencyApi } from '$lib/api/saliency';
@@ -9,11 +10,13 @@
   import { api } from '$lib/config/environment';
   import { showAudioTracks, updateAudioClipsWithScenes } from '$lib/stores/timeline.store';
   import logger from '$lib/utils/logger';
-  import UdgGlassVisionTags from '$lib/components/udg-glass-vision-tags.svelte';
-  import UdgGlassVideoPlayerWrapper from '$lib/components/udg-glass-video-player-wrapper.svelte';
-  import UdgGlassDeleteModal from '$lib/components/udg-glass-delete-modal.svelte';
+  import MsqdxVisionTags from '$lib/components/msqdx-vision-tags.svelte';
+  import MsqdxVideoPlayerWrapper from '$lib/components/msqdx-video-player-wrapper.svelte';
+  import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
   import ReframeModal from '$lib/components/ReframeModal.svelte';
   import ReframedVideoCard from '$lib/components/ReframedVideoCard.svelte';
+  import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
+  import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
   import type { ReframedVideo, ReframeOptions } from '$lib/api/saliency';
       import ArrowBackIcon from '@material-icons/svg/svg/arrow_back/baseline.svg?raw';
       import RefreshIcon from '@material-icons/svg/svg/refresh/baseline.svg?raw';
@@ -109,10 +112,13 @@
         const status = await response.json();
         qwenVLStatus = status;
         qwenVLProgress = status.progress || 0;
+      } else if (response.status === 404 || response.status === 503) {
+        // Service not available or not found - this is expected if Qwen VL is not running
+        qwenVLStatus = null;
       }
     } catch (error) {
-      // Status endpoint might not be available, ignore
-      console.log('Qwen VL status not available');
+      // Silently fail - Qwen VL service might not be running
+      qwenVLStatus = null;
     }
   }
 
@@ -296,8 +302,10 @@
       await pollSaliencyStatus();
       // Reload saliency status after completion
       await loadSaliencyStatus();
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Failed to trigger saliency analysis', { videoId, error: error?.message });
+      const errorMessage = error?.message || 'Failed to start saliency analysis. Please check if the saliency service is running.';
+      alert($currentLocale === 'en' ? errorMessage : `Fehler beim Starten der Saliency-Analyse: ${errorMessage}`);
     } finally {
       analyzingSaliency = false;
     }
@@ -559,13 +567,26 @@
         // Start polling for status
         await pollQwenVLStatus();
       } else {
-        const errorData = await response.json();
-        logger.error('Failed to trigger Qwen VL analysis', { videoId, error: errorData });
-        alert(errorData.message || 'Failed to trigger Qwen VL analysis');
+        let errorMessage = 'Failed to trigger Qwen VL analysis';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = response.statusText || errorMessage;
+        }
+        logger.error('Failed to trigger Qwen VL analysis', { videoId, error: errorMessage, status: response.status });
+        const localizedMessage = $currentLocale === 'en' 
+          ? `Qwen VL service is not available. Please ensure the Qwen VL service is running.\n\nError: ${errorMessage}`
+          : `Qwen VL Service ist nicht verfügbar. Bitte stellen Sie sicher, dass der Qwen VL Service läuft.\n\nFehler: ${errorMessage}`;
+        alert(localizedMessage);
       }
-    } catch (error) {
-      logger.error('Error triggering Qwen VL analysis', { videoId, error });
-      alert('Error triggering Qwen VL analysis');
+    } catch (error: any) {
+      logger.error('Error triggering Qwen VL analysis', { videoId, error: error?.message });
+      const errorMessage = error?.message || 'Unknown error';
+      const localizedMessage = $currentLocale === 'en'
+        ? `Qwen VL service is not available. Please ensure the Qwen VL service is running.\n\nError: ${errorMessage}`
+        : `Qwen VL Service ist nicht verfügbar. Bitte stellen Sie sicher, dass der Qwen VL Service läuft.\n\nFehler: ${errorMessage}`;
+      alert(localizedMessage);
     } finally {
       analyzingQwenVL = false;
     }
@@ -743,7 +764,7 @@
     try {
       await videosApi.deleteVideo(videoId);
       // Navigate back to video list
-      goto('/videos');
+      goto(`${base}/videos`);
     } catch (error: any) {
       alert(`${_('delete.deleteError')}: ${error?.message || _('export.unknownError')}`);
       deleteModalOpen = false;
@@ -830,49 +851,69 @@
           <div class="flex gap-2 flex-wrap responsive-button-group">
             <!-- Services Dropdown -->
             <div class="relative">
-              <button 
+              <MsqdxButton
+                glass={true}
                 on:click={() => servicesOpen = !servicesOpen}
-                class="glass-button flex items-center gap-2"
+                class="flex items-center gap-2"
               >
                 <div class="icon-18px">{@html PlayIcon}</div>
-                Services
+                <MsqdxTypography variant="body2" weight="medium">Services</MsqdxTypography>
                 <div class="icon-18px">{@html servicesOpen ? ExpandLessIcon : ExpandMoreIcon}</div>
-              </button>
+              </MsqdxButton>
               
               {#if servicesOpen}
-                <div class="absolute left-0 top-full mt-1 min-w-[180px] z-10 py-1 dropdown-menu">
-                  <button on:click={() => { handleRefresh(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={refreshing}>
-                    <div class="icon-16px">{@html RefreshIcon}</div> {refreshing ? _('videoDetails.refreshing') : _('videoDetails.refresh')}
+                <div class="dropdown-menu">
+                  <button on:click={() => { handleRefresh(); servicesOpen = false; }} class="dropdown-item" disabled={refreshing}>
+                    {#if refreshing}
+                      <div class="spinner-small"></div>
+                    {:else}
+                      <div class="icon-16px">{@html RefreshIcon}</div>
+                    {/if}
+                    <span class="dropdown-item-text">{refreshing ? _('videoDetails.refreshing') : _('videoDetails.refresh')}</span>
                   </button>
-                  <button on:click={() => { triggerVisionAnalysis(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs">
-                    <div class="icon-16px">{@html PlayIcon}</div> {$currentLocale === 'en' ? 'Start Analysis' : 'Analyse starten'}
+                  <button on:click={() => { triggerVisionAnalysis(); servicesOpen = false; }} class="dropdown-item">
+                    <div class="icon-16px">{@html PlayIcon}</div>
+                    <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Start Analysis' : 'Analyse starten'}</span>
                   </button>
-                  <button on:click={() => { triggerQwenVLAnalysis(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={analyzingQwenVL}>
+                  <button on:click={() => { triggerQwenVLAnalysis(); servicesOpen = false; }} class="dropdown-item" disabled={analyzingQwenVL}>
                     {#if analyzingQwenVL}
-                      <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                      {$currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...'}
+                      <div class="spinner-small"></div>
+                      <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...'}</span>
                     {:else}
                       <div class="icon-16px">{@html VisibilityIcon}</div>
-                      {$currentLocale === 'en' ? 'Semantic Analysis (Qwen VL)' : 'Semantische Analyse (Qwen VL)'}
+                      <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Semantic Analysis (Qwen VL)' : 'Semantische Analyse (Qwen VL)'}</span>
                     {/if}
                   </button>
-                  <button on:click={() => { triggerAudioSeparation(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={separatingAudio}>
-                    <div class="icon-16px">{@html PlayIcon}</div> {separatingAudio ? ($currentLocale === 'en' ? 'Separating...' : 'Trennt...') : ($currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen')}
+                  <button on:click={() => { triggerAudioSeparation(); servicesOpen = false; }} class="dropdown-item" disabled={separatingAudio}>
+                    {#if separatingAudio}
+                      <div class="spinner-small"></div>
+                    {:else}
+                      <div class="icon-16px">{@html PlayIcon}</div>
+                    {/if}
+                    <span class="dropdown-item-text">{separatingAudio ? ($currentLocale === 'en' ? 'Separating...' : 'Trennt...') : ($currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen')}</span>
                   </button>
-                  <button on:click={() => { triggerSpleeterSeparation(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={separatingSpleeter}>
-                    <div class="icon-16px">{@html PlayIcon}</div> {separatingSpleeter ? ($currentLocale === 'en' ? 'Separating...' : 'Trennt...') : ($currentLocale === 'en' ? 'Spleeter' : 'Spleeter')}
+                  <button on:click={() => { triggerSpleeterSeparation(); servicesOpen = false; }} class="dropdown-item" disabled={separatingSpleeter}>
+                    {#if separatingSpleeter}
+                      <div class="spinner-small"></div>
+                    {:else}
+                      <div class="icon-16px">{@html PlayIcon}</div>
+                    {/if}
+                    <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Spleeter' : 'Spleeter'}</span>
                   </button>
                   {#if !saliencyAnalyzed}
-                    <button on:click={() => { triggerSaliencyAnalysis(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={analyzingSaliency}>
-                      <div class="icon-16px">{@html VisibilityIcon}</div> 
-                      {analyzingSaliency ? ($currentLocale === 'en' ? 'Analyzing...' : 'Analysiert...') : 
-                       ($currentLocale === 'en' ? 'Analyze Saliency' : 'Saliency analysieren')}
+                    <button on:click={() => { triggerSaliencyAnalysis(); servicesOpen = false; }} class="dropdown-item" disabled={analyzingSaliency}>
+                      {#if analyzingSaliency}
+                        <div class="spinner-small"></div>
+                      {:else}
+                        <div class="icon-16px">{@html VisibilityIcon}</div>
+                      {/if}
+                      <span class="dropdown-item-text">{analyzingSaliency ? ($currentLocale === 'en' ? 'Analyzing...' : 'Analysiert...') : ($currentLocale === 'en' ? 'Analyze Saliency' : 'Saliency analysieren')}</span>
                     </button>
                   {/if}
                   {#if saliencyAnalyzed}
-                    <button on:click={() => { openReframeModal(); servicesOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={reframingVideo}>
-                      <div class="icon-16px">{@html MovieIcon}</div> 
-                      {$currentLocale === 'en' ? 'Reframe Video' : 'Video reframen'}
+                    <button on:click={() => { openReframeModal(); servicesOpen = false; }} class="dropdown-item" disabled={reframingVideo}>
+                      <div class="icon-16px">{@html MovieIcon}</div>
+                      <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Reframe Video' : 'Video reframen'}</span>
                     </button>
                   {/if}
                 </div>
@@ -881,41 +922,42 @@
             
             <!-- Export Dropdown -->
             <div class="relative">
-              <button 
+              <MsqdxButton
+                glass={true}
                 on:click={() => exportOpen = !exportOpen}
-                class="glass-button flex items-center gap-2"
+                class="flex items-center gap-2"
               >
                 <div class="icon-18px">{@html VideoIcon}</div>
-                Export
+                <MsqdxTypography variant="body2" weight="medium">Export</MsqdxTypography>
                 <div class="icon-18px">{@html exportOpen ? ExpandLessIcon : ExpandMoreIcon}</div>
-              </button>
+              </MsqdxButton>
               
               {#if exportOpen}
-                <div class="absolute left-0 top-full mt-1 min-w-[180px] z-10 py-1 dropdown-menu">
-                  <button on:click={() => { handleExport('premiere'); exportOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={exporting}>
+                <div class="dropdown-menu">
+                  <button on:click={() => { handleExport('premiere'); exportOpen = false; }} class="dropdown-item" disabled={exporting}>
                     {#if exporting && currentExportFormat === 'premiere'}
-                      <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                      {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+                      <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html VideoIcon}</div> {$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}
+                      <div class="icon-16px">{@html VideoIcon}</div>
                     {/if}
+                    <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}</span>
                   </button>
-                  <button on:click={() => { handleExportXMLOnly('premiere'); exportOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={exporting}>
+                  <button on:click={() => { handleExportXMLOnly('premiere'); exportOpen = false; }} class="dropdown-item" disabled={exporting}>
                     {#if exporting && currentExportFormat === null}
-                      <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                      {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+                      <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html CodeIcon}</div> {$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}
+                      <div class="icon-16px">{@html CodeIcon}</div>
                     {/if}
+                    <span class="dropdown-item-text">{$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}</span>
                   </button>
                   {#if transcriptionData}
-                    <button on:click={() => { handleExport('srt'); exportOpen = false; }} class="w-full text-left px-3 py-1.5 hover:bg-white/10 flex items-center gap-2 text-xs" disabled={exporting}>
+                    <button on:click={() => { handleExport('srt'); exportOpen = false; }} class="dropdown-item" disabled={exporting}>
                       {#if exporting && currentExportFormat === 'srt'}
-                        <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+                        <div class="spinner-small"></div>
                       {:else}
-                        <div class="icon-16px">{@html SubtitleIcon}</div> {$currentLocale === 'en' ? 'SRT' : 'SRT'}
+                        <div class="icon-16px">{@html SubtitleIcon}</div>
                       {/if}
+                      <span class="dropdown-item-text">{$currentLocale === 'en' ? 'SRT' : 'SRT'}</span>
                     </button>
                   {/if}
                 </div>
@@ -923,22 +965,25 @@
             </div>
             
             <!-- Delete Button -->
-            <button
+            <MsqdxButton
+              glass={true}
               on:click={() => deleteModalOpen = true}
               on:mouseenter={() => deleteButtonHovered = true}
               on:mouseleave={() => deleteButtonHovered = false}
-              class="glass-button flex items-center gap-2"
+              class="flex items-center gap-2 delete-button"
               title={$currentLocale === 'en' ? 'Delete Video' : 'Video löschen'}
-              style="background: {deleteButtonHovered ? 'rgba(255, 0, 0, 0.2)' : 'rgba(255, 0, 0, 0.1)'} !important; border-color: rgba(255, 0, 0, 0.3) !important; color: {deleteButtonHovered ? '#f87171' : '#fca5a5'} !important;"
             >
-              <div class="icon-18px">{@html DeleteIcon}</div> {$currentLocale === 'en' ? 'Delete' : 'Löschen'}
-            </button>
+              <div class="icon-18px">{@html DeleteIcon}</div>
+              <MsqdxTypography variant="body2" weight="medium">
+                {$currentLocale === 'en' ? 'Delete' : 'Löschen'}
+              </MsqdxTypography>
+            </MsqdxButton>
           </div>
         </div>
 
     <!-- Video Player + Timeline Wrapper -->
     {#if visionData && visionData.length > 0}
-      <UdgGlassVideoPlayerWrapper
+      <MsqdxVideoPlayerWrapper
         videoSrc={videosApi.getVideoUrl($selectedVideo.id)}
         posterSrc=""
         scenes={visionData}
@@ -969,12 +1014,16 @@
           <div class="icon-18px text-white">{@html MicIcon}</div> {$currentLocale === 'en' ? 'Video Transcription' : 'Video Transkription'}
         </h3>
         <p class="text-white/70 mb-4 text-xs">{$currentLocale === 'en' ? 'No transcription available yet' : 'Noch keine Transkription vorhanden'}</p>
-        <button 
-          class="glass-button "
+        <MsqdxButton
+          glass={true}
           on:click={triggerTranscription}
+          class="flex items-center gap-2"
         >
-          <div class="icon-18px text-current">{@html MicIcon}</div> {$currentLocale === 'en' ? 'Transcribe Video' : 'Video transkribieren'}
-        </button>
+          <div class="icon-18px">{@html MicIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">
+            {$currentLocale === 'en' ? 'Transcribe Video' : 'Video transkribieren'}
+          </MsqdxTypography>
+        </MsqdxButton>
       </div>
     {/if}
 
@@ -994,9 +1043,14 @@
       <div class="glass-card text-center py-8">
         <div class="icon-18px mx-auto mb-4 text-white/40">{@html VisibilityIcon}</div>
         <p class="text-white/70 mb-4 text-xs">Noch keine Vision-Analyse verfügbar</p>
-        <button on:click={triggerVisionAnalysis} class="glass-button flex items-center gap-2 mx-auto">
-          <div class="icon-18px text-current">{@html PlayIcon}</div> Analyse starten
-        </button>
+        <MsqdxButton
+          glass={true}
+          on:click={triggerVisionAnalysis}
+          class="flex items-center gap-2 mx-auto"
+        >
+          <div class="icon-18px">{@html PlayIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">Analyse starten</MsqdxTypography>
+        </MsqdxButton>
       </div>
     {:else if visionData && visionData.length > 0}
       <!-- Show Vision Analysis for all scenes with Qwen VL -->
@@ -1050,7 +1104,7 @@
                     {/if}
                   </div>
                 </div>
-                <UdgGlassVisionTags 
+                <MsqdxVisionTags 
                   objects={scene.objects || []}
                   faces={scene.faces || []}
                   sceneClassification={scene.sceneClassification || []}
@@ -1102,9 +1156,13 @@
     <p class="text-white/70 mb-8">
       Das angeforderte Video konnte nicht geladen werden.
     </p>
-    <a href="/videos" class="glass-button">
-      Zurück zur Video-Gallery
-    </a>
+    <MsqdxButton
+      glass={true}
+      href={resolve('/videos')}
+      class="flex items-center gap-2"
+    >
+      <MsqdxTypography variant="body2" weight="medium">Zurück zur Video-Gallery</MsqdxTypography>
+    </MsqdxButton>
   </div>
 {:else}
   <div class="glass-card text-center py-16">
@@ -1117,7 +1175,7 @@
 {/if}
 
 <!-- Delete Modal -->
-<UdgGlassDeleteModal 
+<MsqdxDeleteModal 
   bind:open={deleteModalOpen}
   video={$selectedVideo}
   on:close={() => deleteModalOpen = false}
@@ -1135,40 +1193,116 @@
 
 <style>
   .dropdown-menu {
-    backdrop-filter: blur(18px);
-    border-radius: 8px;
-    padding: 4px 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: var(--msqdx-spacing-xs);
+    min-width: 180px;
+    z-index: 1000;
+    backdrop-filter: blur(var(--msqdx-glass-blur));
+    border-radius: var(--msqdx-radius-md);
+    padding: var(--msqdx-spacing-xxs) 0;
+    border: 1px solid var(--msqdx-color-dark-border);
+    background: var(--msqdx-color-dark-paper);
   }
 
-  .dropdown-menu button:hover {
+  .dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: var(--msqdx-spacing-sm) var(--msqdx-spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--msqdx-spacing-sm);
+    background: transparent;
+    border: none;
+    color: var(--msqdx-color-brand-black) !important;
+    font-size: var(--msqdx-font-size-body2);
+    font-family: var(--msqdx-font-primary);
+    cursor: pointer;
+    transition: all var(--msqdx-transition-standard);
+  }
+
+  .dropdown-item-text {
+    color: var(--msqdx-color-brand-black) !important;
+    font-size: var(--msqdx-font-size-body2);
+    font-family: var(--msqdx-font-primary);
+    font-weight: var(--msqdx-font-weight-medium);
+  }
+
+  .dropdown-item * {
+    color: var(--msqdx-color-brand-black) !important;
+  }
+
+  .dropdown-item:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  :global(html.dark) .dropdown-menu {
-    background: rgba(20, 20, 20, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    color: #fff;
+  .dropdown-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
-  :global(html.dark) .dropdown-menu button {
-    color: inherit;
+  .icon-16px {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-18px {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .spinner-small {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--msqdx-color-dark-text-primary);
+    border-top-color: transparent;
+    border-radius: var(--msqdx-radius-full);
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .delete-button {
+    background: var(--msqdx-color-tint-pink) !important;
+    border-color: var(--msqdx-color-status-error) !important;
+    color: var(--msqdx-color-status-error) !important;
+  }
+
+  .delete-button:hover {
+    background: var(--msqdx-color-tint-pink) !important;
+    border-color: var(--msqdx-color-status-error) !important;
+    opacity: 0.9;
   }
 
   :global(html.light) .dropdown-menu {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    color: #000;
+    background: var(--msqdx-color-light-paper);
+    border: 1px solid var(--msqdx-color-light-border);
   }
 
-  :global(html.light) .dropdown-menu button {
-    color: inherit;
+  :global(html.light) .dropdown-item {
+    color: var(--msqdx-color-brand-black) !important;
   }
 
-  :global(html.light) .dropdown-menu button:hover {
+  :global(html.light) .dropdown-item-text {
+    color: var(--msqdx-color-brand-black) !important;
+  }
+
+  :global(html.light) .dropdown-item * {
+    color: var(--msqdx-color-brand-black) !important;
+  }
+
+  :global(html.light) .dropdown-item:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.05);
   }
 
@@ -1197,7 +1331,7 @@
       flex-direction: column;
     }
     
-    .glass-button {
+    :global(.msqdx-button) {
       width: 100%;
     }
     

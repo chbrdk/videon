@@ -7,22 +7,25 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
-COPY pnpm-lock.yaml* package-lock.json* ./
+COPY frontend/package.json ./
+COPY frontend/pnpm-lock.yaml* frontend/package-lock.json* ./
 
 # Install dependencies
 RUN if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile; else pnpm install; fi
 
 # Copy source code (exclude node_modules and build)
-COPY src ./src
-COPY static ./static
-COPY svelte.config.js ./
-COPY vite.config.ts ./
-COPY tsconfig.json ./
-COPY postcss.config.js ./
-COPY tailwind.config.js ./
-COPY playwright.config.ts ./
-COPY vitest.config.ts ./
+COPY frontend/src ./src
+COPY frontend/static ./static
+COPY frontend/svelte.config.js ./
+COPY frontend/vite.config.ts ./
+COPY frontend/tsconfig.json ./
+COPY frontend/postcss.config.js ./
+COPY frontend/tailwind.config.mjs ./
+COPY frontend/playwright.config.ts ./
+COPY frontend/vitest.config.ts ./
+# Copy MSQDX Design System (needed for tailwind.config.mjs)
+# Note: Build context is from packages/ directory
+COPY msqdx-design-system ./msqdx-design-system
 
 # Build stage
 FROM base AS build

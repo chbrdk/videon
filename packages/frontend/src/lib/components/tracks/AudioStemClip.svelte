@@ -1,6 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import AudioWaveform from './AudioWaveform.svelte';
+  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
+  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
   
   export let audioStemId: string;
   export let stemType: 'vocals' | 'music' | 'original' | 'drums' | 'bass';
@@ -32,13 +34,13 @@
   $: trimEndPx = trimEnd * width;
   $: trimWidth = trimEndPx - trimStartPx;
   
-  // Farben für verschiedene Stem-Typen
+  // Farben für verschiedene Stem-Typen (gedämpft, weniger knallig)
   const stemColors = {
-    vocals: '#ff4444',
-    music: 'rgb(68, 255, 68)', 
-    original: '#4444ff',
-    drums: '#ffaa44',
-    bass: '#aa44ff'
+    vocals: '#cc7777',
+    music: 'rgb(119, 204, 119)', 
+    original: '#7777cc',
+    drums: '#cc9966',
+    bass: '#9966cc'
   };
   
   $: stemColor = stemColors[stemType] || '#666666';
@@ -156,8 +158,9 @@
       class:muted={isMuted}
       on:click={handleMuteToggle}
       on:mousedown|stopPropagation
+      title={isMuted ? 'Unmute' : 'Mute'}
     >
-      {isMuted ? '🔇' : '🔊'}
+      <div class="icon-16px">{@html (isMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
     </button>
   </div>
 </div>
@@ -167,19 +170,18 @@
     position: relative;
     cursor: pointer;
     user-select: none;
-    border-radius: 4px;
+    border-radius: var(--msqdx-radius-xs);
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: all var(--msqdx-transition-standard);
     height: 100%;
   }
   
   .audio-stem-clip:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   
   .audio-stem-clip.selected {
-    outline: 2px solid #007bff;
+    outline: 2px solid var(--msqdx-color-brand-blue);
     outline-offset: -2px;
   }
   
@@ -191,9 +193,9 @@
     position: relative;
     width: 100%;
     height: 100%;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.1));
+    border: 1px solid var(--msqdx-color-dark-border);
+    border-radius: var(--msqdx-radius-xs);
+    background: transparent;
   }
   
   .waveform-container {
@@ -257,10 +259,14 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 12px;
+    padding: var(--msqdx-spacing-xxs);
     opacity: 0.7;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--msqdx-transition-standard);
     z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--msqdx-color-dark-text-primary);
   }
   
   .mute-button:hover {
@@ -269,6 +275,14 @@
   
   .mute-button.muted {
     opacity: 1;
-    color: #ff4444;
+    color: var(--msqdx-color-status-error);
+  }
+
+  .icon-16px {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

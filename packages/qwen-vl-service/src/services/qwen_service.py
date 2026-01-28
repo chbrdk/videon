@@ -23,7 +23,7 @@ class QwenVLService:
     
     def __init__(
         self,
-        model_name: str = "mlx-community/Qwen3-VL-8B-Instruct-3bit",
+        model_name: str = "mlx-community/Qwen3-VL-8B-Instruct-4bit",
         max_tokens: int = 500,
         temperature: float = 0.0
     ):

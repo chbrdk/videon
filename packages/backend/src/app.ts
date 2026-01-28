@@ -18,12 +18,28 @@ import { globalErrorHandler, notFoundHandler } from './utils/error-handler';
 import { localeMiddleware } from './middleware/locale.middleware';
 import config from './config';
 import logger from './utils/logger';
+import { initializeUnionSettings } from './utils/union-init';
+
+// Initialize UNION Settings before anything else (non-blocking)
+initializeUnionSettings().catch((error) => {
+  logger.warn('Failed to initialize UNION settings, using environment variables', {
+    error: error.message,
+  });
+});
 
 // Zentrale Backend URL für Frontend-Kommunikation
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:4001';
 
 const app: express.Application = express();
 const PORT = config.port;
+
+// Initialize UNION Settings (load API keys from UNION)
+// This runs once at startup and sets environment variables for services
+initializeUnionSettings().catch((error) => {
+  logger.warn('Failed to initialize UNION settings, using environment variables', {
+    error: error.message,
+  });
+});
 
 // Security middleware
 app.use(helmet({
@@ -90,26 +106,46 @@ app.use((req, res, next) => {
 
 // Qwen VL Route - MUST BE BEFORE ALL OTHER ROUTES!
 app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
-  console.log('🎯🎯🎯 Qwen VL Route HIT!', req.method, req.path, req.url);
-  console.log('🎯 Qwen VL Route HIT DIRECTLY!', req.method, req.path, req.params, req.url);
   try {
     const { id } = req.params;
     const QwenVLService = require('./services/qwen-vl.service').QwenVLService;
     const qwenVLService = new QwenVLService();
 
-    const isAvailable = await qwenVLService.isAvailable();
+    logger.info(`Starting Qwen VL analysis for video ${id}`);
+
+    // Check if Qwen VL service is available
+    let isAvailable = false;
+    try {
+      isAvailable = await qwenVLService.isAvailable();
+    } catch (healthError: any) {
+      logger.error(`Health check error for Qwen VL service:`, healthError);
+      // Continue with service unavailable handling
+    }
+
     if (!isAvailable) {
+      const serviceUrl = qwenVLService.getServiceUrl();
+      logger.error(`Qwen VL service is not available at ${serviceUrl}`);
       return res.status(503).json({ 
-        error: 'Qwen VL Service not available',
-        message: 'Qwen VL Service is not running or not reachable'
+        error: 'Qwen VL service unavailable',
+        message: 'The Qwen VL analysis service is not running or not reachable. Please check if the service is started. This service runs locally (outside Docker) on port 8081.',
+        serviceUrl: serviceUrl,
+        statusCode: 503,
+        timestamp: new Date().toISOString(),
+        path: req.path,
+        instructions: 'To start the service, run: cd packages/qwen-vl-service && ./start.sh'
       });
     }
 
-    console.log(`🎯 Triggering Qwen VL analysis for video: ${id}`);
+    logger.info(`Triggering Qwen VL analysis for video: ${id}`);
     
-    qwenVLService.analyzeVideo(id).catch((error: any) => {
-      console.error(`❌ Qwen VL analysis failed for video ${id}:`, error);
-    });
+    // Trigger analysis asynchronously (don't await to avoid blocking)
+    qwenVLService.analyzeVideo(id)
+      .then(() => {
+        logger.info(`✅ Qwen VL analysis completed for video ${id}`);
+      })
+      .catch((error: any) => {
+        logger.error(`❌ Qwen VL analysis failed for video ${id}:`, error);
+      });
 
     res.json({ 
       message: 'Qwen VL analysis started',
@@ -118,8 +154,14 @@ app.post('/api/videos/:id/qwenVL/analyze', async (req: any, res: any) => {
     });
 
   } catch (error: any) {
-    console.error('❌ Qwen VL analysis trigger error:', error);
-    res.status(500).json({ error: 'Failed to trigger Qwen VL analysis' });
+    logger.error(`Error starting Qwen VL analysis for video ${req.params?.id}:`, error);
+    res.status(500).json({ 
+      error: 'Failed to start Qwen VL analysis',
+      message: error?.message || 'An unexpected error occurred while starting Qwen VL analysis',
+      statusCode: 500,
+      timestamp: new Date().toISOString(),
+      path: req.path
+    });
   }
 });
 
@@ -139,7 +181,7 @@ app.use('/api', voiceSegmentRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    name: 'PrismVid API',
+    name: 'VIDEON API',
     version: '1.0.0',
     description: 'Video Analysis Dashboard API',
     endpoints: {
@@ -162,10 +204,11 @@ app.use(globalErrorHandler);
 // Start server only if not in test environment
 if (config.nodeEnv !== 'test') {
   app.listen(PORT, () => {
-    logger.info('PrismVid Backend API started', {
+    logger.info('VIDEON Backend API started', {
       port: PORT,
       environment: config.nodeEnv,
-      corsOrigins: config.security.corsOrigins
+      corsOrigins: config.security.corsOrigins,
+      unionSettingsEnabled: config.services.union?.enabled || false,
     });
   });
 }

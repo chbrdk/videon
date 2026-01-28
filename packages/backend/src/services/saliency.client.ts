@@ -50,6 +50,13 @@ export class SaliencyClient {
   }
   
   /**
+   * Get the base URL of the saliency service
+   */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+  
+  /**
    * Prüft die Gesundheit des Saliency-Services (alias für healthCheck)
    */
   async getHealth(): Promise<boolean> {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { api } from '$lib/config/environment';
+  import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
   import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
   import PauseIcon from '@material-icons/svg/svg/pause/baseline.svg?raw';
   import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
@@ -321,9 +322,14 @@
       <div class="icon-18px text-current">{@html MovieIcon}</div> Video Audio
     </div>
     <div class="track-controls">
-      <button class="control-btn small audio-level-btn" on:click={toggleVideoLevelSlider} title="Audio Level: {videoAudioLevel}%">
-        <div class="icon-18px text-current">{@html (videoMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
-      </button>
+      <MsqdxButton
+        variant="contained"
+        on:click={toggleVideoLevelSlider}
+        title="Audio Level: {videoAudioLevel}%"
+        class="icon-button-small"
+      >
+        <div class="icon-18px">{@html (videoMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
+      </MsqdxButton>
       
       <!-- Audio Level Controls direkt in der Toolbar -->
       {#if showVideoLevelSlider}
@@ -354,24 +360,23 @@
     position: absolute;
     height: 90%;
     top: 5%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 6px;
+    border: 2px solid var(--msqdx-color-dark-border);
+    border-radius: var(--msqdx-radius-sm);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--msqdx-transition-standard);
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.3);
+    background: transparent;
     display: flex;
     flex-direction: column;
   }
   
   .scene-clip:hover {
-    border-color: rgba(255, 255, 255, 0.6);
+    border-color: var(--msqdx-color-brand-orange);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
   
   .scene-clip:focus {
-    outline: 2px solid rgba(100, 150, 255, 0.6);
+    outline: 2px solid var(--msqdx-color-brand-blue);
     outline-offset: 2px;
   }
   
@@ -392,7 +397,7 @@
   .clip-placeholder {
     width: 100%;
     height: 70%;
-    background: rgba(100, 150, 255, 0.2);
+    background: var(--msqdx-color-tint-blue);
     display: none;
     align-items: center;
     justify-content: center;
@@ -400,9 +405,10 @@
   }
   
   .scene-number {
-    color: white;
-    font-size: 1.5rem;
-    font-weight: bold;
+    color: var(--msqdx-color-dark-text-primary);
+    font-size: var(--msqdx-font-size-3xl);
+    font-weight: var(--msqdx-font-weight-bold);
+    font-family: var(--msqdx-font-primary);
   }
   
   .clip-label {
@@ -411,9 +417,10 @@
     left: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 2px 4px;
-    font-size: 0.6rem;
+    color: var(--msqdx-color-dark-text-primary);
+    padding: var(--msqdx-spacing-xxs) var(--msqdx-spacing-xxs);
+    font-size: var(--msqdx-font-size-xs);
+    font-family: var(--msqdx-font-primary);
     text-align: center;
     flex-shrink: 0;
   }
@@ -423,10 +430,11 @@
     top: 2px;
     right: 2px;
     background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 1px 3px;
-    font-size: 0.5rem;
-    border-radius: 2px;
+    color: var(--msqdx-color-dark-text-primary);
+    padding: 1px var(--msqdx-spacing-xxs);
+    font-size: var(--msqdx-font-size-xs);
+    font-family: var(--msqdx-font-primary);
+    border-radius: var(--msqdx-radius-xs);
   }
   
   /* Resize Handles */
@@ -435,21 +443,21 @@
     top: 0;
     bottom: 0;
     width: 8px;
-    background: rgba(100, 150, 255, 0.6);
+    background: var(--msqdx-color-tint-blue);
     cursor: ew-resize;
     opacity: 0.3;
-    transition: opacity 0.2s ease;
+    transition: opacity var(--msqdx-transition-standard);
     z-index: 10;
   }
   
   .resize-handle-start {
     left: -3px;
-    border-radius: 3px 0 0 3px;
+    border-radius: var(--msqdx-radius-xs) 0 0 var(--msqdx-radius-xs);
   }
   
   .resize-handle-end {
     right: -3px;
-    border-radius: 0 3px 3px 0;
+    border-radius: 0 var(--msqdx-radius-xs) var(--msqdx-radius-xs) 0;
   }
   
   .scene-clip:hover .resize-handle {
@@ -457,14 +465,13 @@
   }
   
   .resize-handle:hover {
-    background: rgba(100, 150, 255, 0.9);
+    background: var(--msqdx-color-brand-blue);
     opacity: 1;
   }
   
   /* Resizing state */
   .scene-clip.resizing {
-    border-color: rgba(100, 150, 255, 0.8);
-    box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+    border-color: var(--msqdx-color-brand-blue);
   }
   
   /* Delete Button */
@@ -474,16 +481,16 @@
     right: 2px;
     width: 20px;
     height: 20px;
-    background: rgba(255, 0, 0, 0.8);
+    background: var(--msqdx-color-status-error);
     border: none;
-    border-radius: 50%;
-    color: white;
+    border-radius: var(--msqdx-radius-full);
+    color: var(--msqdx-color-brand-white);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: all 0.2s ease;
+    transition: all var(--msqdx-transition-standard);
     z-index: 10;
   }
   
@@ -492,7 +499,7 @@
   }
   
   .delete-button:hover {
-    background: rgba(255, 0, 0, 1);
+    background: var(--msqdx-color-status-error);
     transform: scale(1.1);
   }
 
@@ -518,19 +525,19 @@
 
   .track-controls {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--msqdx-spacing-xs);
     position: sticky;
     right: 0;
     top: 0;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 2rem;
-    padding: 0.5rem 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: var(--msqdx-color-brand-orange);
+    border: 1px solid var(--msqdx-color-brand-orange);
+    border-radius: var(--msqdx-radius-full);
+    padding: var(--msqdx-spacing-xs);
     margin-left: auto;
     flex-shrink: 0;
+    align-items: center;
+    height: fit-content;
   }
 
   .control-btn.small {
@@ -554,30 +561,34 @@
     border-color: rgba(255, 255, 255, 0.4);
   }
 
-  .audio-level-btn {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
+  :global(.msqdx-button.icon-button-small) {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  .audio-level-btn:hover {
-    background: rgba(255, 255, 255, 0.25) !important;
-  }
 
   .audio-level-inline {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-left: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    gap: var(--msqdx-spacing-xxs);
+    margin-left: var(--msqdx-spacing-xxs);
+    padding: var(--msqdx-spacing-xxs) var(--msqdx-spacing-xs);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--msqdx-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .level-percentage {
-    font-size: 0.75rem;
-    color: white;
-    font-weight: 600;
+    font-size: var(--msqdx-font-size-sm);
+    color: var(--msqdx-color-brand-white);
+    font-weight: var(--msqdx-font-weight-semibold);
+    font-family: var(--msqdx-font-primary);
     min-width: 2.5rem;
     text-align: center;
   }
@@ -585,8 +596,8 @@
   .level-slider-inline {
     width: 80px;
     height: 3px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: var(--msqdx-radius-xs);
     outline: none;
     cursor: pointer;
     -webkit-appearance: none;
@@ -598,19 +609,19 @@
     appearance: none;
     width: 12px;
     height: 12px;
-    background: #007AFF;
-    border-radius: 50%;
+    background: var(--msqdx-color-brand-white);
+    border-radius: var(--msqdx-radius-full);
     cursor: pointer;
-    border: 1px solid white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
   }
 
   .level-slider-inline::-moz-range-thumb {
     width: 12px;
     height: 12px;
-    background: #007AFF;
-    border-radius: 50%;
+    background: var(--msqdx-color-brand-white);
+    border-radius: var(--msqdx-radius-full);
     cursor: pointer;
-    border: 1px solid white;
+    border: 1px solid rgba(0, 0, 0, 0.2);
   }
 
   .icon-18px {
@@ -626,7 +637,6 @@
     cursor: grabbing !important;
     z-index: 1000;
     transform: scale(1.05) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
     border-color: rgba(255, 255, 255, 0.5) !important;
   }
   

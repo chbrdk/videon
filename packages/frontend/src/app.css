@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,200..700,0..1,-50..200');
+@import './lib/styles/design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,17 +15,13 @@
   }
   
   html.light {
-    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50;
+    background: var(--msqdx-light-background, #f8f6f0);
+    background-image: linear-gradient(135deg, #f8f6f0 0%, #e9ecef 50%, #f8f6f0 100%);
   }
   
   html.dark {
-    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
-    --tw-gradient-from: #0f172a var(--tw-gradient-from-position);
-    --tw-gradient-to: rgb(15 23 42 / 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-    --tw-gradient-to: rgb(42 52 60 / 0) var(--tw-gradient-to-position);
-    --tw-gradient-stops: var(--tw-gradient-from), #2a343c var(--tw-gradient-via-position), var(--tw-gradient-to);
-    --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
+    background: var(--msqdx-dark-background, #0f0f0f);
+    background-image: linear-gradient(135deg, #0f0f0f 0%, #1a1f2e 50%, #0f0f0f 100%);
   }
   
   body {
@@ -117,117 +116,186 @@
 }
 
 @layer components {
-  /* Light Theme Glass Effects */
+  /* MSQDX Glass Effects - Light Theme */
+  html.light .msqdx-glass-panel,
   html.light .glass-effect {
-    @apply bg-white backdrop-blur-md border border-gray-200;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    @apply bg-white backdrop-blur-lg border border-light-border;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px) saturate(150%);
   }
 
+  html.light .msqdx-glass-card,
   html.light .glass-card {
-    @apply bg-white backdrop-blur-md border border-gray-200 rounded-xl p-6;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    @apply bg-white backdrop-blur-lg border border-light-border p-6;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px) saturate(150%);
   }
 
-  html.light .glass-card.rounded-full {
-    border-radius: 9999px;
+  html.light .folder-card .msqdx-glass-card {
+    border-radius: 40px !important;
   }
 
+  /* Note: .rounded-full modifier is handled by Tailwind utility class */
+
+  html.light .msqdx-glass-button,
   html.light .glass-button {
-    @apply bg-white backdrop-blur-md border border-gray-200 rounded-lg px-2 py-1 transition-all duration-200 hover:bg-gray-50 hover:scale-105 active:scale-95 text-black text-xs;
+    @apply bg-white backdrop-blur-lg border border-light-border rounded-full px-6 py-2 transition-all duration-200 hover:bg-gray-50 hover:scale-105 active:scale-95 text-black text-sm;
+    font-weight: 600;
+    text-transform: none;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
+  }
 
-html.light .glass-button svg {
+  html.light .msqdx-glass-button svg,
+  html.light .glass-button svg {
     color: rgba(17, 24, 39, 0.85);
   }
 
+  html.light .msqdx-glass-field input,
+  html.light .msqdx-glass-field textarea,
   html.light .glass-input {
-    @apply bg-white backdrop-blur-md border border-gray-200 rounded-lg px-4 py-2 placeholder-gray-600 text-black focus:outline-none focus:ring-2 focus:ring-blue-500;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    @apply bg-white backdrop-blur-lg border border-light-border rounded-md px-4 py-2 placeholder-light-textSecondary text-black focus:outline-none focus:ring-2 focus:ring-brand-blue;
+    backdrop-filter: blur(12px) saturate(150%);
   }
   
-  /* Dark Theme Glass Effects */
+  /* MSQDX Glass Effects - Dark Theme */
+  html.dark .msqdx-glass-panel,
   html.dark .glass-effect {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    @apply bg-white/10 backdrop-blur-lg border border-dark-border;
+    backdrop-filter: blur(12px) saturate(150%);
   }
   
+  html.dark .msqdx-glass-card,
   html.dark .glass-card {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-6 shadow-lg;
+    @apply bg-white/10 backdrop-blur-lg border border-dark-border p-6;
+    border-radius: 16px;
+    backdrop-filter: blur(12px) saturate(150%);
+  }
+
+  html.dark .folder-card .msqdx-glass-card {
+    border-radius: 40px !important;
   }
   
-  html.dark .glass-card.rounded-full {
-    border-radius: 9999px;
-  }
+  /* Note: .rounded-full modifier is handled by Tailwind utility class */
   
+  html.dark .msqdx-glass-button,
   html.dark .glass-button {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-2 py-1 transition-all duration-200 hover:bg-white/20 hover:scale-105 active:scale-95 text-white text-xs;
+    @apply bg-white/10 backdrop-blur-lg border border-dark-border rounded-full px-6 py-2 transition-all duration-200 hover:bg-white/20 hover:scale-105 active:scale-95 text-white text-sm;
+    font-weight: 600;
+    text-transform: none;
   }
   
+  html.dark .msqdx-glass-field input,
+  html.dark .msqdx-glass-field textarea,
   html.dark .glass-input {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 placeholder-white/70 text-white focus:outline-none focus:ring-2 focus:ring-white/30;
+    @apply bg-white/10 backdrop-blur-lg border border-dark-border rounded-md px-4 py-2 placeholder-dark-textSecondary text-white focus:outline-none focus:ring-2 focus:ring-brand-purple;
+    backdrop-filter: blur(12px) saturate(150%);
   }
   
-  /* Universal Glass Effects (fallback) */
+  /* MSQDX Glass Chip */
+  .msqdx-glass-chip {
+    @apply inline-flex items-center px-3 py-1 rounded-sm text-xs font-medium transition-all duration-200;
+    height: 24px;
+    border-radius: 8px;
+  }
+
+  html.light .msqdx-glass-chip {
+    @apply bg-white/10 backdrop-blur-lg border border-light-border text-light-textPrimary;
+  }
+
+  html.dark .msqdx-glass-chip {
+    @apply bg-white/10 backdrop-blur-lg border border-dark-border text-dark-textPrimary;
+  }
+  
+  /* Universal Glass Effects (fallback - backward compatibility) */
   .glass-effect {
-    @apply backdrop-blur-md shadow-lg;
+    @apply backdrop-blur-lg;
   }
   
   .glass-card {
-    @apply glass-effect rounded-xl p-6;
+    @apply glass-effect rounded-md p-6;
   }
   
-  .glass-card.rounded-full {
-    border-radius: 9999px;
-  }
+  /* Note: .rounded-full modifier is handled by Tailwind utility class */
   
   .glass-button {
-    @apply glass-effect rounded-lg px-2 py-1 transition-all duration-200 hover:scale-105 active:scale-95 text-xs;
+    @apply glass-effect rounded-full px-6 py-2 transition-all duration-200 hover:scale-105 active:scale-95 text-sm;
+    font-weight: 600;
   }
   
   .glass-input {
-    @apply glass-effect rounded-lg px-4 py-2 focus:outline-none focus:ring-2;
+    @apply glass-effect rounded-md px-4 py-2 focus:outline-none focus:ring-2;
   }
   
-  /* Chip/Badge System */
-  .chip {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs transition-all duration-200;
-    font-weight: 300; /* Light font weight */
+  /* MSQDX Chip/Badge System */
+  .chip,
+  .msqdx-glass-chip {
+    @apply inline-flex items-center px-3 py-1 rounded-sm text-xs font-medium transition-all duration-200;
+    height: 24px;
     gap: 6px;
   }
   
-  .chip .icon-18px {
+  .chip .icon-18px,
+  .msqdx-glass-chip .icon-18px {
     display: inline-block;
     width: 18px;
     height: 18px;
     flex-shrink: 0;
   }
   
+  /* MSQDX Chip Variants using brand colors */
   .chip-default {
-    @apply bg-gray-500/20 text-gray-200 border border-gray-500/30;
+    @apply bg-tint-purple/20 text-dark-textSecondary border border-dark-border;
+  }
+  
+  html.light .chip-default {
+    @apply bg-tint-purple/10 text-light-textSecondary border border-light-border;
   }
   
   .chip-primary {
-    @apply bg-blue-500/20 text-blue-200 border border-blue-500/30;
+    @apply bg-tint-blue/20 text-brand-blue border border-dark-border;
+  }
+  
+  html.light .chip-primary {
+    @apply bg-tint-blue/10 text-brand-blue border border-light-border;
   }
   
   .chip-success {
-    @apply bg-green-500/20 text-green-200 border border-green-500/30;
+    @apply bg-tint-green/20 text-status-success border border-dark-border;
+  }
+  
+  html.light .chip-success {
+    @apply bg-tint-green/10 text-status-success border border-light-border;
   }
   
   .chip-warning {
-    @apply bg-yellow-500/20 text-yellow-200 border border-yellow-500/30;
+    @apply bg-tint-orange/20 text-status-warning border border-dark-border;
+  }
+  
+  html.light .chip-warning {
+    @apply bg-tint-orange/10 text-status-warning border border-light-border;
   }
   
   .chip-error {
-    @apply bg-red-500/20 text-red-200 border border-red-500/30;
+    @apply bg-tint-pink/20 text-status-error border border-dark-border;
+  }
+  
+  html.light .chip-error {
+    @apply bg-tint-pink/10 text-status-error border border-light-border;
   }
   
   .chip-info {
-    @apply bg-purple-500/20 text-purple-200 border border-purple-500/30;
+    @apply bg-tint-purple/20 text-brand-purple border border-dark-border;
+  }
+  
+  html.light .chip-info {
+    @apply bg-tint-purple/10 text-brand-purple border border-light-border;
   }
   
 /* SVG Icon Styling */
+.msqdx-glass-button svg,
 .glass-button svg,
+.msqdx-glass-button div svg,
 .glass-button div svg,
 div svg,
 .text-current svg {

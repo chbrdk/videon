@@ -4,6 +4,8 @@ import { VisionService } from '../services/vision.service';
 import { AnalyzerClient } from '../services/analyzer.client';
 import { uploadMiddleware, uploadMultipleMiddleware, handleUploadError } from '../middleware/upload.middleware';
 import { validateVideoUpload, validateVideoId, validateSceneId, validateSceneTiming, validateSplitTime, validateAudioLevel } from '../middleware/validation.middleware';
+import { getStorageService } from '../services/storage';
+import config from '../config';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -200,9 +202,6 @@ router.get('/:id/file', async (req: any, res: any) => {
   console.log('🎬 VIDEO FILE ROUTE HIT!', req.method, req.path, req.params);
   const { id } = req.params;
   try {
-    const path = require('path');
-    const fs = require('fs');
-    
     const { prisma } = require('../lib/prisma');
     
     // Get video from database
@@ -214,51 +213,58 @@ router.get('/:id/file', async (req: any, res: any) => {
       return res.status(404).json({ error: 'Video not found' });
     }
     
-    // Construct file path - use environment variable or default
+    // Check if using STORION storage
+    if (config.storage.type === 'storion') {
+      // video.filename might be STORION file ID or local filename
+      const storageService = getStorageService();
+      const storionFileId = video.filename;
+      
+      // Check if file exists in STORION
+      const exists = await storageService.fileExists(storionFileId).catch(() => false);
+      if (exists) {
+        // Redirect to STORION download URL
+        const storionUrl = storageService.getFileUrl(storionFileId);
+        logger.info('Redirecting to STORION', { videoId: id, storionUrl });
+        return res.redirect(302, storionUrl);
+      }
+      
+      // File not in STORION - fallback to local storage
+      logger.info('File not found in STORION, falling back to local storage', { 
+        videoId: id, 
+        filename: video.filename 
+      });
+    }
+    
+    // Local storage fallback
     let videosStoragePath: string;
     if (process.env.VIDEOS_STORAGE_PATH) {
       videosStoragePath = path.isAbsolute(process.env.VIDEOS_STORAGE_PATH) 
         ? process.env.VIDEOS_STORAGE_PATH 
         : path.resolve(process.cwd(), process.env.VIDEOS_STORAGE_PATH);
     } else if (process.env.STORAGE_PATH) {
-      // STORAGE_PATH might already include 'videos' or be base storage path
       const storagePath = process.env.STORAGE_PATH;
-      // Resolve relative to project root (where .env is typically located)
       const projectRoot = path.resolve(process.cwd(), '..', '..');
       const resolvedStoragePath = path.isAbsolute(storagePath) 
         ? storagePath 
         : path.resolve(projectRoot, storagePath.startsWith('./') ? storagePath.slice(2) : storagePath);
       
-      if (resolvedStoragePath.endsWith('videos')) {
-        videosStoragePath = resolvedStoragePath;
-      } else {
-        videosStoragePath = path.join(resolvedStoragePath, 'videos');
-      }
+      videosStoragePath = resolvedStoragePath.endsWith('videos')
+        ? resolvedStoragePath
+        : path.join(resolvedStoragePath, 'videos');
     } else {
-      // Try to find storage relative to project root (not backend package)
       const projectRoot = path.resolve(process.cwd(), '..', '..');
       videosStoragePath = path.join(projectRoot, 'storage', 'videos');
     }
     
-    console.log('📁 Video storage path:', videosStoragePath);
-    console.log('📄 Video filename:', video.filename);
-    
     let videoPath = path.join(videosStoragePath, video.filename);
-    console.log('📂 Full video path:', videoPath);
-    console.log('✅ File exists:', fs.existsSync(videoPath));
     
     // Check if file exists
     if (!fs.existsSync(videoPath)) {
-      console.log('⚠️  Video file not found at expected path, searching alternatives');
-      
-      // Try to find file in storage directory
       if (fs.existsSync(videosStoragePath)) {
         const files = fs.readdirSync(videosStoragePath);
-        console.log('📋 Files in storage:', files.slice(0, 5));
         const matchingFile = files.find((file: string) => file.includes(video.id) || file === video.filename);
         if (matchingFile) {
           videoPath = path.join(videosStoragePath, matchingFile);
-          console.log('✅ Found matching file:', videoPath);
         }
       }
     }
@@ -1135,7 +1141,7 @@ router.get('/:id/timeline/export/:format', async (req: any, res: any) => {
 
       case 'edl':
         // EDL (Edit Decision List) format
-        let edlContent = 'TITLE: PrismVid Timeline Export\n';
+        let edlContent = 'TITLE: VIDEON Timeline Export\n';
         edlContent += `FCM: NON-DROP FRAME\n\n`;
         
         scenes.forEach((scene: any, index: number) => {

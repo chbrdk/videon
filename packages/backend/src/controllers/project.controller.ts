@@ -24,13 +24,13 @@ async function createSceneAudioStems(videoId: string, sceneId: string, startTime
     }
     
     // Construct video file path from filename
-    const videoPath = path.join('/Volumes/DOCKER_EXTERN/prismvid', 'storage', 'videos', video.filename);
+    const videoPath = path.join('/Volumes/DOCKER_EXTERN/videon', 'storage', 'videos', video.filename);
     if (!fs.existsSync(videoPath)) {
       throw new Error(`Video file not found: ${videoPath}`);
     }
     
     // Create output directory
-    const outputDir = path.join('/Volumes/DOCKER_EXTERN/prismvid', 'storage', 'audio_stems', videoId, sceneId);
+    const outputDir = path.join('/Volumes/DOCKER_EXTERN/videon', 'storage', 'audio_stems', videoId, sceneId);
     fs.mkdirSync(outputDir, { recursive: true });
     
     const duration = endTime - startTime;

@@ -22,8 +22,8 @@ stories/
 
 Component stories are co-located with their components in `src/lib/components/`:
 
-- `udg-glass-video-card.stories.ts` - Video card component
-- `udg-glass-folder-card.stories.ts` - Folder card component
+- `msqdx-video-card.stories.ts` - Video card component
+- `msqdx-folder-card.stories.ts` - Folder card component
 - More component stories will be added as the design system evolves
 
 ## Running Storybook

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { SaliencyClient } from '../services/saliency.client';
 import { PrismaClient } from '@prisma/client';
 import logger from '../utils/logger';
+import { ServiceUnavailableError, handleExternalServiceError, handleDatabaseError } from '../utils/error-handler';
 import fs from 'fs';
 import path from 'path';
 
@@ -218,34 +219,115 @@ router.get('/videos/:videoId/reframed/:reframedId/download', async (req, res, ne
  *       500:
  *         description: Server error
  */
-router.post('/videos/:id/saliency/analyze', async (req, res, next) => {
+router.post('/videos/:id/saliency/analyze', async (req, res) => {
   try {
     const { id } = req.params;
-    const { sampleRate = 25, modelVersion = 'robust-saliency' } = req.body;
+    const { sampleRate = 25, modelVersion = 'robust-saliency' } = req.body || {};
     
     logger.info(`Starting saliency analysis for video ${id}`);
     
     // Get video from database
-    const video = await prisma.video.findUnique({
-      where: { id }
-    });
+    let video;
+    try {
+      video = await prisma.video.findUnique({
+        where: { id }
+      });
+    } catch (dbError: any) {
+      logger.error(`Database error when fetching video ${id}:`, dbError);
+      const appError = handleDatabaseError(dbError, 'fetch video');
+      return res.status(appError.statusCode).json({
+        error: appError.name,
+        message: appError.message,
+        statusCode: appError.statusCode,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    }
     
     if (!video) {
-      return res.status(404).json({ error: 'Video not found' });
+      return res.status(404).json({ 
+        error: 'Video not found',
+        message: `Video with ID '${id}' not found`,
+        statusCode: 404,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
     }
     
     // Construct video path - use environment variable or default to Docker path
     const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
     const videoPath = path.join(videosStoragePath, video.filename);
     
-    // Update video status
-    await prisma.video.update({
-      where: { id },
-      data: { status: 'ANALYZING' }
-    });
+    logger.info(`Video path constructed: ${videoPath} (storage: ${videosStoragePath}, filename: ${video.filename})`);
     
-    // Trigger saliency analysis
-    await saliencyClient.analyzeSaliency(id, videoPath, sampleRate, modelVersion);
+    // Check if video file exists
+    if (!fs.existsSync(videoPath)) {
+      logger.error(`Video file not found: ${videoPath}`);
+      return res.status(404).json({ 
+        error: 'Video file not found',
+        videoPath,
+        message: `Video file could not be located at ${videoPath}`,
+        statusCode: 404,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    }
+    
+    // Check if saliency service is available
+    let isServiceAvailable = false;
+    try {
+      isServiceAvailable = await saliencyClient.healthCheck();
+    } catch (healthError: any) {
+      logger.error(`Health check error:`, healthError);
+      // Continue with service unavailable handling
+    }
+    
+    if (!isServiceAvailable) {
+      const serviceUrl = saliencyClient.getBaseUrl();
+      logger.error(`Saliency service is not available at ${serviceUrl}`);
+      return res.status(503).json({ 
+        error: 'Saliency service unavailable',
+        message: 'The saliency analysis service is not running or not reachable. Please check if the service is started.',
+        serviceUrl: serviceUrl,
+        statusCode: 503,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    }
+    
+    // Update video status
+    try {
+      await prisma.video.update({
+        where: { id },
+        data: { status: 'ANALYZING' }
+      });
+    } catch (updateError: any) {
+      logger.error(`Failed to update video status to ANALYZING:`, updateError);
+      const appError = handleDatabaseError(updateError, 'update video status');
+      return res.status(appError.statusCode).json({
+        error: appError.name,
+        message: appError.message,
+        statusCode: appError.statusCode,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    }
+    
+    // Trigger saliency analysis (async, don't await to avoid blocking)
+    saliencyClient.analyzeSaliency(id, videoPath, sampleRate, modelVersion)
+      .then(() => {
+        logger.info(`✅ Saliency analysis completed for video ${id}`);
+      })
+      .catch((error) => {
+        logger.error(`❌ Saliency analysis failed for video ${id}:`, error);
+        // Update video status back to UPLOADED on error
+        prisma.video.update({
+          where: { id },
+          data: { status: 'UPLOADED' }
+        }).catch(updateError => {
+          logger.error(`Failed to update video status after saliency error:`, updateError);
+        });
+      });
     
     logger.info(`Saliency analysis started for video ${id}`);
     
@@ -255,9 +337,58 @@ router.post('/videos/:id/saliency/analyze', async (req, res, next) => {
       status: 'ANALYZING'
     });
     
-  } catch (error) {
+  } catch (error: any) {
     logger.error(`Error starting saliency analysis for video ${req.params.id}:`, error);
-    next(error);
+    
+    // Try to update video status back to UPLOADED on error
+    try {
+      await prisma.video.update({
+        where: { id: req.params.id },
+        data: { status: 'UPLOADED' }
+      });
+    } catch (updateError) {
+      logger.error(`Failed to update video status after error:`, updateError);
+    }
+    
+    // Handle different error types
+    if (error?.code === 'P2002' || error?.code === 'P2025') {
+      // Database error
+      const appError = handleDatabaseError(error, 'saliency analysis');
+      return res.status(appError.statusCode).json({
+        error: appError.name,
+        message: appError.message,
+        statusCode: appError.statusCode,
+        timestamp: new Date().toISOString(),
+        path: req.path
+      });
+    }
+    
+    if (error?.code === 'ECONNREFUSED' || error?.code === 'ETIMEDOUT' || error?.response?.status === 503) {
+      // Service unavailable error
+      const appError = handleExternalServiceError(error, 'Saliency');
+      return res.status(appError.statusCode).json({
+        error: appError.name,
+        message: appError.message,
+        statusCode: appError.statusCode,
+        timestamp: new Date().toISOString(),
+        path: req.path,
+        serviceUrl: saliencyClient.getBaseUrl()
+      });
+    }
+    
+    // Return a more helpful error message
+    res.status(500).json({ 
+      error: 'Failed to start saliency analysis',
+      message: error?.message || error?.response?.data?.message || 'An unexpected error occurred while starting saliency analysis',
+      statusCode: 500,
+      timestamp: new Date().toISOString(),
+      path: req.path,
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: error?.stack,
+        response: error?.response?.data,
+        code: error?.code
+      } : undefined
+    });
   }
 });
 

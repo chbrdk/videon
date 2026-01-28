@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { currentLocale } from '$lib/i18n';
 
   onMount(() => {
-    // Redirect to video gallery
-    window.location.href = '/videos';
+    // Redirect to video gallery (respects base path)
+    goto(resolve('/videos'));
   });
 </script>
 

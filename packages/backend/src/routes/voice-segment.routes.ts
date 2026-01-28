@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { VoiceSegmentService } from '../services/voice-segment.service';
 import { ElevenLabsClient } from '../services/elevenlabs.client';
+import { getElevenLabsClient, getElevenLabsClientSync } from '../utils/elevenlabs-factory';
 import { PrismaClient } from '@prisma/client';
 import logger from '../utils/logger';
 
@@ -9,12 +10,20 @@ const prisma = new PrismaClient();
 const router = Router();
 
 // Initialize services
-let elevenLabsClient: ElevenLabsClient | null = null;
+// Start with sync client (from env), will be updated with UNION key if available
+let elevenLabsClient: ElevenLabsClient | null = getElevenLabsClientSync();
 
-// Initialize ElevenLabs client if API key is available
-if (process.env.ELEVENLABS_API_KEY) {
-  elevenLabsClient = new ElevenLabsClient(process.env.ELEVENLABS_API_KEY);
-}
+// Try to get client with UNION key (async)
+getElevenLabsClient().then((client) => {
+  if (client) {
+    elevenLabsClient = client;
+    logger.info('ElevenLabs client updated with UNION key');
+  }
+}).catch((error) => {
+  logger.warn('Failed to load ElevenLabs client from UNION, using environment variable', {
+    error: error.message,
+  });
+});
 
 const voiceSegmentService = new VoiceSegmentService(elevenLabsClient || undefined);
 
@@ -84,13 +93,17 @@ router.post('/voice-segments/:segmentId/revoice', async (req: Request, res: Resp
 
     logger.info(`Re-voicing segment ${segmentId} with voice ${voiceId}`);
 
-    if (!elevenLabsClient) {
+    // Try to get client (might have UNION key now)
+    const client = await getElevenLabsClient();
+    if (!client) {
       return res.status(503).json({ 
-        error: 'ElevenLabs API not configured. Please set ELEVENLABS_API_KEY environment variable.' 
+        error: 'ElevenLabs API not configured. Please set ELEVENLABS_API_KEY in UNION or environment variable.' 
       });
     }
 
-    const segment = await voiceSegmentService.reVoiceSegment(
+    // Update service with latest client
+    const updatedService = new VoiceSegmentService(client);
+    const segment = await updatedService.reVoiceSegment(
       segmentId,
       voiceId,
       text,
@@ -109,11 +122,12 @@ router.post('/voice-segments/preview', async (req: Request, res: Response) => {
   try {
     const { text, voiceId, voiceSettings } = req.body;
 
-    if (!elevenLabsClient) {
+    const client = await getElevenLabsClient();
+    if (!client) {
       return res.status(503).json({ error: 'ElevenLabs API key not configured' });
     }
 
-    const stream = await elevenLabsClient.streamTextToSpeech({
+    const stream = await client.streamTextToSpeech({
       text,
       voiceId,
       settings: voiceSettings
@@ -165,11 +179,12 @@ router.get('/voice-segments/:segmentId/revoiced-audio', async (req: Request, res
 // Liste ElevenLabs Voices
 router.get('/voices', async (req: Request, res: Response) => {
   try {
-    if (!elevenLabsClient) {
+    const client = await getElevenLabsClient();
+    if (!client) {
       return res.json([]);
     }
 
-    const voices = await elevenLabsClient.getVoices();
+    const voices = await client.getVoices();
     res.json(voices);
   } catch (error) {
     logger.error(`Error fetching voices: ${error}`);

@@ -1,7 +1,7 @@
 {
-  "name": "@prismvid/audio-service",
+  "name": "@videon/audio-service",
   "version": "1.0.0",
-  "description": "PrismVid Audio Separation Service - Demucs-based audio stem separation",
+  "description": "VIDEON Audio Separation Service - Demucs-based audio stem separation",
   "main": "src/api/server.py",
   "scripts": {
     "dev": "python3 -m uvicorn src.api.server:app --host 0.0.0.0 --port 5679 --reload",
@@ -16,9 +16,9 @@
     "demucs",
     "music",
     "vocals",
-    "prismvid"
+    "videon"
   ],
-  "author": "PrismVid Team",
+  "author": "VIDEON Team",
   "license": "MIT",
   "dependencies": {
     "fastapi": "^0.104.1",

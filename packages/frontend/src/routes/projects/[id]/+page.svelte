@@ -8,14 +8,20 @@
   import { getVideoUrl, getCoverImageUrl, getAudioStemUrl, getProjectUrl } from '$lib/config/environment';
   import { showAudioTracks, trackConfigs, updateCurrentTime, audioStemOperations, showAudioStems, audioStemMode, showWaveforms, audioStemClips } from '$lib/stores/timeline.store';
   import { setCurrentProject, canUndo, canRedo, addToHistory } from '$lib/stores/edit-history.store';
-  import UdgGlassVideoPlayerWrapper from '$lib/components/udg-glass-video-player-wrapper.svelte';
-  import UdgGlassVisionTags from '$lib/components/udg-glass-vision-tags.svelte';
+  import MsqdxVideoPlayerWrapper from '$lib/components/msqdx-video-player-wrapper.svelte';
+  import MsqdxVisionTags from '$lib/components/msqdx-vision-tags.svelte';
+  import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
+  import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
   
   // Icons
   import ExportIcon from '@material-icons/svg/svg/file_download/baseline.svg?raw';
   import VideoIcon from '@material-icons/svg/svg/video_file/baseline.svg?raw';
   import CodeIcon from '@material-icons/svg/svg/code/baseline.svg?raw';
   import SubtitleIcon from '@material-icons/svg/svg/subtitles/baseline.svg?raw';
+  import PlayIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
+  import PreviewIcon from '@material-icons/svg/svg/preview/baseline.svg?raw';
+  import SyncIcon from '@material-icons/svg/svg/sync/baseline.svg?raw';
+  import MusicNoteIcon from '@material-icons/svg/svg/music_note/baseline.svg?raw';
   
   let project: Project | null = null;
   let showSearchModal = false;
@@ -937,7 +943,7 @@
               console.log('🎬 Timeline time updated to:', cumulativeTime);
               
               // Force timeline to update by dispatching a custom event
-              const timelineElement = document.querySelector('udg-glass-unified-timeline');
+              const timelineElement = document.querySelector('msqdx-unified-timeline');
               if (timelineElement) {
                 timelineElement.dispatchEvent(new CustomEvent('setTime', { 
                   detail: { time: cumulativeTime } 
@@ -1195,113 +1201,123 @@
     <!-- Project Controls -->
     <div class="mb-4 flex gap-4 flex-wrap">
       <!-- Preview Mode Toggle -->
-      <button 
-        class="glass-button" 
-        class:active={previewMode}
+      <MsqdxButton
+        glass={true}
         on:click={togglePreviewMode}
         disabled={generatingPreview}
+        class="flex items-center gap-2"
       >
         {#if generatingPreview}
-          <div class="icon-18px animate-spin">
-            {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`}
-          </div>
-          Generating...
+          <div class="spinner-small"></div>
+          <MsqdxTypography variant="body2" weight="medium">Generating...</MsqdxTypography>
         {:else if previewMode}
-          <div class="icon-18px">
-            {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`}
-          </div>
-          Scene Mode
+          <div class="icon-18px">{@html PreviewIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">Scene Mode</MsqdxTypography>
         {:else}
-          <div class="icon-18px">
-            {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`}
-          </div>
-          Preview Mode
+          <div class="icon-18px">{@html PreviewIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">Preview Mode</MsqdxTypography>
         {/if}
-      </button>
+      </MsqdxButton>
       
       <!-- Audio Sync Toggle -->
-      <button 
-        class="glass-button" 
-        class:active={isAudioSyncEnabled}
+      <MsqdxButton
+        glass={true}
         on:click={toggleAudioSync}
         title="Toggle Audio Stem Synchronization"
+        class="flex items-center gap-2"
       >
-        <div class="icon-18px">
-          {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`}
-        </div>
-        {isAudioSyncEnabled ? 'Audio Sync ON' : 'Audio Sync OFF'}
-      </button>
+        <div class="icon-18px">{@html SyncIcon}</div>
+        <MsqdxTypography variant="body2" weight="medium">
+          {isAudioSyncEnabled ? 'Audio Sync ON' : 'Audio Sync OFF'}
+        </MsqdxTypography>
+      </MsqdxButton>
       
       <!-- Audio Separation Button -->
       {#if currentVideoId}
-        <button 
-          class="glass-button" 
+        <MsqdxButton
+          glass={true}
           on:click={triggerAudioSeparation}
           disabled={separatingAudio}
+          class="flex items-center gap-2"
         >
           {#if separatingAudio}
-            <div class="icon-18px">
-              {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`}
-            </div>
-            {$currentLocale === 'en' ? 'Separating...' : 'Trenne...'}
+            <div class="spinner-small"></div>
+            <MsqdxTypography variant="body2" weight="medium">
+              {$currentLocale === 'en' ? 'Separating...' : 'Trenne...'}
+            </MsqdxTypography>
           {:else}
-            <div class="icon-18px">
-              {@html `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>`}
-            </div>
-            {$currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen'}
-        {/if}
-      </button>
+            <div class="icon-18px">{@html MusicNoteIcon}</div>
+            <MsqdxTypography variant="body2" weight="medium">
+              {$currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen'}
+            </MsqdxTypography>
+          {/if}
+        </MsqdxButton>
       {/if}
       
       <!-- Export Buttons -->
-      <button
+      <MsqdxButton
+        glass={true}
         on:click={() => handleProjectExport('premiere')}
-        class="glass-button flex items-center gap-2"
         disabled={exporting}
+        class="flex items-center gap-2"
       >
         {#if exporting && currentExportFormat === 'premiere'}
-          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+          <div class="spinner-small"></div>
+          <MsqdxTypography variant="body2" weight="medium">
+            {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+          </MsqdxTypography>
         {:else}
-          <div class="icon-18px text-current">{@html VideoIcon}</div> 
-          {$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}
+          <div class="icon-18px">{@html VideoIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">
+            {$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}
+          </MsqdxTypography>
         {/if}
-      </button>
+      </MsqdxButton>
       
-      <button
+      <MsqdxButton
+        glass={true}
         on:click={() => handleProjectExportXMLOnly()}
-        class="glass-button flex items-center gap-2"
         disabled={exporting}
+        class="flex items-center gap-2"
       >
         {#if exporting && currentExportFormat === null}
-          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+          <div class="spinner-small"></div>
+          <MsqdxTypography variant="body2" weight="medium">
+            {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+          </MsqdxTypography>
         {:else}
-          <div class="icon-18px text-current">{@html CodeIcon}</div> 
-          {$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}
+          <div class="icon-18px">{@html CodeIcon}</div>
+          <MsqdxTypography variant="body2" weight="medium">
+            {$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}
+          </MsqdxTypography>
         {/if}
-      </button>
+      </MsqdxButton>
       
       {#if transcriptionSegments.length > 0}
-        <button
+        <MsqdxButton
+          glass={true}
           on:click={() => handleProjectExport('srt')}
-          class="glass-button flex items-center gap-2"
           disabled={exporting}
+          class="flex items-center gap-2"
         >
           {#if exporting && currentExportFormat === 'srt'}
-            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+            <div class="spinner-small"></div>
+            <MsqdxTypography variant="body2" weight="medium">
+              {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
+            </MsqdxTypography>
           {:else}
-            <div class="icon-18px text-current">{@html SubtitleIcon}</div> 
-            {$currentLocale === 'en' ? 'SRT' : 'SRT'}
+            <div class="icon-18px">{@html SubtitleIcon}</div>
+            <MsqdxTypography variant="body2" weight="medium">
+              {$currentLocale === 'en' ? 'SRT' : 'SRT'}
+            </MsqdxTypography>
           {/if}
-        </button>
+        </MsqdxButton>
       {/if}
     </div>
     
     <!-- Video Player + Timeline Wrapper -->
     {#if currentVideoId || previewMode}
-      <UdgGlassVideoPlayerWrapper
+      <MsqdxVideoPlayerWrapper
         bind:this={videoPlayerWrapper}
         videoSrc={getVideoSource()}
         posterSrc={previewMode ? '' : getCoverImageUrl(currentVideoId!, currentSceneStartTime)}
@@ -1360,8 +1376,31 @@
       gap: 0.5rem;
     }
     
-    .glass-button {
+    :global(.msqdx-button) {
       width: 100%;
+      justify-content: center;
+    }
+
+    .spinner-small {
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--msqdx-color-dark-text-primary);
+      border-top-color: transparent;
+      border-radius: var(--msqdx-radius-full);
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .icon-18px {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
       justify-content: center;
     }
   }

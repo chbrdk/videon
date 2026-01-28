@@ -4,6 +4,8 @@
  */
 
 import dotenv from 'dotenv';
+import { getDatabaseUrl, getStorageConfig } from './storion';
+import { getUnionConfig } from './union';
 
 // Zentrale Konfiguration
 const environment = process.env.NODE_ENV || 'development';
@@ -16,6 +18,7 @@ export interface AppConfig {
   nodeEnv: string;
   database: {
     url: string;
+    useStorion: boolean;
   };
   services: {
     analyzer: {
@@ -26,12 +29,21 @@ export interface AppConfig {
       url: string;
       timeout: number;
     };
+    storion?: {
+      url: string;
+    };
+    union?: {
+      baseUrl: string;
+      enabled: boolean;
+    };
   };
   storage: {
+    type: 'local' | 'storion';
     videos: string;
     keyframes: string;
     audioStems: string;
     thumbnails: string;
+    baseUrl?: string; // For STORION
   };
   security: {
     corsOrigins: string[];
@@ -50,33 +62,54 @@ export interface AppConfig {
   };
 }
 
-const config: AppConfig = {
-  port: parseInt(process.env.PORT || '4001', 10),
-  nodeEnv: environment,
+// Storage config is evaluated at runtime, not build time
+// We'll create a function that returns the config dynamically
+function createConfig(): AppConfig {
+  const storageConfig = getStorageConfig();
   
-  database: {
-    url: process.env.DATABASE_URL || 'file:./dev.db'
-  },
-  
-  services: {
-    analyzer: {
-      url: process.env.ANALYZER_SERVICE_URL || 'http://localhost:8001',
-      timeout: parseInt(process.env.ANALYZER_TIMEOUT || '30000', 10)
+  return {
+    port: parseInt(process.env.PORT || '4001', 10),
+    nodeEnv: environment,
+    
+    database: {
+      url: getDatabaseUrl(),
+      useStorion: process.env.USE_STORION_DB?.toLowerCase() === 'true' || 
+                  (process.env.STORION_DATABASE_URL !== undefined && 
+                   process.env.STORION_DATABASE_URL.toLowerCase().includes('storion'))
     },
-    vision: {
-      url: process.env.VISION_SERVICE_URL || 'http://localhost:8004',
-      timeout: parseInt(process.env.VISION_TIMEOUT || '30000', 10)
-    }
-  },
+    
+    services: {
+      analyzer: {
+        url: process.env.ANALYZER_SERVICE_URL || 'http://localhost:8001',
+        timeout: parseInt(process.env.ANALYZER_TIMEOUT || '30000', 10)
+      },
+      vision: {
+        url: process.env.VISION_SERVICE_URL || 'http://localhost:8004',
+        timeout: parseInt(process.env.VISION_TIMEOUT || '30000', 10)
+      },
+      ...(storageConfig.type === 'storion' && 'baseUrl' in storageConfig ? {
+        storion: {
+          url: storageConfig.baseUrl
+        }
+      } : {}),
+      ...(getUnionConfig().enabled ? {
+        union: {
+          baseUrl: getUnionConfig().baseUrl,
+          enabled: true,
+        }
+      } : {})
+    },
+    
+    storage: {
+      type: storageConfig.type,
+      videos: storageConfig.videos,
+      keyframes: storageConfig.keyframes,
+      audioStems: storageConfig.audioStems,
+      thumbnails: storageConfig.thumbnails,
+      ...(storageConfig.type === 'storion' && 'baseUrl' in storageConfig ? { baseUrl: storageConfig.baseUrl } : {})
+    },
   
-  storage: {
-    videos: process.env.VIDEOS_STORAGE_PATH || './storage/videos',
-    keyframes: process.env.KEYFRAMES_STORAGE_PATH || './storage/keyframes',
-    audioStems: process.env.AUDIO_STEMS_STORAGE_PATH || './storage/audio_stems',
-    thumbnails: process.env.THUMBNAILS_STORAGE_PATH || './storage/thumbnails'
-  },
-  
-  security: {
+    security: {
     corsOrigins: process.env.CORS_ORIGINS?.split(',') || [
       'http://localhost:3002',
       'http://localhost:3000',
@@ -110,7 +143,11 @@ const config: AppConfig = {
       'video/x-matroska'
     ]
   }
-};
+  };
+}
+
+// Create config instance (evaluated at runtime)
+const config = createConfig();
 
 // Validation
 const validateConfig = (config: AppConfig): void => {

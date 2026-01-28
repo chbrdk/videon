@@ -1,17 +1,53 @@
 import OpenAI from 'openai';
 import logger from '../utils/logger';
+import { unionSettingsClient } from './union-settings.client';
 
 export class OpenAIService {
   private client: OpenAI;
+  private apiKey: string | undefined;
 
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      logger.warn('OPENAI_API_KEY is not set. OpenAI features will be disabled.');
-      // Create a dummy client or handle it in methods
+  constructor(apiKey?: string) {
+    // If API key provided, use it directly
+    if (apiKey) {
+      this.apiKey = apiKey;
+      this.client = new OpenAI({ apiKey });
+      return;
     }
-    // Initialize client only if key exists, or handle in methods
-    this.client = apiKey ? new OpenAI({ apiKey }) : (null as any);
+
+    // Otherwise, try to get key from environment (non-throwing)
+    const envKey = process.env.OPENAI_API_KEY;
+    if (envKey) {
+      this.apiKey = envKey;
+      this.client = new OpenAI({ apiKey: envKey });
+    } else {
+      logger.warn('OPENAI_API_KEY is not set. OpenAI features will be disabled until initialized via Union or update.');
+    }
+  }
+
+  /**
+   * Initialize with UNION keys (async)
+   * Call this after service creation to load keys from UNION
+   */
+  async initializeFromUnion(): Promise<void> {
+    try {
+      const keys = await unionSettingsClient.getApiKeys('videon');
+      const unionKey = keys['openai_api_key'];
+
+      if (unionKey && unionKey !== this.apiKey) {
+        // Update API key and recreate client
+        this.apiKey = unionKey;
+        this.client = new OpenAI({ apiKey: unionKey });
+        logger.info('OpenAI client initialized with key from UNION');
+      } else if (unionKey) {
+        logger.debug('OpenAI key from UNION matches environment variable');
+      } else {
+        logger.debug('No OpenAI key found in UNION');
+      }
+    } catch (error: any) {
+      logger.warn('Failed to load OpenAI key from UNION', {
+        error: error.message,
+      });
+    }
   }
 
   async createEmbedding(text: string): Promise<number[]> {

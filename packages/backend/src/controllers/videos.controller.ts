@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { VideoService } from '../services/video.service';
 import { AnalyzerClient } from '../services/analyzer.client';
 import { SaliencyClient } from '../services/saliency.client';
+import { getStorageService } from '../services/storage';
+import config from '../config';
 import logger from '../utils/logger';
 import multer from 'multer';
 import path from 'path';
@@ -50,9 +52,35 @@ export class VideosController {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
+      // Upload to STORION (mandatory when enabled)
+      let storagePath = req.file.filename;
+      let videoPath = path.join(req.file.destination, req.file.filename);
+      
+      if (config.storage.type === 'storion') {
+        const storageService = getStorageService();
+        const storionFileId = await storageService.uploadFile(
+          videoPath,
+          `videos/${req.file.filename}`,
+          'temp' // Will be updated with video.id after creation
+        );
+        storagePath = storionFileId;
+        logger.info('Video uploaded to STORION', {
+          videoId: 'temp',
+          storionFileId,
+          originalPath: videoPath,
+        });
+        
+        // Keep local copy for processing (analyzer services need file access)
+        // The local copy is temporary and can be cleaned up after processing
+      } else {
+        logger.warn('Using local storage (STORION disabled)', {
+          videoPath,
+        });
+      }
+
       // Create video record
       const video = await videoService.createVideo({
-        filename: req.file.filename,
+        filename: storagePath, // Use STORION file ID or local filename
         originalName: req.file.originalname,
         fileSize: req.file.size,
         mimeType: req.file.mimetype,
@@ -64,14 +92,16 @@ export class VideosController {
       logger.info('Video created successfully', { 
         videoId: video.id, 
         filename: video.filename,
-        fileSize: video.fileSize 
+        fileSize: video.fileSize,
+        storageType: config.storage.type,
       });
 
       // Trigger all analyses (async)
       try {
-        // Use environment variable or default to /app/storage/videos (Docker path)
+        // For analysis, we need the local file path (even if stored in STORION)
+        // Analyzer services need direct file access
         const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
-        const videoPath = path.join(videosStoragePath, req.file.filename);
+        const localVideoPath = path.join(videosStoragePath, req.file.filename);
         
         logger.info(`Queueing analyses for video ${video.id}`, { videoPath, filename: req.file.filename });
         
@@ -122,9 +152,34 @@ export class VideosController {
       const file = req.file;
       logger.info(`Uploading video: ${file.originalname} (${file.size} bytes)`);
 
+      // Upload to STORION if enabled
+      let storagePath = file.filename;
+      const localVideoPath = path.join(file.destination, file.filename);
+      
+      if (config.storage.type === 'storion') {
+        try {
+          const storageService = getStorageService();
+          const storionFileId = await storageService.uploadFile(
+            localVideoPath,
+            `videos/${file.filename}`,
+            'temp' // Will be updated with video.id after creation
+          );
+          storagePath = storionFileId;
+          logger.info('Video uploaded to STORION', {
+            storionFileId,
+            originalPath: localVideoPath,
+          });
+        } catch (storionError) {
+          logger.error('STORION upload failed, using local storage', {
+            error: storionError instanceof Error ? storionError.message : String(storionError),
+            fallbackPath: localVideoPath,
+          });
+        }
+      }
+
       // Create video record in database
       const video = await videoService.createVideo({
-        filename: file.filename,
+        filename: storagePath, // Use STORION file ID or local filename
         originalName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
@@ -146,8 +201,8 @@ export class VideosController {
       );
 
           // Trigger all analyses (async)
+          // Note: Analyzer services need local file access, so we keep local copy even if using STORION
           try {
-            // Use environment variable or default to /app/storage/videos (Docker path)
             const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
             const videoPath = path.join(videosStoragePath, file.filename);
             

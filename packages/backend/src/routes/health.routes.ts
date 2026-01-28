@@ -3,12 +3,14 @@ import { AnalyzerClient } from '../services/analyzer.client';
 import { AudioSeparationClient } from '../services/audio-separation.client';
 import { SaliencyClient } from '../services/saliency.client';
 import { VisionClient } from '../services/vision.client';
+import { QwenVLService } from '../services/qwen-vl.service';
 
 const router: any = Router();
 const analyzerClient = new AnalyzerClient();
 const audioSeparationClient = new AudioSeparationClient();
 const saliencyClient = new SaliencyClient();
 const visionClient = new VisionClient();
+const qwenVLService = new QwenVLService();
 
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -44,6 +46,14 @@ router.get('/', async (req: Request, res: Response) => {
       console.log('Vision service not available:', (error as Error).message);
     }
     
+    // Check Qwen VL service health (optional - local MLX service)
+    let qwenVLHealth = false;
+    try {
+      qwenVLHealth = await qwenVLService.isAvailable();
+    } catch (error) {
+      console.log('Qwen VL service not available:', (error as Error).message);
+    }
+    
     const health = {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -54,6 +64,7 @@ router.get('/', async (req: Request, res: Response) => {
         saliency: saliencyHealth ? 'healthy' : 'unavailable',
         audioSeparation: audioSeparationHealth ? 'healthy' : 'unavailable',
         vision: visionHealth ? 'healthy' : 'unavailable',
+        qwenVL: qwenVLHealth ? 'healthy' : 'unavailable',
       },
     };
 
