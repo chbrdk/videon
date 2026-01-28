@@ -103,8 +103,8 @@ services:
   # Analyzer Service
   analyzer:
     build:
-      context: ./packages/analyzer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: packages/analyzer/Dockerfile
     container_name: prismvid-analyzer
     environment:
       PYTHONPATH: /app/src
@@ -130,8 +130,8 @@ services:
   # Saliency Service
   saliency-service:
     build:
-      context: ./packages/saliency-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: packages/saliency-service/Dockerfile
     container_name: prismvid-saliency-service
     environment:
       PYTHONPATH: /app/src

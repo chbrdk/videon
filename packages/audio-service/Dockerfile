@@ -17,7 +17,13 @@ COPY packages/audio-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
+# Copy source code
 COPY packages/audio-service/src/ ./src/
+# Copy shared config
+COPY config/ ./config/
+
+# Set PYTHONPATH to include /app so we can import config
+ENV PYTHONPATH=/app
 
 # Create storage directory
 RUN mkdir -p /app/storage/audio_stems

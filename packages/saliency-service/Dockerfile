@@ -25,9 +25,15 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY src ./src
-COPY tests ./tests
-COPY pytest.ini ./
+# Copy source code
+COPY packages/saliency-service/src ./src
+# Copy shared config
+COPY config/ ./config/
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
+COPY packages/saliency-service/tests ./tests
+COPY packages/saliency-service/pytest.ini ./
 
 # Create storage directories
 RUN mkdir -p storage/saliency storage/models storage/temp

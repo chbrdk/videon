@@ -22,7 +22,13 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY src ./src
+# Copy source code
+COPY packages/analyzer/src ./src
+# Copy shared config
+COPY config/ ./config/
+
+# Set PYTHONPATH
+ENV PYTHONPATH=/app
 
 # Create storage directories
 RUN mkdir -p storage/videos storage/keyframes
