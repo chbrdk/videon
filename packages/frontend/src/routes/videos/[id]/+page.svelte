@@ -71,7 +71,7 @@
         logger.info('Vision data loaded successfully', { videoId: currentVideoId });
         await loadTranscription();
         logger.info('Transcription data loaded successfully', { videoId: currentVideoId });
-        await loadAudioStems();
+        await loadAudioStems(currentVideoId);
         logger.info('Audio stems loaded successfully', { videoId: currentVideoId });
         await loadReframedVideos();
         logger.info('Reframed videos loaded successfully', { videoId: currentVideoId });
@@ -231,7 +231,7 @@
       try {
         const status = await videosApi.getAudioSeparationStatus(currentVideoId);
         if (status.status === 'completed') {
-          await loadAudioStems();
+          await loadAudioStems(currentVideoId);
           return;
         }
         
@@ -381,23 +381,6 @@
     } catch (error) {
       saliencyStatus = null;
       saliencyAnalyzed = false;
-    }
-  }
-
-  async function loadAudioStems() {
-    const currentVideoId = $page.params.id;
-    if (!currentVideoId) return;
-    
-    try {
-      const audioStems = await videosApi.getAudioStems(currentVideoId);
-      if (audioStems && audioStems.length > 0) {
-        showAudioTracks(audioStems);
-        if ($videoScenes && $videoScenes.length > 0) {
-          updateAudioClipsWithScenes($videoScenes);
-        }
-      }
-    } catch (error) {
-      console.error('❌ Failed to load audio stems:', error);
     }
   }
 
