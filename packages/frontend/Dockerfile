@@ -56,11 +56,23 @@ RUN npx svelte-kit sync
 # Debug: Check generated tsconfig
 RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 
-# Debug: Print NODE_OPTIONS to ensure memory limit is applied
-RUN printenv NODE_OPTIONS
+# Debug: Create a shell script to run the build with robust logging
+RUN echo '#!/bin/sh' > debug-build.sh && \
+    echo 'set -e' >> debug-build.sh && \
+    echo 'echo "--- SYSTEM INFO ---"' >> debug-build.sh && \
+    echo 'node -v' >> debug-build.sh && \
+    echo 'npm -v' >> debug-build.sh && \
+    echo 'free -m || echo "free command not available"' >> debug-build.sh && \
+    echo 'echo "--- STARTING BUILD ---"' >> debug-build.sh && \
+    echo 'npm run build > build.output.txt 2>&1 || true' >> debug-build.sh && \
+    echo 'echo "--- BUILD FINISHED ---"' >> debug-build.sh && \
+    echo 'echo "--- LOG CONTENT START ---"' >> debug-build.sh && \
+    echo 'cat build.output.txt' >> debug-build.sh && \
+    echo 'echo "--- LOG CONTENT END ---"' >> debug-build.sh && \
+    echo 'grep -q "Error" build.output.txt && exit 1' >> debug-build.sh && \
+    echo 'grep -q "built in" build.output.txt || exit 1' >> debug-build.sh
 
-# Run build (simple command to ensure logs stream to stdout)
-RUN echo "Starting build process..." && npm run build || { echo "Build failed!"; exit 1; }
+RUN chmod +x debug-build.sh && ./debug-build.sh
 
 # Production stage
 # Production stage
