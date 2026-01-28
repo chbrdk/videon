@@ -28,8 +28,11 @@ ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-# Run build directly to stdout (verbose) and list binaries for debugging
-RUN ls -la node_modules/.bin && npm run build -- --logLevel info
+# Debug: List installed packages to verify vite is present
+RUN npm list --depth=0 || true
+
+# Run build directly using npx to ensure we use the local binary
+RUN npx vite build --logLevel info
 
 # Production stage
 # Production stage
