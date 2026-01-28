@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api } from '$lib/config/environment';
-  import { _ } from '$lib/i18n';
+  import { _, currentLocale, type Locale } from '$lib/i18n';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   let user = {
     name: '',
@@ -94,6 +95,9 @@
       isLoading = false;
     }
   }
+  function setLanguage(lang: Locale) {
+    currentLocale.set(lang);
+  }
 </script>
 
 <div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
@@ -149,6 +153,51 @@
         >
           {isLoading ? _('settings.saving') : _('settings.saveProfile')}
         </button>
+      </div>
+
+      <!-- Language Section -->
+      <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          {$currentLocale === 'en' ? 'App Language' : 'App-Sprache'}
+        </h3>
+
+        <div class="grid grid-cols-2 gap-4">
+          <button
+            on:click={() => setLanguage('de')}
+            class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
+            'de'
+              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
+              : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}"
+          >
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🇩🇪</span>
+              <span class="font-medium text-gray-900 dark:text-white">Deutsch</span>
+            </div>
+            {#if $currentLocale === 'de'}
+              <div class="text-blue-500">
+                <MaterialSymbol name="check_circle" filled />
+              </div>
+            {/if}
+          </button>
+
+          <button
+            on:click={() => setLanguage('en')}
+            class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
+            'en'
+              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
+              : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}"
+          >
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🇺🇸</span>
+              <span class="font-medium text-gray-900 dark:text-white">English</span>
+            </div>
+            {#if $currentLocale === 'en'}
+              <div class="text-blue-500">
+                <MaterialSymbol name="check_circle" filled />
+              </div>
+            {/if}
+          </button>
+        </div>
       </div>
 
       <!-- Password Change Section -->
