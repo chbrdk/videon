@@ -1,3 +1,4 @@
+<script lang="ts">
   import { searchApi, type SearchResult } from '$lib/api/search';
   import { projectsApi } from '$lib/api/projects';
   import { currentLocale, _ } from '$lib/i18n';
