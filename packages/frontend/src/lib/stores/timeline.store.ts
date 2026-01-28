@@ -410,7 +410,7 @@ export const audioStemOperations = {
   loadAudioStems: async (videoId: string) => {
     try {
       console.log('🎵 Loading audio stems for video:', videoId);
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/audio-stems`);
+      const response = await fetch(`${api.baseUrl}/audio-stems/videos/${videoId}/audio-stems`);
 
       if (response.ok) {
         const audioStems = await response.json();
@@ -455,7 +455,7 @@ export const audioStemOperations = {
   loadAudioStemsForProject: async (projectId: string) => {
     try {
       // Zuerst versuche Scene-spezifische Audio-Stems zu laden
-      const response = await fetch(`${api.baseUrl}/projects/${projectId}/audio-stems`);
+      const response = await fetch(`${api.baseUrl}/audio-stems/projects/${projectId}/audio-stems`);
       let audioStems = [];
 
       if (response.ok) {
@@ -479,7 +479,7 @@ export const audioStemOperations = {
 
             for (const videoId of uniqueVideoIds) {
               try {
-                const videoStemsResponse = await fetch(`${api.baseUrl}/videos/${videoId}/audio-stems`);
+                const videoStemsResponse = await fetch(`${api.baseUrl}/audio-stems/videos/${videoId}/audio-stems`);
                 if (videoStemsResponse.ok) {
                   const videoStems = await videoStemsResponse.json();
                   allStems.push(...videoStems);
