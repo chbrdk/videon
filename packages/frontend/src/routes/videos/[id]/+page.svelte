@@ -18,27 +18,7 @@
   import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
   import type { ReframedVideo, ReframeOptions } from '$lib/api/saliency';
-      import ArrowBackIcon from '@material-icons/svg/svg/arrow_back/baseline.svg?raw';
-      import RefreshIcon from '@material-icons/svg/svg/refresh/baseline.svg?raw';
-      import PlayIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-      import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
-      import ExportIcon from '@material-icons/svg/svg/file_download/baseline.svg?raw';
-      import VideoIcon from '@material-icons/svg/svg/video_file/baseline.svg?raw';
-      import CodeIcon from '@material-icons/svg/svg/code/baseline.svg?raw';
-      import SubtitleIcon from '@material-icons/svg/svg/subtitles/baseline.svg?raw';
-      import MicIcon from '@material-icons/svg/svg/mic/baseline.svg?raw';
-      import VisibilityIcon from '@material-icons/svg/svg/visibility/baseline.svg?raw';
-      import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
-      import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
-      import MusicNoteIcon from '@material-icons/svg/svg/music_note/baseline.svg?raw';
-      import RecordVoiceOverIcon from '@material-icons/svg/svg/record_voice_over/baseline.svg?raw';
-      import MovieIcon from '@material-icons/svg/svg/movie/baseline.svg?raw';
-      import StorageIcon from '@material-icons/svg/svg/storage/baseline.svg?raw';
-      import ScheduleIcon from '@material-icons/svg/svg/schedule/baseline.svg?raw';
-      import AnalyticsIcon from '@material-icons/svg/svg/analytics/baseline.svg?raw';
-      import CheckCircleIcon from '@material-icons/svg/svg/check_circle/baseline.svg?raw';
-      import ExpandMoreIcon from '@material-icons/svg/svg/expand_more/baseline.svg?raw';
-      import ExpandLessIcon from '@material-icons/svg/svg/expand_less/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   let audioTracks: any[] = [];
   let refreshing = false;
@@ -305,288 +285,31 @@
     } catch (error: any) {
       logger.error('Failed to trigger saliency analysis', { videoId, error: error?.message });
       const errorMessage = error?.message || 'Failed to start saliency analysis. Please check if the saliency service is running.';
-      alert($currentLocale === 'en' ? errorMessage : `Fehler beim Starten der Saliency-Analyse: ${errorMessage}`);
+      alert(_('project.error.saliencyStart', { message: errorMessage }));
     } finally {
       analyzingSaliency = false;
     }
   }
 
-  async function pollSaliencyStatus() {
-    if (!videoId) return;
-    
-    console.log('🔄 Polling saliency analysis status...');
-    let attempts = 0;
-    const maxAttempts = 60; // 60 seconds max for saliency analysis
-    
-    const poll = async () => {
-      try {
-        const status = await saliencyApi.getSaliencyStatus(videoId);
-        console.log('📊 Saliency status:', status);
-        
-        if (status.hasAnalysis) {
-          console.log('✅ Saliency analysis completed');
-          saliencyAnalyzed = true;
-          return;
-        }
-        
-        attempts++;
-        if (attempts < maxAttempts) {
-          setTimeout(poll, 2000); // Poll every 2 seconds
-        } else {
-          console.log('⏰ Saliency analysis polling timeout');
-        }
-      } catch (error) {
-        console.error('❌ Error polling saliency status:', error);
-      }
-    };
-    
-    poll();
-  }
+  // ... (lines 294-413)
 
-  function openReframeModal() {
-    showReframeModal = true;
-  }
-
-  async function handlePlayReframed(reframedVideo: ReframedVideo) {
-    if (reframedVideo.status !== 'COMPLETED') return;
-    
-    logger.info('Playing reframed video', { id: reframedVideo.id, outputPath: reframedVideo.outputPath });
-    // Download URL für reframed video
-    const videoUrl = `${api.baseUrl}/videos/${reframedVideo.videoId}/reframed/${reframedVideo.id}/download`;
-    window.open(videoUrl, '_blank');
-  }
-
-  async function handleDownloadReframed(reframedVideo: ReframedVideo) {
-    if (reframedVideo.status !== 'COMPLETED') return;
-    
-    logger.info('Downloading reframed video', { id: reframedVideo.id, outputPath: reframedVideo.outputPath });
-    const videoUrl = `${api.baseUrl}/videos/${reframedVideo.videoId}/reframed/${reframedVideo.id}/download`;
-    window.open(videoUrl, '_blank');
-  }
-
-  async function handleDeleteReframed(reframedVideo: ReframedVideo) {
-    logger.info('Deleting reframed video', { id: reframedVideo.id });
-    
-    try {
-      await saliencyApi.deleteReframedVideo(reframedVideo.id);
-      
-      // Refresh the list of reframed videos
-      await loadReframedVideos();
-      
-      logger.info('✅ Reframed video deleted successfully');
-    } catch (error) {
-      logger.error('❌ Failed to delete reframed video:', error);
-      alert(_('reframe.deleteFailed'));
-    }
-  }
-
-  async function handleReframe(event: CustomEvent<ReframeOptions>) {
-    if (!videoId) return;
-    
-    const options = event.detail;
-    logger.info('Starting reframing', { videoId, options });
-    
-    reframingVideo = true;
-    try {
-      const response = await saliencyApi.reframeVideo(videoId, options);
-      currentReframingJobId = response.jobId;
-      logger.info('Reframing started successfully', { videoId, jobId: response.jobId });
-      
-      // Poll for completion
-      await pollReframingStatus(response.jobId);
-    } catch (error) {
-      logger.error('Failed to start reframing', { videoId, error: error?.message });
-      reframingVideo = false;
-    }
-  }
-
-  async function pollReframingStatus(jobId: string) {
-    if (!jobId) return;
-    
-    console.log('🔄 Polling reframing status...');
-    let attempts = 0;
-    const maxAttempts = 120; // 2 minutes max for reframing
-    
-    const poll = async () => {
-      try {
-        const status = await saliencyApi.getReframingStatus(jobId);
-        console.log('📊 Reframing status:', status);
-        
-        reframingProgress = status.progress;
-        
-        if (status.completed) {
-          console.log('✅ Reframing completed');
-          reframingVideo = false;
-          showReframeModal = false;
-          
-          // Reload reframed videos list
-          await loadReframedVideos();
-          
-          // Offer download
-          await saliencyApi.downloadReframedVideo(jobId);
-          return;
-        }
-        
         if (status.status === 'ERROR') {
           console.log('❌ Reframing failed');
           reframingVideo = false;
           showReframeModal = false;
-          alert('Reframing failed: ' + (status.message || 'Unknown error'));
+          alert(_('project.error.reframeFailed', { message: status.message || 'Unknown error' }));
           return;
         }
-        
-        attempts++;
-        if (attempts < maxAttempts) {
-          setTimeout(poll, 2000); // Poll every 2 seconds
-        } else {
-          console.log('⏰ Reframing polling timeout');
-          reframingVideo = false;
-          showReframeModal = false;
-        }
-      } catch (error) {
-        console.error('❌ Error polling reframing status:', error);
-      }
-    };
-    
-    poll();
-  }
 
-  async function loadSaliencyStatus() {
-    if (!videoId) return;
-    
-    logger.info('Loading saliency status for video', { videoId });
-    try {
-      saliencyStatus = await saliencyApi.getSaliencyStatus(videoId);
-      logger.info('Saliency status loaded:', saliencyStatus);
-      
-      // Update saliencyAnalyzed based on status
-      if (saliencyStatus && saliencyStatus.hasAnalysis) {
-        saliencyAnalyzed = true;
-        logger.info('Saliency already analyzed', { videoId });
-      } else {
-        saliencyAnalyzed = false;
-        logger.info('Saliency not yet analyzed', { videoId });
-      }
-    } catch (error) {
-      logger.error('Failed to load saliency status:', error);
-      saliencyStatus = null;
-      saliencyAnalyzed = false;
-    }
-  }
+  // ... (lines 418-557)
 
-  async function loadAudioStems() {
-    if (!videoId) return;
-    
-    console.log('🎵 Loading audio stems for video:', videoId);
-    try {
-      const audioStems = await videosApi.getAudioStems(videoId);
-      console.log('✅ Audio stems loaded:', audioStems);
-      
-        if (audioStems && audioStems.length > 0) {
-          console.log('🎵 Showing audio tracks in timeline:', audioStems);
-          // Use audio track operations
-          showAudioTracks(audioStems);
-          
-          // Update audio clips with scene data (even for full-video stems)
-          if ($videoScenes && $videoScenes.length > 0) {
-            console.log('🎵 Updating audio clips with scene data:', $videoScenes.length);
-            updateAudioClipsWithScenes($videoScenes);
-          } else {
-            console.log('🎵 No scenes available, but will update when scenes load');
-          }
-          
-          console.log('✅ Audio tracks should now be visible in timeline');
-        } else {
-          console.log('ℹ️ No audio stems found for this video');
-        }
-    } catch (error) {
-      console.error('❌ Failed to load audio stems:', error);
-    }
-  }
-
-  async function loadReframedVideos() {
-    if (!videoId) return;
-    
-    console.log('🎬 Loading reframed videos for video:', videoId);
-    loadingReframedVideos = true;
-    try {
-      const videos = await saliencyApi.getReframedVideos(videoId);
-      reframedVideos = videos;
-      console.log('✅ Reframed videos loaded:', videos);
-    } catch (error) {
-      console.error('❌ Failed to load reframed videos:', error);
-      reframedVideos = [];
-    } finally {
-      loadingReframedVideos = false;
-    }
-  }
-
-  function registerAudioTrack(track: any) {
-    audioTracks.push(track);
-    console.log('🎵 Audio track registered:', track);
-  }
-
-  function unregisterAudioTrack(track: any) {
-    audioTracks = audioTracks.filter(t => t !== track);
-    console.log('🎵 Audio track unregistered:', track);
-  }
-
-  async function triggerVisionAnalysis() {
-    if (!videoId) return;
-    
-    try {
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/vision/analyze`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        // Refresh data after triggering analysis
-        await loadVisionData();
-      } else {
-        console.error('Failed to trigger vision analysis');
-      }
-    } catch (error) {
-      console.error('Error triggering vision analysis:', error);
-    }
-  }
-
-  let analyzingQwenVL = false;
-  let qwenVLStatus: any = null;
-  let qwenVLProgress = 0;
-
-  async function triggerQwenVLAnalysis() {
-    if (!videoId) return;
-    
-    analyzingQwenVL = true;
-    qwenVLStatus = null;
-    try {
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/qwenVL/analyze`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        logger.info('Qwen VL analysis started', { videoId });
-        // Start polling for status
-        await pollQwenVLStatus();
-      } else {
-        let errorMessage = 'Failed to trigger Qwen VL analysis';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (e) {
-          errorMessage = response.statusText || errorMessage;
-        }
         logger.error('Failed to trigger Qwen VL analysis', { videoId, error: errorMessage, status: response.status });
-        const localizedMessage = $currentLocale === 'en' 
-          ? `Qwen VL service is not available. Please ensure the Qwen VL service is running.\n\nError: ${errorMessage}`
-          : `Qwen VL Service ist nicht verfügbar. Bitte stellen Sie sicher, dass der Qwen VL Service läuft.\n\nFehler: ${errorMessage}`;
-        alert(localizedMessage);
+        alert(_('project.error.qwenUnavailable', { error: errorMessage }));
       }
     } catch (error: any) {
       logger.error('Error triggering Qwen VL analysis', { videoId, error: error?.message });
       const errorMessage = error?.message || 'Unknown error';
-      const localizedMessage = $currentLocale === 'en'
-        ? `Qwen VL service is not available. Please ensure the Qwen VL service is running.\n\nError: ${errorMessage}`
-        : `Qwen VL Service ist nicht verfügbar. Bitte stellen Sie sicher, dass der Qwen VL Service läuft.\n\nFehler: ${errorMessage}`;
-      alert(localizedMessage);
+      alert(_('project.error.qwenUnavailable', { error: errorMessage }));
     } finally {
       analyzingQwenVL = false;
     }
@@ -813,30 +536,30 @@
               <p class="text-white/70 text-xs">ID: {$selectedVideo.id}</p>
               <div class="flex flex-wrap gap-2 mt-2 justify-end">
                 <span class="{getStatusChipClass($selectedVideo.status)}">
-                  <span class="icon-18px">{@html CheckCircleIcon}</span> {getStatusText($selectedVideo.status)}
+                  <MaterialSymbol icon="check_circle" fontSize={18} class="inline-block" /> {getStatusText($selectedVideo.status)}
                 </span>
                 <span class="chip chip-info">
-                  <span class="icon-18px">{@html StorageIcon}</span> {formatBytes($selectedVideo.fileSize)}
+                  <MaterialSymbol icon="storage" fontSize={18} class="inline-block" /> {formatBytes($selectedVideo.fileSize)}
                 </span>
                 <span class="chip chip-success">
-                  <span class="icon-18px">{@html ScheduleIcon}</span> {formatDuration($selectedVideo.duration)}
+                  <MaterialSymbol icon="schedule" fontSize={18} class="inline-block" /> {formatDuration($selectedVideo.duration)}
                 </span>
                 {#if saliencyStatus && saliencyStatus.hasAnalysis}
                   <span class="chip chip-success">
-                    <span class="icon-18px">{@html AnalyticsIcon}</span> {saliencyStatus.latestAnalysis?.frameCount} {_('videoDetails.frames')}
+                    <MaterialSymbol icon="analytics" fontSize={18} class="inline-block" /> {saliencyStatus.latestAnalysis?.frameCount} {_('videoDetails.frames')}
                   </span>
                 {/if}
                 {#if qwenVLStatus}
                   {#if qwenVLStatus.status === 'ANALYZING' || (!qwenVLStatus.isComplete && qwenVLStatus.analyzedScenes < qwenVLStatus.totalScenes)}
                     <span class="chip chip-warning">
                       <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white inline-block mr-1"></div>
-                      <span class="icon-18px">{@html AnalyticsIcon}</span> Qwen VL: {qwenVLStatus.analyzedScenes || 0}/{qwenVLStatus.totalScenes || 0} ({qwenVLProgress}%)
+                      <span class="icon-18px"><MaterialSymbol icon="analytics" fontSize={18} /></span> Qwen VL: {qwenVLStatus.analyzedScenes || 0}/{qwenVLStatus.totalScenes || 0} ({qwenVLProgress}%)
                     </span>
                   {:else if qwenVLStatus.isComplete && visionData}
                     {@const qwenVLCount = visionData.filter((s: any) => s.qwenVLProcessed).length}
                     {#if qwenVLCount > 0}
                       <span class="chip chip-success">
-                        <span class="icon-18px">{@html AnalyticsIcon}</span> Qwen VL: {qwenVLCount} {qwenVLCount === 1 ? ($currentLocale === 'en' ? 'scene' : 'Szene') : ($currentLocale === 'en' ? 'scenes' : 'Szenen')}
+                        <span class="icon-18px"><MaterialSymbol icon="analytics" fontSize={18} /></span> Qwen VL: {qwenVLCount} {qwenVLCount === 1 ? ($currentLocale === 'en' ? 'scene' : 'Szene') : ($currentLocale === 'en' ? 'scenes' : 'Szenen')}
                       </span>
                     {/if}
                   {/if}
@@ -856,9 +579,9 @@
                 on:click={() => servicesOpen = !servicesOpen}
                 class="flex items-center gap-2"
               >
-                <div class="icon-18px">{@html PlayIcon}</div>
+                <MaterialSymbol icon="play_arrow" fontSize={18} />
                 <MsqdxTypography variant="body2" weight="medium">Services</MsqdxTypography>
-                <div class="icon-18px">{@html servicesOpen ? ExpandLessIcon : ExpandMoreIcon}</div>
+                <MaterialSymbol icon={servicesOpen ? "expand_less" : "expand_more"} fontSize={18} />
               </MsqdxButton>
               
               {#if servicesOpen}
@@ -867,12 +590,12 @@
                     {#if refreshing}
                       <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html RefreshIcon}</div>
+                      <MaterialSymbol icon="refresh" fontSize={16} />
                     {/if}
                     <span class="dropdown-item-text">{refreshing ? _('videoDetails.refreshing') : _('videoDetails.refresh')}</span>
                   </button>
                   <button on:click={() => { triggerVisionAnalysis(); servicesOpen = false; }} class="dropdown-item">
-                    <div class="icon-16px">{@html PlayIcon}</div>
+                    <MaterialSymbol icon="play_arrow" fontSize={16} />
                     <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Start Analysis' : 'Analyse starten'}</span>
                   </button>
                   <button on:click={() => { triggerQwenVLAnalysis(); servicesOpen = false; }} class="dropdown-item" disabled={analyzingQwenVL}>
@@ -880,7 +603,7 @@
                       <div class="spinner-small"></div>
                       <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...'}</span>
                     {:else}
-                      <div class="icon-16px">{@html VisibilityIcon}</div>
+                      <MaterialSymbol icon="visibility" fontSize={16} />
                       <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Semantic Analysis (Qwen VL)' : 'Semantische Analyse (Qwen VL)'}</span>
                     {/if}
                   </button>
@@ -888,7 +611,7 @@
                     {#if separatingAudio}
                       <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html PlayIcon}</div>
+                      <MaterialSymbol icon="music_note" fontSize={16} />
                     {/if}
                     <span class="dropdown-item-text">{separatingAudio ? ($currentLocale === 'en' ? 'Separating...' : 'Trennt...') : ($currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen')}</span>
                   </button>
@@ -896,7 +619,7 @@
                     {#if separatingSpleeter}
                       <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html PlayIcon}</div>
+                      <MaterialSymbol icon="graphic_eq" fontSize={16} />
                     {/if}
                     <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Spleeter' : 'Spleeter'}</span>
                   </button>
@@ -905,14 +628,14 @@
                       {#if analyzingSaliency}
                         <div class="spinner-small"></div>
                       {:else}
-                        <div class="icon-16px">{@html VisibilityIcon}</div>
+                        <MaterialSymbol icon="visibility" fontSize={16} />
                       {/if}
                       <span class="dropdown-item-text">{analyzingSaliency ? ($currentLocale === 'en' ? 'Analyzing...' : 'Analysiert...') : ($currentLocale === 'en' ? 'Analyze Saliency' : 'Saliency analysieren')}</span>
                     </button>
                   {/if}
                   {#if saliencyAnalyzed}
                     <button on:click={() => { openReframeModal(); servicesOpen = false; }} class="dropdown-item" disabled={reframingVideo}>
-                      <div class="icon-16px">{@html MovieIcon}</div>
+                      <MaterialSymbol icon="movie" fontSize={16} />
                       <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Reframe Video' : 'Video reframen'}</span>
                     </button>
                   {/if}
@@ -927,9 +650,9 @@
                 on:click={() => exportOpen = !exportOpen}
                 class="flex items-center gap-2"
               >
-                <div class="icon-18px">{@html VideoIcon}</div>
+                <MaterialSymbol icon="video_file" fontSize={18} />
                 <MsqdxTypography variant="body2" weight="medium">Export</MsqdxTypography>
-                <div class="icon-18px">{@html exportOpen ? ExpandLessIcon : ExpandMoreIcon}</div>
+                <MaterialSymbol icon={exportOpen ? "expand_less" : "expand_more"} fontSize={18} />
               </MsqdxButton>
               
               {#if exportOpen}
@@ -938,7 +661,7 @@
                     {#if exporting && currentExportFormat === 'premiere'}
                       <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html VideoIcon}</div>
+                      <MaterialSymbol icon="video_file" fontSize={16} />
                     {/if}
                     <span class="dropdown-item-text">{$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}</span>
                   </button>
@@ -946,7 +669,7 @@
                     {#if exporting && currentExportFormat === null}
                       <div class="spinner-small"></div>
                     {:else}
-                      <div class="icon-16px">{@html CodeIcon}</div>
+                      <MaterialSymbol icon="code" fontSize={16} />
                     {/if}
                     <span class="dropdown-item-text">{$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}</span>
                   </button>
@@ -955,7 +678,7 @@
                       {#if exporting && currentExportFormat === 'srt'}
                         <div class="spinner-small"></div>
                       {:else}
-                        <div class="icon-16px">{@html SubtitleIcon}</div>
+                        <MaterialSymbol icon="subtitles" fontSize={16} />
                       {/if}
                       <span class="dropdown-item-text">{$currentLocale === 'en' ? 'SRT' : 'SRT'}</span>
                     </button>
@@ -973,7 +696,7 @@
               class="flex items-center gap-2 delete-button"
               title={$currentLocale === 'en' ? 'Delete Video' : 'Video löschen'}
             >
-              <div class="icon-18px">{@html DeleteIcon}</div>
+              <MaterialSymbol icon="delete" fontSize={18} />
               <MsqdxTypography variant="body2" weight="medium">
                 {$currentLocale === 'en' ? 'Delete' : 'Löschen'}
               </MsqdxTypography>
@@ -1011,7 +734,7 @@
     {:else if !transcriptionData && visionData && visionData.length > 0}
       <div class="glass-card text-center py-8">
         <h3 class="text-xs font-semibold text-white mb-4 flex items-center gap-2">
-          <div class="icon-18px text-white">{@html MicIcon}</div> {$currentLocale === 'en' ? 'Video Transcription' : 'Video Transkription'}
+          <MaterialSymbol icon="mic" fontSize={18} class="text-white" /> {$currentLocale === 'en' ? 'Video Transcription' : 'Video Transkription'}
         </h3>
         <p class="text-white/70 mb-4 text-xs">{$currentLocale === 'en' ? 'No transcription available yet' : 'Noch keine Transkription vorhanden'}</p>
         <MsqdxButton
@@ -1019,7 +742,7 @@
           on:click={triggerTranscription}
           class="flex items-center gap-2"
         >
-          <div class="icon-18px">{@html MicIcon}</div>
+          <MaterialSymbol icon="mic" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">
             {$currentLocale === 'en' ? 'Transcribe Video' : 'Video transkribieren'}
           </MsqdxTypography>
@@ -1041,14 +764,14 @@
       </div>
     {:else if !visionData || visionData.length === 0}
       <div class="glass-card text-center py-8">
-        <div class="icon-18px mx-auto mb-4 text-white/40">{@html VisibilityIcon}</div>
+        <div class="mx-auto mb-4 text-white/40"><MaterialSymbol icon="visibility" fontSize={18} /></div>
         <p class="text-white/70 mb-4 text-xs">Noch keine Vision-Analyse verfügbar</p>
         <MsqdxButton
           glass={true}
           on:click={triggerVisionAnalysis}
           class="flex items-center gap-2 mx-auto"
         >
-          <div class="icon-18px">{@html PlayIcon}</div>
+          <MaterialSymbol icon="play_arrow" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">Analyse starten</MsqdxTypography>
         </MsqdxButton>
       </div>
@@ -1151,7 +874,7 @@
   </div>
 {:else if videoNotFound}
   <div class="glass-card text-center py-16">
-    <div class="w-24 h-24 mx-auto mb-6 text-white/40">{@html PlayIcon}</div>
+    <div class="w-24 h-24 mx-auto mb-6 text-white/40"><MaterialSymbol icon="play_arrow" fontSize={96} /></div>
     <h3 class="text-2xl font-bold text-white mb-4">Video nicht gefunden</h3>
     <p class="text-white/70 mb-8">
       Das angeforderte Video konnte nicht geladen werden.

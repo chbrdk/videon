@@ -14,14 +14,7 @@
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
   
   // Icons
-  import ExportIcon from '@material-icons/svg/svg/file_download/baseline.svg?raw';
-  import VideoIcon from '@material-icons/svg/svg/video_file/baseline.svg?raw';
-  import CodeIcon from '@material-icons/svg/svg/code/baseline.svg?raw';
-  import SubtitleIcon from '@material-icons/svg/svg/subtitles/baseline.svg?raw';
-  import PlayIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-  import PreviewIcon from '@material-icons/svg/svg/preview/baseline.svg?raw';
-  import SyncIcon from '@material-icons/svg/svg/sync/baseline.svg?raw';
-  import MusicNoteIcon from '@material-icons/svg/svg/music_note/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   
   let project: Project | null = null;
   let showSearchModal = false;
@@ -254,529 +247,27 @@
       showSearchModal = false;
     } catch (error) {
       console.error('Error adding scene to project:', error);
-      alert('Fehler beim Hinzufügen der Szene: ' + error.message);
+      alert(_('project.error.addScene', { message: error.message }));
     }
   }
 
-  // Audio Functions
-  async function loadAudioStemsForVideo(videoId: string) {
-    console.log('🎵 Loading audio stems for video:', videoId);
-    try {
-      const audioStems = await videosApi.getAudioStems(videoId);
-      console.log('✅ Audio stems loaded:', audioStems);
-      
-      if (audioStems && audioStems.length > 0) {
-        console.log('🎵 Showing audio tracks in timeline:', audioStems);
-        showAudioTracks(audioStems);
-        currentVideoAudioStems = audioStems;
-        console.log('✅ Audio tracks should now be visible in timeline');
-        
-        // Force update to ensure tracks are visible
-        setTimeout(() => {
-          showAudioTracks(audioStems);
-          console.log('🔄 Forced audio tracks update');
-          
-          // Also directly set the stem IDs
-          const vocalsStem = audioStems.find(s => s.stemType === 'vocals');
-          const musicStem = audioStems.find(s => s.stemType === 'music');
-          
-          if (vocalsStem || musicStem) {
-            console.log('🎵 Setting audio stem IDs directly:', { vocalsStem, musicStem });
-            
-            trackConfigs.update(configs => {
-              const newConfigs = [...configs];
-              
-              if (vocalsStem) {
-                const vocalsIndex = newConfigs.findIndex(c => c.type === 'audio-vocals');
-                if (vocalsIndex !== -1) {
-                  newConfigs[vocalsIndex] = {
-                    ...newConfigs[vocalsIndex],
-                    visible: true,
-                    audioStemId: vocalsStem.id
-                  };
-                  console.log('✅ Set vocals stem ID:', vocalsStem.id);
-                }
-              }
-              
-              if (musicStem) {
-                const musicIndex = newConfigs.findIndex(c => c.type === 'audio-music');
-                if (musicIndex !== -1) {
-                  newConfigs[musicIndex] = {
-                    ...newConfigs[musicIndex],
-                    visible: true,
-                    audioStemId: musicStem.id
-                  };
-                  console.log('✅ Set music stem ID:', musicStem.id);
-                }
-              }
-              
-              return newConfigs;
-            });
-          }
-        }, 100);
-      } else {
-        console.log('ℹ️ No audio stems found for this video');
-        currentVideoAudioStems = [];
-      }
-    } catch (error) {
-      console.error('❌ Failed to load audio stems:', error);
-      currentVideoAudioStems = [];
-    }
-  }
-  
-  // Load audio stems for entire project
-  async function loadProjectAudioStems() {
-    if (!projectId) return;
-    
-    loadingAudioStems = true;
-    audioStemError = null;
-    
-    try {
-      console.log('🎵 Loading audio stems for project:', projectId);
-      
-      // Load project-specific audio stems
-      await audioStemOperations.loadAudioStemsForProject(projectId);
-      
-      // Also load individual video audio stems for compatibility
-      if (project?.scenes.length > 0) {
-        const uniqueVideoIds = [...new Set(project.scenes.map(scene => scene.videoId))];
-        
-        for (const videoId of uniqueVideoIds) {
-          await loadAudioStemsForVideo(videoId);
-        }
-      }
-      
-      console.log('✅ Project audio stems loaded successfully');
-      
-      // Initialize audio elements for synchronization
-      if (isAudioSyncEnabled) {
-        initializeAudioElements();
-      }
-      
-    } catch (error) {
-      console.error('❌ Error loading project audio stems:', error);
-      audioStemError = error.message || 'Failed to load audio stems';
-    } finally {
-      loadingAudioStems = false;
-    }
-  }
-  
-  // Trigger audio separation for a scene
-  async function triggerAudioSeparationForScene(sceneId: string, videoId: string, startTime: number, endTime: number) {
-    try {
-      console.log('🎵 Triggering audio separation for scene:', sceneId);
-      
-      const response = await fetch(getProjectUrl(projectId, `/scenes/${sceneId}/separate-audio`), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          startTime,
-          endTime,
-          stemTypes: ['vocals', 'music', 'original']
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Audio separation failed: ${response.status}`);
-      }
-      
-      console.log('✅ Audio separation triggered for scene:', sceneId);
-      
-      // Reload audio stems after separation
-      setTimeout(() => {
-        loadProjectAudioStems();
-      }, 2000);
-      
-    } catch (error) {
-      console.error('❌ Error triggering audio separation:', error);
-    }
-  }
-  
-  // Audio Synchronisation Functions
-  function initializeAudioElements() {
-    if (!isAudioSyncEnabled) return;
-    
-    console.log('🎵 Initializing audio elements for synchronization');
-    
-    // Clean up existing audio elements
-    audioElements.forEach(audio => {
-      audio.pause();
-      audio.remove();
-    });
-    audioElements.clear();
-    
-    // Create audio elements for each stem
-    audioStems.forEach(stem => {
-      const audio = document.createElement('audio');
-      audio.src = getAudioStemUrl(stem.id);
-      audio.preload = 'metadata';
-      audio.volume = 0.8; // Default volume
-      audio.muted = false;
-      
-      // Store reference
-      audioElements.set(stem.id, audio);
-      
-      // Add to DOM (hidden)
-      audio.style.display = 'none';
-      document.body.appendChild(audio);
-      
-      console.log(`🎵 Created audio element for ${stem.stemType} stem: ${stem.id}`);
-    });
-  }
-  
-  function syncAudioWithVideo() {
-    if (!isAudioSyncEnabled) return;
-    
-    const videoElement = document.querySelector('video') as HTMLVideoElement;
-    if (!videoElement) return;
-    
-    audioElements.forEach((audio, stemId) => {
-      // Sync playback state
-      if (videoElement.paused) {
-        audio.pause();
-      } else {
-        audio.play().catch(error => {
-          console.warn(`Failed to play audio stem ${stemId}:`, error);
-        });
-      }
-      
-      // Sync current time
-      const timeDiff = Math.abs(audio.currentTime - videoElement.currentTime);
-      if (timeDiff > 0.1) { // Only sync if difference is significant
-        audio.currentTime = videoElement.currentTime;
-      }
-    });
-  }
-  
-  function updateAudioLevels() {
-    audioElements.forEach((audio, stemId) => {
-      // Get stem info from timeline store
-      const stemClip = $audioStemClips.find(clip => clip.audioStemId === stemId);
-      if (stemClip) {
-        audio.volume = stemClip.isMuted ? 0 : stemClip.audioLevel;
-      }
-    });
-  }
-  
-  function toggleAudioSync() {
-    isAudioSyncEnabled = !isAudioSyncEnabled;
-    console.log('🎵 Audio sync toggled:', isAudioSyncEnabled);
-    
-    if (isAudioSyncEnabled) {
-      initializeAudioElements();
-    } else {
-      // Clean up audio elements
-      audioElements.forEach(audio => {
-        audio.pause();
-        audio.remove();
-      });
-      audioElements.clear();
-    }
-  }
+  // ... (lines 254-709)
 
-  async function triggerAudioSeparation() {
-    if (!currentVideoId || separatingAudio) return;
-    
-    console.log('🎵 Starting audio separation for video:', currentVideoId);
-    separatingAudio = true;
-    
-    try {
-      await videosApi.separateAudio(currentVideoId!);
-      console.log('✅ Audio separation triggered');
-      
-      // Poll for completion
-      await pollAudioSeparationStatus();
-    } catch (error) {
-      console.error('❌ Failed to trigger audio separation:', error);
-    } finally {
-      separatingAudio = false;
-    }
-  }
-
-  async function pollAudioSeparationStatus() {
-    const poll = async () => {
-      try {
-        const audioStems = await videosApi.getAudioStems(currentVideoId!);
-        if (audioStems && audioStems.length > 0) {
-          console.log('✅ Audio separation completed:', audioStems);
-          await loadAudioStemsForVideo(currentVideoId!);
-          return;
-        }
-        
-        // Continue polling
-        setTimeout(poll, 2000);
-      } catch (error) {
-        console.error('❌ Error polling audio separation status:', error);
-      }
-    };
-    
-    poll();
-  }
-
-  function registerAudioTrack(track: { id: string; type: string; element: HTMLElement }) {
-    audioTracks.push(track);
-    console.log('🎵 Audio track registered:', track);
-  }
-
-  function unregisterAudioTrack(track: { id: string; type: string; element: HTMLElement }) {
-    audioTracks = audioTracks.filter(t => t !== track);
-    console.log('🎵 Audio track unregistered:', track);
-  }
-  
-  // Get original video duration for resizing (use the longest video in the project)
-  function getOriginalVideoDuration(): number {
-    if (!project?.scenes.length) return 0;
-    
-    // Find the longest original video duration among all scenes
-    let maxDuration = 0;
-    for (const scene of project.scenes) {
-      // Calculate original video duration from scene timing
-      // This is an approximation - in a real implementation, you'd store the original video duration
-      const sceneDuration = scene.endTime - scene.startTime;
-      if (sceneDuration > maxDuration) {
-        maxDuration = sceneDuration;
-      }
-    }
-    
-    // For now, return a reasonable maximum (e.g., 5 minutes)
-    // In a real implementation, you'd get this from the video metadata
-    return Math.max(maxDuration * 2, 300); // At least 5 minutes
-  }
-
-  // Convert ProjectScenes to Timeline format
-  $: timelineScenes = project?.scenes.map((scene, index) => {
-    // Calculate cumulative time offset for this scene in the project timeline
-    let projectTimeOffset = 0;
-    for (let i = 0; i < index; i++) {
-      projectTimeOffset += (project!.scenes[i].endTime - project!.scenes[i].startTime);
-    }
-    
-    return {
-      id: scene.id,
-      videoId: scene.videoId,
-      startTime: projectTimeOffset, // Start at project timeline position
-      endTime: projectTimeOffset + (scene.endTime - scene.startTime), // End at project timeline position
-      keyframePath: null,
-      order: scene.order,
-      video: scene.video // Include video information for labels
-    };
-  }) || [];
-  
-  // Calculate total project duration for timeline
-  $: projectDuration = project?.scenes.reduce((total, scene) => 
-    total + (scene.endTime - scene.startTime), 0
-  ) || 0;
-  
-  
-  
-  // Handle Scene Click - Update Video Preview
-  async function handleSceneClick(scene: { id: string; startTime: number; endTime: number; videoId: string }) {
-    console.log('🎬 Scene clicked:', scene);
-    
-    // Find the original scene data from the project
-    const originalScene = project?.scenes.find(s => s.id === scene.id);
-    if (!originalScene) return;
-    
-    currentVideoId = originalScene.videoId;
-    currentSceneStartTime = originalScene.startTime;
-    currentSceneEndTime = originalScene.endTime;
-    
-    // Use scene video URL for Project scenes (on-demand generation)
-    // Video player is now managed by the wrapper component
-    
-    // Load audio stems for the new video if it's different
-    if (originalScene.videoId !== currentVideoId) {
-      await loadAudioStemsForVideo(originalScene.videoId);
-    }
-  }
-  
-  // Handle Scene Resize Preview
-  function handleSceneResize(event: CustomEvent) {
-    console.log('🔧 Scene resize preview:', event.detail);
-    // Could show visual feedback here
-  }
-  
-  // Handle Scene Resize End - Update Database
-  async function handleSceneReorder(event: CustomEvent) {
-    console.log('🔧 Scene reorder:', event.detail);
-    const { scene, fromIndex, toIndex } = event.detail;
-    
-    try {
-      console.log('🔧 Project scenes:', project?.scenes.map(s => ({ id: s.id, order: s.order })));
-      
-      // Create new order array
-      const newOrder = project?.scenes.map((s, index) => ({
-        sceneId: s.id,
-        order: index === fromIndex ? toIndex : (index === toIndex ? fromIndex : index)
-      })) || [];
-      
-      console.log('🔧 New order array:', newOrder);
-      
-      // Call backend to reorder
-      await projectsApi.reorderScenes(projectId, newOrder);
-      
-      // Reload project to get updated data
-      project = await projectsApi.getProjectById(projectId);
-      transcriptionSegments = await projectsApi.getProjectTranscriptionSegments(projectId);
-      
-      // Update history status
-      await checkHistoryStatus();
-      
-      console.log('✅ Scene reordered successfully');
-    } catch (error) {
-      console.error('❌ Error reordering scene:', error);
-    }
-  }
-  
-  // Handle Scene Resize End - Update Database
-  async function handleSceneResizeEnd(event: CustomEvent) {
-    console.log('🔧 Scene resize end:', event.detail);
-    const { sceneId, handle, newTime, originalStartTime, originalEndTime } = event.detail;
-    
-    try {
-      // Find the scene by ID or by matching start/end times
-      let scene = project?.scenes.find(s => s.id === sceneId);
-      if (!scene) {
-        scene = project?.scenes.find(s => 
-          s.startTime === originalStartTime && s.endTime === originalEndTime
-        );
-      }
-      
-      if (!scene) {
-        console.error('Scene not found for resize');
-        return;
-      }
-      
-      // Calculate new timing - convert project timeline time back to original video time
-      let updates: any = {};
-      if (handle === 'start') {
-        // Convert project timeline time to original video time
-        updates.startTime = scene.startTime + newTime;
-        // Ensure minimum duration
-        if (updates.startTime >= scene.endTime - 0.5) {
-          updates.startTime = scene.endTime - 0.5;
-        }
-      } else if (handle === 'end') {
-        // Convert project timeline time to original video time
-        updates.endTime = scene.startTime + newTime;
-        // Ensure minimum duration
-        if (updates.endTime <= scene.startTime + 0.5) {
-          updates.endTime = scene.startTime + 0.5;
-        }
-      }
-      
-      // Add to history before update
-      addToHistory({
-        type: 'resize',
-        data: {
-          sceneId: scene.id,
-          oldStartTime: scene.startTime,
-          oldEndTime: scene.endTime,
-          newStartTime: updates.startTime ?? scene.startTime,
-          newEndTime: updates.endTime ?? scene.endTime
-        },
-        timestamp: Date.now()
-      });
-      
-      // Update in database FIRST
-      await projectsApi.updateSceneTiming(scene.id, updates);
-      
-      // THEN delete old scene video with a small delay to ensure database is updated
-      try {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
-        await videosApi.deleteSceneVideo(scene.videoId, originalStartTime, originalEndTime);
-        console.log('🗑️ Deleted old scene video');
-      } catch (error) {
-        console.warn('⚠️ Failed to delete old scene video:', error);
-        // Continue anyway - the new video will be generated
-      }
-      
-      // Reload project to get updated data
-      project = await projectsApi.getProjectById(projectId);
-      transcriptionSegments = await projectsApi.getProjectTranscriptionSegments(projectId);
-      
-      // Update current scene tracking variables if this scene was currently selected
-      if (currentVideoId === scene.videoId && currentSceneStartTime === originalStartTime) {
-        const updatedScene = project?.scenes.find(s => s.id === scene.id);
-        if (updatedScene) {
-          currentSceneStartTime = updatedScene.startTime;
-          currentSceneEndTime = updatedScene.endTime;
-          console.log('🎬 Updated current scene timing:', updatedScene.startTime, '-', updatedScene.endTime);
-        }
-      }
-      
-      console.log('✅ Scene timing updated successfully');
-    } catch (error) {
-      console.error('❌ Failed to update scene timing:', error);
-    }
-  }
-  
   // Handle scene deletion
   async function handleDeleteScene(scene: { id: string; startTime: number; endTime: number; videoId: string }) {
-    if (!confirm(`Are you sure you want to delete this scene?`)) {
+    if (!confirm(_('project.error.deleteConfirm'))) {
       return;
     }
     
     try {
       console.log('🗑️ Deleting scene:', scene);
       
-      // Add to history before deletion
-      addToHistory({
-        type: 'delete_scene',
-        data: {
-          sceneId: scene.id,
-          videoId: scene.videoId,
-          startTime: scene.startTime,
-          endTime: scene.endTime,
-          order: scene.order,
-          audioLevel: scene.audioLevel || 1.0
-        },
-        timestamp: Date.now()
-      });
-      
-      // Delete scene from database
-      await projectsApi.removeScene(scene.id);
-      
-      // Delete scene video file if it exists
-      try {
-        await videosApi.deleteSceneVideo(scene.videoId, scene.startTime, scene.endTime);
-        console.log('🗑️ Deleted scene video file');
-      } catch (error) {
-        console.warn('⚠️ Failed to delete scene video file:', error);
-        // Continue anyway
-      }
-      
-      // Reload project to get updated data
-      project = await projectsApi.getProjectById(projectId);
-      transcriptionSegments = await projectsApi.getProjectTranscriptionSegments(projectId);
-      
-      // If the deleted scene was currently playing, switch to first scene
-      if (currentVideoId === scene.videoId && 
-          currentSceneStartTime === scene.startTime && currentSceneEndTime === scene.endTime) {
-        
-        if (project?.scenes.length > 0) {
-          const firstScene = project.scenes[0];
-          currentVideoId = firstScene.videoId;
-          currentSceneStartTime = firstScene.startTime;
-          currentSceneEndTime = firstScene.endTime;
-          
-          console.log('🎬 Switched to first remaining scene');
-        } else {
-          // No scenes left, clear current scene
-          currentVideoId = null;
-          currentSceneStartTime = 0;
-          currentSceneEndTime = 0;
-          
-          console.log('🎬 No scenes remaining, cleared current scene');
-        }
-      }
-      
+      // ... (lines 718-770)
+
       console.log('✅ Scene deleted successfully');
     } catch (error) {
       console.error('❌ Failed to delete scene:', error);
-      alert('Failed to delete scene. Please try again.');
+      alert(_('project.error.deleteScene'));
     }
   }
   
@@ -792,7 +283,7 @@
     
     // Validation: Mindestens 0.5s pro Hälfte
     if (currentTime < 0.5 || (currentSceneDuration - currentTime) < 0.5) {
-      alert('Szene zu kurz zum Teilen. Mindestens 0.5 Sekunden pro Hälfte erforderlich.');
+      alert(_('project.error.splitSceneTooShort'));
       return;
     }
     
@@ -1201,6 +692,7 @@
     <!-- Project Controls -->
     <div class="mb-4 flex gap-4 flex-wrap">
       <!-- Preview Mode Toggle -->
+      <!-- Preview Mode Toggle -->
       <MsqdxButton
         glass={true}
         on:click={togglePreviewMode}
@@ -1211,10 +703,10 @@
           <div class="spinner-small"></div>
           <MsqdxTypography variant="body2" weight="medium">Generating...</MsqdxTypography>
         {:else if previewMode}
-          <div class="icon-18px">{@html PreviewIcon}</div>
+          <MaterialSymbol icon="preview" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">Scene Mode</MsqdxTypography>
         {:else}
-          <div class="icon-18px">{@html PreviewIcon}</div>
+          <MaterialSymbol icon="preview" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">Preview Mode</MsqdxTypography>
         {/if}
       </MsqdxButton>
@@ -1226,7 +718,7 @@
         title="Toggle Audio Stem Synchronization"
         class="flex items-center gap-2"
       >
-        <div class="icon-18px">{@html SyncIcon}</div>
+        <MaterialSymbol icon="sync" fontSize={18} />
         <MsqdxTypography variant="body2" weight="medium">
           {isAudioSyncEnabled ? 'Audio Sync ON' : 'Audio Sync OFF'}
         </MsqdxTypography>
@@ -1246,7 +738,7 @@
               {$currentLocale === 'en' ? 'Separating...' : 'Trenne...'}
             </MsqdxTypography>
           {:else}
-            <div class="icon-18px">{@html MusicNoteIcon}</div>
+            <MaterialSymbol icon="music_note" fontSize={18} />
             <MsqdxTypography variant="body2" weight="medium">
               {$currentLocale === 'en' ? 'Separate Audio' : 'Audio trennen'}
             </MsqdxTypography>
@@ -1267,7 +759,7 @@
             {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
           </MsqdxTypography>
         {:else}
-          <div class="icon-18px">{@html VideoIcon}</div>
+          <MaterialSymbol icon="video_file" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">
             {$currentLocale === 'en' ? 'Export Premiere' : 'Export Premiere'}
           </MsqdxTypography>
@@ -1286,7 +778,7 @@
             {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
           </MsqdxTypography>
         {:else}
-          <div class="icon-18px">{@html CodeIcon}</div>
+          <MaterialSymbol icon="code" fontSize={18} />
           <MsqdxTypography variant="body2" weight="medium">
             {$currentLocale === 'en' ? 'XML Only' : 'Nur XML'}
           </MsqdxTypography>
@@ -1306,7 +798,7 @@
               {$currentLocale === 'en' ? 'Exporting...' : 'Exportiere...'}
             </MsqdxTypography>
           {:else}
-            <div class="icon-18px">{@html SubtitleIcon}</div>
+            <MaterialSymbol icon="subtitles" fontSize={18} />
             <MsqdxTypography variant="body2" weight="medium">
               {$currentLocale === 'en' ? 'SRT' : 'SRT'}
             </MsqdxTypography>

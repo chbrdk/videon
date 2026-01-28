@@ -1,17 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-  import PauseIcon from '@material-icons/svg/svg/pause/baseline.svg?raw';
-  import SkipPreviousIcon from '@material-icons/svg/svg/skip_previous/baseline.svg?raw';
-  import SkipNextIcon from '@material-icons/svg/svg/skip_next/baseline.svg?raw';
-  import VolumeUpIcon from '@material-icons/svg/svg/volume_up/baseline.svg?raw';
-  import VolumeOffIcon from '@material-icons/svg/svg/volume_off/baseline.svg?raw';
-  import UndoIcon from '@material-icons/svg/svg/undo/baseline.svg?raw';
-  import RedoIcon from '@material-icons/svg/svg/redo/baseline.svg?raw';
-  import ContentCutIcon from '@material-icons/svg/svg/content_cut/baseline.svg?raw';
-  import AddIcon from '@material-icons/svg/svg/add/baseline.svg?raw';
-  import SearchIcon from '@material-icons/svg/svg/search/baseline.svg?raw';
-  import CloseIcon from '@material-icons/svg/svg/close/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   import { _, currentLocale } from '$lib/i18n';
 
   const dispatch = createEventDispatcher();
@@ -79,7 +68,12 @@
     dispatch('searchInput', { value: target.value });
   }
 
-  function handleAddSceneToProject(result: { sceneId: string; videoId: string; startTime: number; endTime: number }) {
+  function handleAddSceneToProject(result: {
+    sceneId: string;
+    videoId: string;
+    startTime: number;
+    endTime: number;
+  }) {
     console.log('Central Controls: Adding scene to project:', result);
     dispatch('addSceneToProject', result);
   }
@@ -93,32 +87,32 @@
 
 <div class="central-controls glass-effect">
   <!-- Previous Button -->
-  <button 
+  <button
     class="control-btn"
     on:click={handlePrevious}
     disabled={!canGoBack}
     title={_('controls.previousScene')}
   >
-    <div class="icon-24px">{@html SkipPreviousIcon}</div>
+    <MaterialSymbol icon="skip_previous" fontSize={24} />
   </button>
 
   <!-- Play/Pause Button -->
-  <button 
+  <button
     class="control-btn play-pause-btn"
     on:click={handlePlayPause}
     title={isPlaying ? _('controls.pause') : _('controls.play')}
   >
-    <div class="icon-32px">{@html (isPlaying ? PauseIcon : PlayArrowIcon)}</div>
+    <MaterialSymbol icon={isPlaying ? 'pause' : 'play_arrow'} fontSize={32} />
   </button>
 
   <!-- Next Button -->
-  <button 
+  <button
     class="control-btn"
     on:click={handleNext}
     disabled={!canGoForward}
     title={_('controls.nextScene')}
   >
-    <div class="icon-24px">{@html SkipNextIcon}</div>
+    <MaterialSymbol icon="skip_next" fontSize={24} />
   </button>
 
   <!-- Divider -->
@@ -135,31 +129,21 @@
   <div class="control-divider"></div>
 
   <!-- Editing Tools -->
-  <button 
-    class="control-btn"
-    on:click={handleUndo}
-    disabled={!canUndo}
-    title={_('controls.undo')}
-  >
-    <div class="icon-20px">{@html UndoIcon}</div>
+  <button class="control-btn" on:click={handleUndo} disabled={!canUndo} title={_('controls.undo')}>
+    <MaterialSymbol icon="undo" fontSize={20} />
   </button>
 
-  <button 
-    class="control-btn"
-    on:click={handleRedo}
-    disabled={!canRedo}
-    title={_('controls.redo')}
-  >
-    <div class="icon-20px">{@html RedoIcon}</div>
+  <button class="control-btn" on:click={handleRedo} disabled={!canRedo} title={_('controls.redo')}>
+    <MaterialSymbol icon="redo" fontSize={20} />
   </button>
 
-  <button 
+  <button
     class="control-btn"
     on:click={handleSplit}
     disabled={!canSplit}
     title={_('controls.split')}
   >
-    <div class="icon-20px">{@html ContentCutIcon}</div>
+    <MaterialSymbol icon="content_cut" fontSize={20} />
   </button>
 
   <!-- Divider -->
@@ -167,84 +151,81 @@
 
   <!-- Volume Controls -->
   <div class="volume-controls">
-    <button 
+    <button
       class="control-btn volume-btn"
       on:click={handleMuteToggle}
       title={videoMuted ? _('controls.unmute') : _('controls.mute')}
     >
-      <div class="icon-20px">{@html (videoMuted ? VolumeOffIcon : VolumeUpIcon)}</div>
+      <MaterialSymbol icon={videoMuted ? 'volume_off' : 'volume_up'} fontSize={20} />
     </button>
-    
-    <input 
-      type="range" 
-      min="0" 
-      max="100" 
+
+    <input
+      type="range"
+      min="0"
+      max="100"
       bind:value={videoAudioLevel}
       on:input={handleVolumeChange}
       class="volume-slider"
       title={`${_('controls.volume')}: ${videoAudioLevel}%`}
     />
-    
+
     <span class="volume-percentage">{videoAudioLevel}%</span>
   </div>
-  
+
   <!-- Add Scene Button - Absolutely positioned right -->
-  <button 
+  <button
     class="control-btn add-scene-btn"
     on:click={handleAddScene}
     disabled={!canAddScene}
     title={_('controls.addScene')}
   >
-    <div class="icon-20px">{@html AddIcon}</div>
+    <MaterialSymbol icon="add" fontSize={20} />
   </button>
-  
+
   <!-- Search Modal - Positioned relative to Add Scene Button -->
   {#if showSearchModal}
     <div class="search-modal-overlay" on:click={() => dispatch('closeSearchModal')}>
       <div class="search-modal" on:click|stopPropagation>
-      <div class="search-modal-header">
-        <h3 class="text-lg font-bold">
-          {_('search.searchScenes')}
-        </h3>
-        <button class="close-btn" on:click={() => dispatch('closeSearchModal')}>
-          <div class="icon-20px">{@html CloseIcon}</div>
-        </button>
-      </div>
-      
-      <!-- Search Input -->
-      <div class="search-input-container">
-        <input
-          type="text"
-          bind:value={searchQuery}
-          on:keydown={(e) => e.key === 'Enter' && handleSearch()}
-          on:input={handleSearchInput}
-          placeholder={_('search.searchPlaceholder')}
-          class="search-input"
-        />
-        <button class="search-btn" on:click={handleSearch} disabled={searching}>
-          <div class="icon-20px">{@html SearchIcon}</div>
-        </button>
-      </div>
-      
-      <!-- Results -->
-      <div class="search-results">
-        {#each searchResults as result}
-          <div class="search-result-item">
-            <div class="result-content">
-              <div class="result-title">{result.videoTitle}</div>
-              <div class="result-description">
-                {result.content}
+        <div class="search-modal-header">
+          <h3 class="text-lg font-bold">
+            {_('search.searchScenes')}
+          </h3>
+          <button class="close-btn" on:click={() => dispatch('closeSearchModal')}>
+            <MaterialSymbol icon="close" fontSize={20} />
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="search-input-container">
+          <input
+            type="text"
+            bind:value={searchQuery}
+            on:keydown={e => e.key === 'Enter' && handleSearch()}
+            on:input={handleSearchInput}
+            placeholder={_('search.searchPlaceholder')}
+            class="search-input"
+          />
+          <button class="search-btn" on:click={handleSearch} disabled={searching}>
+            <MaterialSymbol icon="search" fontSize={20} />
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div class="search-results">
+          {#each searchResults as result}
+            <div class="search-result-item">
+              <div class="result-content">
+                <div class="result-title">{result.videoTitle}</div>
+                <div class="result-description">
+                  {result.content}
+                </div>
               </div>
+              <button class="add-btn" on:click={() => handleAddSceneToProject(result)}>
+                {_('search.addToProject')}
+              </button>
             </div>
-            <button 
-              class="add-btn"
-              on:click={() => handleAddSceneToProject(result)}
-            >
-              {_('search.addToProject')}
-            </button>
-          </div>
-        {/each}
-      </div>
+          {/each}
+        </div>
       </div>
     </div>
   {/if}
@@ -421,7 +402,7 @@
     overflow-y: auto;
     z-index: 1000;
   }
-  
+
   @media (max-width: 768px) {
     .search-modal {
       right: 1rem;
@@ -433,7 +414,7 @@
       padding: 1rem;
     }
   }
-  
+
   @media (max-width: 640px) {
     .search-modal {
       position: fixed;
@@ -717,28 +698,28 @@
     background: var(--msqdx-color-tint-green) !important;
     border-color: var(--msqdx-color-brand-orange) !important;
   }
-  
+
   @media (max-width: 1024px) {
     .central-controls {
       gap: 0.5rem;
       padding: 0.75rem 1rem;
     }
   }
-  
+
   @media (max-width: 768px) {
     .central-controls {
       flex-wrap: wrap;
       justify-content: center;
       gap: 0.5rem;
     }
-    
+
     .time-display {
       width: 100%;
       text-align: center;
       font-size: 0.75rem;
       order: -1;
     }
-    
+
     .control-btn {
       width: 2.5rem;
       height: 2.5rem;
@@ -746,18 +727,18 @@
       min-height: 44px;
     }
   }
-  
+
   @media (max-width: 640px) {
     .central-controls {
       padding: 0.5rem;
     }
-    
+
     .volume-controls {
       width: 100%;
       justify-content: center;
       order: 2;
     }
-    
+
     .control-divider {
       display: none;
     }

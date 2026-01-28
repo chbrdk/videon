@@ -16,7 +16,7 @@
   });
 
   async function createNewProject() {
-    const name = prompt($currentLocale === 'en' ? 'Project name:' : 'Projektname:');
+    const name = prompt(_('projects.name'));
     if (name) {
       const project = await projectsApi.createProject({ name });
       window.location.href = resolve(`/projects/${project.id}`);
@@ -31,7 +31,7 @@
 </script>
 
 <svelte:head>
-  <title>{$currentLocale === 'en' ? 'My Projects' : 'Meine Projekte'} - Videon</title>
+  <title>{_('projects.title')} - Videon</title>
 </svelte:head>
 
 <div class="space-y-8 pb-12">
@@ -48,7 +48,7 @@
       on:click={createNewProject}
     >
       <MaterialSymbol icon="add" fontSize={20} />
-      <span>{$currentLocale === 'en' ? 'New Project' : 'Neues Projekt'}</span>
+      <span>{_('projects.newProject')}</span>
     </button>
   </div>
 
@@ -56,7 +56,7 @@
     <div class="flex flex-col items-center justify-center py-24 space-y-4">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white/50"></div>
       <p class="text-white/40 text-sm">
-        {$currentLocale === 'en' ? 'Loading projects...' : 'Lade Projekte...'}
+        {_('projects.loading')}
       </p>
     </div>
   {:else if projects.length === 0}
@@ -67,12 +67,10 @@
         </div>
         <div>
           <h3 class="text-xl text-white font-light tracking-wide mb-2">
-            {$currentLocale === 'en' ? 'No projects yet' : 'Noch keine Projekte'}
+            {_('projects.noProjects')}
           </h3>
           <p class="text-white/50 text-sm max-w-sm mx-auto">
-            {$currentLocale === 'en'
-              ? 'Create your first project to start organizing your videos and scenes.'
-              : 'Erstelle dein erstes Projekt, um Videos und Szenen zu organisieren.'}
+            {_('projects.createFirstProject')}
           </p>
         </div>
         <button
@@ -87,7 +85,7 @@
           on:click={createNewProject}
         >
           <MaterialSymbol icon="add" fontSize={20} />
-          <span>{$currentLocale === 'en' ? 'Create Project' : 'Projekt erstellen'}</span>
+          <span>{_('projects.createProject')}</span>
         </button>
       </div>
     </MsqdxGlassCard>
@@ -139,7 +137,7 @@
             <div
               class="flex items-center justify-between text-xs text-white/40 mt-4 pt-4 border-t border-white/5"
             >
-              <span>{project.scenes.length} {$currentLocale === 'en' ? 'scenes' : 'Szenen'}</span>
+              <span>{project.scenes.length} {_('projects.scenes')}</span>
               <span class="group-hover:translate-x-1 transition-transform">
                 <MaterialSymbol icon="arrow_forward" fontSize={16} />
               </span>

@@ -46,7 +46,21 @@
         "maxSize": "Maximum file size: 1GB",
         "analysis": "Vision analysis starts automatically after upload",
         "duration": "Analysis may take several minutes"
-      }
+      },
+      "errorNoFile": "Please select at least one video file",
+      "errorNotVideo": "File \"{name}\" is not a video file",
+      "errorTooLarge": "File \"{name}\" is too large (max 10GB)",
+      "dragDropTitle": "Drag & Drop your videos here",
+      "dragDropSubtitle": "or click to browse from your device",
+      "selectedFiles": "Selected Files",
+      "fileCountSelected": "{count} File(s) Selected",
+      "uploadingCount": "Uploading {current} of {total}",
+      "processing": "Processing video...",
+      "startUpload": "Start Upload ({count})",
+      "guidelines": "Upload Guidelines",
+      "guidelineFormats": "Video formats: MP4, MOV, MKV, AVI",
+      "guidelineSize": "Max 10GB per file",
+      "guidelineAnalysis": "Auto-analysis enabled"
     }
   },
   "video": {
@@ -168,12 +182,26 @@
   },
   "delete": {
     "deleteError": "Delete Error",
-    "confirmDelete": "Really delete?"
+    "confirmDelete": "Really delete?",
+    "videoTitle": "Delete Video",
+    "videoConfirm": "Do you really want to delete this video?",
+    "warning": "This action cannot be undone.",
+    "dataDeleted": "The following data will be deleted:",
+    "data": {
+      "file": "Video file ({size})",
+      "scenes": "All scenes and keyframes",
+      "transcripts": "Transcriptions (if available)",
+      "logs": "Analysis logs",
+      "db": "All database entries"
+    },
+    "deleting": "Deleting...",
+    "finalConfirm": "Delete forever"
   },
   "move": {
     "moveError": "Move Error"
   },
   "search": {
+    "clear": "Clear search",
     "title": "Search Videos",
     "placeholder": "Search for scenes, topics, or objects...",
     "button": "Search",
@@ -210,11 +238,21 @@
     "newProject": "New Project",
     "createProject": "Create Project",
     "noProjects": "No projects yet",
-    "createFirstProject": "Create your first project",
+    "createFirstProject": "Create your first project to start organizing your videos and scenes.",
     "name": "Project name:",
-    "loading": "Loading...",
+    "loading": "Loading projects...",
     "currentScene": "Current Scene:",
-    "noScenesAdded": "No scenes added yet"
+    "noScenesAdded": "No scenes added yet",
+    "scenes": "scenes",
+    "error": {
+      "addScene": "Error adding scene: {message}",
+      "deleteScene": "Failed to delete scene. Please try again.",
+      "deleteConfirm": "Are you sure you want to delete this scene?",
+      "splitSceneTooShort": "Scene too short to split. Minimum 0.5 seconds per half required.",
+      "saliencyStart": "Failed to start saliency analysis: {message}",
+      "reframeFailed": "Reframing failed: {message}",
+      "qwenUnavailable": "Qwen VL service is not available. Please ensure the Qwen VL service is running.\n\nError: {error}"
+    }
   },
   "voiceClone": {
     "title": "🎤 Clone Your Voice",
@@ -256,5 +294,25 @@
     "enterDimensions": "Please enter both width and height for custom aspect ratio",
     "close": "Close",
     "start": "Start"
+  },
+  "settings": {
+    "title": "Settings",
+    "email": "Email",
+    "emailHelp": "Email cannot be changed.",
+    "displayName": "Display Name",
+    "signOut": "Sign out",
+    "saveProfile": "Save Profile",
+    "saving": "Saving...",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "updating": "Updating...",
+    "successSaved": "Settings saved successfully!",
+    "successPassword": "Password updated successfully",
+    "errorMatch": "Error: New passwords do not match",
+    "errorLength": "Error: Password must be at least 6 characters",
+    "errorGeneric": "An error occurred"
   }
 }

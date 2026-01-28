@@ -1,12 +1,18 @@
 <script>
   import { searchQuery, searchAll } from '$lib/stores/folders.store';
-  import { MSQDX_SPACING, MSQDX_COLORS, MSQDX_EFFECTS, MSQDX_TYPOGRAPHY, MSQDX_ICONS } from '$lib/design-tokens';
+  import {
+    MSQDX_SPACING,
+    MSQDX_COLORS,
+    MSQDX_EFFECTS,
+    MSQDX_TYPOGRAPHY,
+    MSQDX_ICONS,
+  } from '$lib/design-tokens';
   import { _ } from '$lib/i18n';
   import { MaterialSymbol } from '$lib/components/ui';
-  
+
   let debounceTimer;
   export let className = '';
-  
+
   function handleSearch() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
@@ -17,21 +23,21 @@
   }
 </script>
 
-<div 
-  class="search-bar {className}" 
+<div
+  class="search-bar {className}"
   style="
     border-radius: {MSQDX_SPACING.borderRadius.full}px;
     padding: {MSQDX_SPACING.scale.sm}px {MSQDX_SPACING.scale.md}px;
   "
 >
-  <MaterialSymbol 
-    icon="search" 
-    fontSize={MSQDX_ICONS.sizes.md} 
+  <MaterialSymbol
+    icon="search"
+    fontSize={MSQDX_ICONS.sizes.md}
     weight={MSQDX_ICONS.weights.regular}
     class="search-icon"
   />
-  <input 
-    type="search" 
+  <input
+    type="search"
     bind:value={$searchQuery}
     oninput={handleSearch}
     placeholder={_('search.placeholder')}
@@ -43,20 +49,20 @@
     "
   />
   {#if $searchQuery}
-    <button 
+    <button
       class="clear-button"
       onclick={() => searchQuery.set('')}
-      title="Suche löschen"
-    style="
+      title={_('search.clear')}
+      style="
       width: {MSQDX_ICONS.sizes.lg}px;
       height: {MSQDX_ICONS.sizes.lg}px;
       border-radius: {MSQDX_SPACING.borderRadius.sm}px;
       transition: all 0.2s ease-in-out;
     "
     >
-      <MaterialSymbol 
-        icon="close" 
-        fontSize={MSQDX_ICONS.sizes.sm} 
+      <MaterialSymbol
+        icon="close"
+        fontSize={MSQDX_ICONS.sizes.sm}
         weight={MSQDX_ICONS.weights.regular}
       />
     </button>

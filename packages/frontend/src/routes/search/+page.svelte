@@ -312,7 +312,7 @@
               <div class="flex items-center justify-between">
                 <span class="text-white/80 group-hover:text-white">{project.name}</span>
                 <span class="text-xs text-white/30 group-hover:text-white/50"
-                  >{project.scenes.length} scenes</span
+                  >{project.scenes.length} {_('projects.scenes')}</span
                 >
               </div>
             </button>
@@ -334,38 +334,6 @@
           </button>
         </div>
       </MsqdxGlassCard>
-    </div>
-  </div>
-{/if}
-
-<!-- Project Selection Modal -->
-{#if showProjectModal}
-  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="glass-card p-6 max-w-md w-full">
-      <h3 class="text-xl font-bold mb-4">
-        {_('search.addToProject')}
-      </h3>
-
-      <div class="space-y-2 max-h-60 overflow-y-auto">
-        {#each projects as project}
-          <button
-            class="w-full glass-button text-left p-3"
-            on:click={() => addToProject(project.id)}
-          >
-            {project.name}
-            <span class="text-xs text-gray-500">({project.scenes.length} scenes)</span>
-          </button>
-        {/each}
-      </div>
-
-      <div class="flex gap-2 mt-4">
-        <button class="glass-button flex-1" on:click={createNewProject}>
-          {_('search.createNewProject')}
-        </button>
-        <button class="glass-button" on:click={() => (showProjectModal = false)}>
-          {_('actions.cancel')}
-        </button>
-      </div>
     </div>
   </div>
 {/if}

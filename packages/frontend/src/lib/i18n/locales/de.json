@@ -46,7 +46,21 @@
         "maxSize": "Maximale Dateigröße: 1GB",
         "analysis": "Nach dem Upload startet automatisch die Vision-Analyse",
         "duration": "Die Analyse kann einige Minuten dauern"
-      }
+      },
+      "errorNoFile": "Bitte wählen Sie mindestens eine Videodatei aus",
+      "errorNotVideo": "Datei \"{name}\" ist keine Videodatei",
+      "errorTooLarge": "Datei \"{name}\" ist zu groß (max 10GB)",
+      "dragDropTitle": "Videos hier ablegen",
+      "dragDropSubtitle": "oder klicken zum Durchsuchen",
+      "selectedFiles": "Ausgewählte Dateien",
+      "fileCountSelected": "{count} Datei(en) ausgewählt",
+      "uploadingCount": "Lade {current} von {total} hoch",
+      "processing": "Verarbeite Video...",
+      "startUpload": "Upload Starten ({count})",
+      "guidelines": "Hinweise",
+      "guidelineFormats": "Formate: MP4, MOV, MKV, AVI",
+      "guidelineSize": "Max 10GB pro Datei",
+      "guidelineAnalysis": "Automatische KI-Analyse"
     }
   },
   "video": {
@@ -168,12 +182,26 @@
   },
   "delete": {
     "deleteError": "Fehler beim Löschen",
-    "confirmDelete": "Wirklich löschen?"
+    "confirmDelete": "Wirklich löschen?",
+    "videoTitle": "Video löschen",
+    "videoConfirm": "Möchten Sie dieses Video wirklich löschen?",
+    "warning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "dataDeleted": "Folgende Daten werden gelöscht:",
+    "data": {
+      "file": "Video-Datei ({size})",
+      "scenes": "Alle Szenen und Keyframes",
+      "transcripts": "Transkriptionen (falls vorhanden)",
+      "logs": "Analyse-Logs",
+      "db": "Alle Datenbankeinträge"
+    },
+    "deleting": "Wird gelöscht...",
+    "finalConfirm": "Endgültig löschen"
   },
   "move": {
     "moveError": "Verschiebungsfehler"
   },
   "search": {
+    "clear": "Suche löschen",
     "title": "Videos durchsuchen",
     "placeholder": "Nach Szenen, Themen oder Objekten suchen...",
     "button": "Suchen",
@@ -210,11 +238,21 @@
     "newProject": "Neues Projekt",
     "createProject": "Projekt erstellen",
     "noProjects": "Noch keine Projekte",
-    "createFirstProject": "Erstelle dein erstes Projekt",
+    "createFirstProject": "Erstelle dein erstes Projekt, um Videos und Szenen zu organisieren.",
     "name": "Projektname:",
-    "loading": "Lädt...",
+    "loading": "Lade Projekte...",
     "currentScene": "Aktuelle Szene:",
-    "noScenesAdded": "Noch keine Szenen hinzugefügt"
+    "noScenesAdded": "Noch keine Szenen hinzugefügt",
+    "scenes": "Szenen",
+    "error": {
+      "addScene": "Fehler beim Hinzufügen der Szene: {message}",
+      "deleteScene": "Fehler beim Löschen der Szene. Bitte versuchen Sie es erneut.",
+      "deleteConfirm": "Möchten Sie diese Szene wirklich löschen?",
+      "splitSceneTooShort": "Szene zu kurz zum Teilen. Mindestens 0.5 Sekunden pro Hälfte erforderlich.",
+      "saliencyStart": "Fehler beim Starten der Saliency-Analyse: {message}",
+      "reframeFailed": "Reframing fehlgeschlagen: {message}",
+      "qwenUnavailable": "Qwen VL Service ist nicht verfügbar. Bitte stellen Sie sicher, dass der Qwen VL Service läuft.\n\nFehler: {error}"
+    }
   },
   "voiceClone": {
     "title": "🎤 Stimme klonen",
@@ -256,5 +294,25 @@
     "enterDimensions": "Bitte geben Sie Breite und Höhe ein",
     "close": "Schließen",
     "start": "Start"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "email": "E-Mail",
+    "emailHelp": "E-Mail kann nicht geändert werden.",
+    "displayName": "Anzeigename",
+    "signOut": "Abmelden",
+    "saveProfile": "Profil speichern",
+    "saving": "Speichere...",
+    "changePassword": "Passwort ändern",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "updatePassword": "Passwort aktualisieren",
+    "updating": "Aktualisiere...",
+    "successSaved": "Einstellungen erfolgreich gespeichert!",
+    "successPassword": "Passwort erfolgreich aktualisiert",
+    "errorMatch": "Fehler: Neue Passwörter stimmen nicht überein",
+    "errorLength": "Fehler: Passwort muss mindestens 6 Zeichen lang sein",
+    "errorGeneric": "Ein Fehler ist aufgetreten"
   }
 }

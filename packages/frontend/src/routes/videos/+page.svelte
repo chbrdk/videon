@@ -40,10 +40,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   import MsqdxContextMenu from '$lib/components/msqdx-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
-  import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
-  import CreateFolderIcon from '@material-icons/svg/svg/create_new_folder/baseline.svg?raw';
-  import UploadIcon from '@material-icons/svg/svg/file_upload/baseline.svg?raw';
-  import { MsqdxButton } from '$lib/components/ui';
+  import { MsqdxButton, MaterialSymbol } from '$lib/components/ui';
 
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
@@ -481,7 +478,7 @@ let scrollAnimationId: number | null = null;
         on:click={handleCreateFolder}
         title={_('folder.create')}
       >
-        <div class="icon-20px">{@html CreateFolderIcon}</div>
+        <MaterialSymbol icon="create_new_folder" fontSize={20} />
       </MsqdxButton>
       <MsqdxButton 
         variant="text"
@@ -489,7 +486,7 @@ let scrollAnimationId: number | null = null;
         href={resolve('/upload')}
         title={_('pages.videoGallery.newVideo')}
       >
-        <div class="icon-20px">{@html UploadIcon}</div>
+        <MaterialSymbol icon="upload_file" fontSize={20} />
       </MsqdxButton>
     </div>
   </div>

@@ -5,7 +5,7 @@
   import { videosApi } from '$lib/api/videos';
   import MsqdxProgress from '$lib/components/msqdx-progress.svelte';
   import { get } from 'svelte/store';
-  import { currentLocale } from '$lib/i18n';
+  import { currentLocale, _ } from '$lib/i18n';
 
   let files: FileList | null = null;
   let uploading = false;
@@ -17,13 +17,8 @@
   let totalFiles = 0;
 
   async function handleUpload() {
-    const locale = get(currentLocale);
-
     if (!files || files.length === 0) {
-      error =
-        locale === 'en'
-          ? 'Please select at least one video file'
-          : 'Bitte wählen Sie mindestens eine Videodatei aus';
+      error = _('pages.upload.errorNoFile');
       return;
     }
 
@@ -33,18 +28,12 @@
       const file = files[i];
 
       if (!file.type.startsWith('video/')) {
-        error =
-          locale === 'en'
-            ? `File "${file.name}" is not a video file`
-            : `Datei "${file.name}" ist keine Videodatei`;
+        error = _('pages.upload.errorNotVideo', { name: file.name });
         return;
       }
 
       if (file.size > maxSize) {
-        error =
-          locale === 'en'
-            ? `File "${file.name}" is too large (max 10GB)`
-            : `Datei "${file.name}" ist zu groß (max 10GB)`;
+        error = _('pages.upload.errorTooLarge', { name: file.name });
         return;
       }
     }
@@ -75,12 +64,7 @@
         goto(`${base}/videos`);
       }, 1000);
     } catch (err) {
-      error =
-        err instanceof Error
-          ? err.message
-          : locale === 'en'
-            ? 'Upload failed'
-            : 'Upload fehlgeschlagen';
+      error = err instanceof Error ? err.message : _('errors.uploadError');
       uploading = false;
       progress = 0;
     }
@@ -117,16 +101,16 @@
 
   function formatFileSize(bytes: number): string {
     const locale = get(currentLocale);
-    if (bytes === 0) return locale === 'en' ? '0 Bytes' : '0 Bytes';
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = locale === 'en' ? ['Bytes', 'KB', 'MB', 'GB'] : ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 </script>
 
 <svelte:head>
-  <title>{$currentLocale === 'en' ? 'Video Upload' : 'Video Upload'} - Videon</title>
+  <title>{_('pages.upload.title')} - Videon</title>
 </svelte:head>
 
 <div class="max-w-4xl mx-auto space-y-8 pb-12">
@@ -165,17 +149,11 @@
           <div>
             <h3 class="text-xl font-light tracking-wide text-white mb-2">
               {files && files.length > 0
-                ? $currentLocale === 'en'
-                  ? `${files.length} File(s) Selected`
-                  : `${files.length} Datei(en) ausgewählt`
-                : $currentLocale === 'en'
-                  ? 'Drag & Drop your videos here'
-                  : 'Videos hier ablegen'}
+                ? _('pages.upload.fileCountSelected', { count: files.length })
+                : _('pages.upload.dragDropTitle')}
             </h3>
             <p class="text-white/60 font-light">
-              {$currentLocale === 'en'
-                ? 'or click to browse from your device'
-                : 'oder klicken zum Durchsuchen'}
+              {_('pages.upload.dragDropSubtitle')}
             </p>
           </div>
 
@@ -203,7 +181,7 @@
     {#if files && files.length > 0}
       <div class="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-white/50 mb-4 pl-1">
-          {$currentLocale === 'en' ? 'Selected Files' : 'Ausgewählte Dateien'}
+          {_('pages.upload.selectedFiles')}
         </h4>
         <div class="space-y-3">
           {#each Array.from(files) as file, index}
@@ -226,7 +204,7 @@
           {/each}
 
           <div class="flex justify-end pt-2 text-white/40 text-xs font-mono">
-            {$currentLocale === 'en' ? 'Total:' : 'Gesamt:'}
+            {_('pages.upload.selectedFile')}
             {formatFileSize(Array.from(files).reduce((sum, f) => sum + f.size, 0))}
           </div>
         </div>
@@ -248,15 +226,13 @@
       <div class="mt-8 p-6 bg-black/20 rounded-2xl border border-white/5">
         <div class="flex items-center justify-between mb-3">
           <span class="text-white/80 text-sm font-medium">
-            {$currentLocale === 'en'
-              ? `Uploading ${currentFileIndex + 1} of ${totalFiles}`
-              : `Lade ${currentFileIndex + 1} von ${totalFiles} hoch`}
+            {_('pages.upload.uploadingCount', { current: currentFileIndex + 1, total: totalFiles })}
           </span>
           <span class="text-indigo-400 font-mono text-sm">{Math.round(progress)}%</span>
         </div>
         <MsqdxProgress {progress} />
         <p class="text-white/40 text-xs mt-3 text-center animate-pulse">
-          {$currentLocale === 'en' ? 'Processing video...' : 'Verarbeite Video...'}
+          {_('pages.upload.processing')}
         </p>
       </div>
     {/if}
@@ -281,9 +257,7 @@
         >
           <MaterialSymbol icon="rocket_launch" fontSize={20} />
           <span>
-            {$currentLocale === 'en'
-              ? `Start Upload (${files.length})`
-              : `Upload Starten (${files.length})`}
+            {_('pages.upload.startUpload', { count: files.length })}
           </span>
         </button>
       </div>
@@ -293,24 +267,20 @@
   <!-- Help Section (Subtler) -->
   <div class="px-6 py-4">
     <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">
-      {$currentLocale === 'en' ? 'Upload Guidelines' : 'Hinweise'}
+      {_('pages.upload.guidelines')}
     </h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/50">
       <div class="flex items-start gap-3">
         <MaterialSymbol icon="check_circle" fontSize={18} class="text-white/20 mt-0.5" />
-        <span>{$currentLocale === 'en' ? 'Max 10GB per file' : 'Max 10GB pro Datei'}</span>
+        <span>{_('pages.upload.guidelineSize')}</span>
       </div>
       <div class="flex items-start gap-3">
         <MaterialSymbol icon="check_circle" fontSize={18} class="text-white/20 mt-0.5" />
-        <span
-          >{$currentLocale === 'en'
-            ? 'Video formats: MP4, MOV, MKV, AVI'
-            : 'Formate: MP4, MOV, MKV, AVI'}</span
-        >
+        <span>{_('pages.upload.guidelineFormats')}</span>
       </div>
       <div class="flex items-start gap-3">
         <MaterialSymbol icon="auto_awesome" fontSize={18} class="text-white/20 mt-0.5" />
-        <span>{$currentLocale === 'en' ? 'Auto-analysis enabled' : 'Automatische KI-Analyse'}</span>
+        <span>{_('pages.upload.guidelineAnalysis')}</span>
       </div>
     </div>
   </div>
