@@ -5,10 +5,14 @@ FROM node:18-alpine AS base
 COPY frontend/package.json ./
 COPY frontend/package-lock.json ./
 
+# Delete package-lock.json to avoid conflicts and force fresh install
+RUN rm -f package-lock.json
+
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=development
-RUN npm install --legacy-peer-deps
+# Install dependencies fresh
+RUN npm install
 
 # Copy source code (exclude node_modules and build)
 COPY frontend/src ./src
