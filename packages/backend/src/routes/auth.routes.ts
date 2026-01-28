@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 
 const router = Router();
