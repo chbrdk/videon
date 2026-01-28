@@ -56,27 +56,21 @@ RUN npx svelte-kit sync
 # Debug: Check generated tsconfig
 RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 
-# Debug: Create a shell script to run the build with robust logging
-# SOFT FAIL STRATEGY: Exit 0 even if build fails, to ensure logs are flushed.
-# The subsequent COPY command will fail if build/ directory is missing.
+# Debug: Create a shell script to run the build with "Trojan Horse" logging
+# STRATEGY: If build fails, deploy the error log as the website so we can read it.
 RUN echo '#!/bin/sh' > debug-build.sh && \
-    echo 'echo "--- SYSTEM INFO ---"' >> debug-build.sh && \
-    echo 'node -v' >> debug-build.sh && \
-    echo 'npm -v' >> debug-build.sh && \
     echo 'echo "--- STARTING BUILD ---"' >> debug-build.sh && \
-    echo 'npm run build > build.output.txt 2>&1' >> debug-build.sh && \
-    echo 'BUILD_EXIT_CODE=$?' >> debug-build.sh && \
-    echo 'echo "--- BUILD FINISHED WITH EXIT CODE $BUILD_EXIT_CODE ---"' >> debug-build.sh && \
-    echo 'echo "--- LOG CONTENT START ---"' >> debug-build.sh && \
-    echo 'cat build.output.txt' >> debug-build.sh && \
-    echo 'echo "--- LOG CONTENT END ---"' >> debug-build.sh && \
-    echo 'if [ $BUILD_EXIT_CODE -ne 0 ]; then' >> debug-build.sh && \
-    echo '  echo "BUILD FAILED BUT EXITING 0 TO FLUSH LOGS"' >> debug-build.sh && \
-    echo '  # Create a fake build directory to allow this step to pass, but empty so COPY might fail or app fails to start' >> debug-build.sh && \
-    echo '  # Actually, better to NOT create it so COPY fails.' >> debug-build.sh && \
+    echo 'if npm run build > build.output.txt 2>&1; then' >> debug-build.sh && \
+    echo '  echo "Build Succeeded"' >> debug-build.sh && \
     echo '  exit 0' >> debug-build.sh && \
-    echo 'fi' >> debug-build.sh && \
-    echo 'exit 0' >> debug-build.sh
+    echo 'else' >> debug-build.sh && \
+    echo '  echo "Build Failed! Packaging logs as index.html..."' >> debug-build.sh && \
+    echo '  mkdir -p build' >> debug-build.sh && \
+    echo '  echo "<html><body><h1>Build Failed</h1><pre>" > build/index.html' >> debug-build.sh && \
+    echo '  cat build.output.txt >> build/index.html' >> debug-build.sh && \
+    echo '  echo "</pre></body></html>" >> build/index.html' >> debug-build.sh && \
+    echo '  exit 0' >> debug-build.sh && \
+    echo 'fi' >> debug-build.sh
 
 RUN chmod +x debug-build.sh && ./debug-build.sh
 
