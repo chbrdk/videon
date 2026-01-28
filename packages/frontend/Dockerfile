@@ -14,8 +14,14 @@ ENV NODE_ENV=development
 # Check actual configuration
 RUN npm config list
 
-# Install dependencies fresh with legacy peer deps AND explicitly include dev dependencies
-RUN npm install --legacy-peer-deps --include=dev --loglevel verbose
+# Debug: verify package.json content
+RUN cat package.json
+
+# Install dependencies fresh with legacy peer deps AND explicitly force dev dependencies via flag
+RUN npm install --production=false --legacy-peer-deps --loglevel verbose
+
+# Debug: list installed modules
+RUN ls -F node_modules || echo "node_modules missing"
 
 # Copy source code (exclude node_modules and build)
 COPY frontend/src ./src
