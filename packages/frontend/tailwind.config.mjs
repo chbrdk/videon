@@ -1,18 +1,161 @@
 /** @type {import('tailwindcss').Config} */
 // Try to import from relative path (for Docker build) or parent directory (for local build)
+// Try to import from relative path (for Docker build) or parent directory (for local build)
 let MSQDX_COLORS, MSQDX_TYPOGRAPHY, MSQDX_SPACING, MSQDX_EFFECTS;
+
+// Fallback tokens (copied from src/lib/design-tokens.ts) to ensure build succeeds even if submodule is missing
+const FALLBACK_TOKENS = {
+  MSQDX_COLORS: {
+    brand: {
+      purple: "#b638ff",
+      yellow: "#fef14d",
+      pink: "#f256b6",
+      orange: "#ff6a3b",
+      blue: "#3b82f6",
+      green: "#00ca55",
+      greenRgb: "0, 202, 85",
+      orangeRgb: "255, 106, 59",
+      white: "#ffffff",
+      black: "#000000",
+    },
+    tints: {
+      purple: "rgba(182, 56, 255, 0.15)",
+      yellow: "rgba(254, 241, 77, 0.15)",
+      pink: "rgba(242, 86, 182, 0.15)",
+      orange: "rgba(255, 106, 59, 0.15)",
+      blue: "rgba(59, 130, 246, 0.15)",
+      green: "rgba(0, 202, 85, 0.15)",
+    },
+    status: {
+      success: "#22c55e",
+      warning: "#f97316",
+      error: "#f87171",
+      info: "#3b82f6",
+    },
+    dark: {
+      background: "#0f0f0f",
+      paper: "#1a1a1a",
+      border: "rgba(255, 255, 255, 0.12)",
+      textPrimary: "#ffffff",
+      textSecondary: "#cccccc",
+    },
+    light: {
+      background: "#f8f6f0",
+      paper: "#ffffff",
+      border: "rgba(0, 0, 0, 0.12)",
+      textPrimary: "#0f172a",
+      textSecondary: "#475569",
+    }
+  },
+  MSQDX_SPACING: {
+    borderRadius: {
+      none: 0,
+      xs: 4,
+      sm: 8,
+      md: 16,
+      lg: 24,
+      xl: 32,
+      xxl: 40,
+      full: 999,
+    },
+    scale: {
+      none: 0,
+      xxs: 4,
+      xs: 8,
+      sm: 12,
+      md: 16,
+      lg: 24,
+      xl: 32,
+      xxl: 48,
+      xxxl: 64,
+    }
+  },
+  MSQDX_EFFECTS: {
+    glass: {
+      blur: "12px",
+      saturate: "150%",
+    },
+    shadows: {
+      light: "none",
+      dark: "none",
+    },
+    transitions: {
+      fast: "0.15s ease-out",
+      standard: "0.2s ease-in-out",
+      slow: "0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      spring: "0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    },
+    zIndex: {
+      base: 0,
+      dropdown: 1000,
+      sticky: 1100,
+      fixed: 1200,
+      modalBackdrop: 1300,
+      modal: 1400,
+      popover: 1500,
+      tooltip: 1600,
+    },
+  },
+  MSQDX_TYPOGRAPHY: {
+    fontFamily: {
+      primary: '"Noto Sans JP", sans-serif',
+      mono: '"JetBrains Mono", monospace',
+    },
+    fontSize: {
+      xs: "0.625rem",
+      sm: "0.75rem",
+      body2: "0.8125rem",
+      body1: "0.875rem",
+      base: "1rem",
+      lg: "1.125rem",
+      xl: "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "2rem",
+      "4xl": "2.5rem",
+    },
+    fontWeight: {
+      thin: 100,
+      extralight: 200,
+      light: 300,
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+      black: 900,
+    },
+    lineHeight: {
+      tight: 1.2,
+      normal: 1.4,
+      relaxed: 1.6,
+      loose: 1.8,
+    },
+  }
+};
+
 try {
+  // First try Docker build path
   const tokens = require('./msqdx-design-system/packages/design-system/src/tokens/index.ts');
   MSQDX_COLORS = tokens.MSQDX_COLORS;
   MSQDX_TYPOGRAPHY = tokens.MSQDX_TYPOGRAPHY;
   MSQDX_SPACING = tokens.MSQDX_SPACING;
   MSQDX_EFFECTS = tokens.MSQDX_EFFECTS;
 } catch (e) {
-  const tokens = require('../msqdx-design-system/packages/design-system/src/tokens/index.ts');
-  MSQDX_COLORS = tokens.MSQDX_COLORS;
-  MSQDX_TYPOGRAPHY = tokens.MSQDX_TYPOGRAPHY;
-  MSQDX_SPACING = tokens.MSQDX_SPACING;
-  MSQDX_EFFECTS = tokens.MSQDX_EFFECTS;
+  try {
+    // Then try local dev path (parent directory)
+    const tokens = require('../msqdx-design-system/packages/design-system/src/tokens/index.ts');
+    MSQDX_COLORS = tokens.MSQDX_COLORS;
+    MSQDX_TYPOGRAPHY = tokens.MSQDX_TYPOGRAPHY;
+    MSQDX_SPACING = tokens.MSQDX_SPACING;
+    MSQDX_EFFECTS = tokens.MSQDX_EFFECTS;
+  } catch (e2) {
+    // Finally fall back to hardcoded tokens
+    console.warn('Could not load design tokens from submodule, using fallback values.');
+    MSQDX_COLORS = FALLBACK_TOKENS.MSQDX_COLORS;
+    MSQDX_TYPOGRAPHY = FALLBACK_TOKENS.MSQDX_TYPOGRAPHY;
+    MSQDX_SPACING = FALLBACK_TOKENS.MSQDX_SPACING;
+    MSQDX_EFFECTS = FALLBACK_TOKENS.MSQDX_EFFECTS;
+  }
 }
 
 export default {
