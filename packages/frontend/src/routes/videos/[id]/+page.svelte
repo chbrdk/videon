@@ -61,36 +61,38 @@
   }
 
   onMount(async () => {
-    if (videoId) {
-      logger.info('Loading video details', { videoId });
+    const currentVideoId = $page.params.id;
+    if (currentVideoId) {
+      logger.info('Loading video details', { videoId: currentVideoId });
       try {
-        const videoDetails = await loadVideoDetails(videoId);
-        logger.info('Video details loaded successfully', { videoId, filename: videoDetails?.filename });
+        const videoDetails = await loadVideoDetails(currentVideoId);
+        logger.info('Video details loaded successfully', { videoId: currentVideoId, filename: videoDetails?.filename });
         await loadVisionData();
-        logger.info('Vision data loaded successfully', { videoId });
+        logger.info('Vision data loaded successfully', { videoId: currentVideoId });
         await loadTranscription();
-        logger.info('Transcription data loaded successfully', { videoId });
+        logger.info('Transcription data loaded successfully', { videoId: currentVideoId });
         await loadAudioStems();
-        logger.info('Audio stems loaded successfully', { videoId });
+        logger.info('Audio stems loaded successfully', { videoId: currentVideoId });
         await loadReframedVideos();
-        logger.info('Reframed videos loaded successfully', { videoId });
+        logger.info('Reframed videos loaded successfully', { videoId: currentVideoId });
         await loadSaliencyStatus();
-        logger.info('Saliency status loaded successfully', { videoId });
+        logger.info('Saliency status loaded successfully', { videoId: currentVideoId });
         // Load Qwen VL status if available
         await loadQwenVLStatus();
       } catch (error: any) {
-        logger.error('Failed to load video details', { videoId, error: error?.message });
-        logger.error('Error details', { videoId, error: error?.message || 'Unknown error' });
+        logger.error('Failed to load video details', { videoId: currentVideoId, error: error?.message });
+        logger.error('Error details', { videoId: currentVideoId, error: error?.message || 'Unknown error' });
         videoNotFound = true;
       }
     }
   });
 
   async function loadQwenVLStatus() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
     try {
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/qwenVL/status`);
+      const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/qwenVL/status`);
       if (response.ok) {
         const status = await response.json();
         qwenVLStatus = status;
@@ -108,40 +110,35 @@
   // Reactive statement to update audio clips when scenes are loaded
   $: if ($videoScenes && $videoScenes.length > 0) {
     console.log('🎵 Scenes loaded, updating audio clips with scene data:', $videoScenes.length);
-    console.log('🎵 First scene:', $videoScenes[0]);
-    console.log('🎵 Last scene:', $videoScenes[$videoScenes.length - 1]);
     updateAudioClipsWithScenes($videoScenes);
-  } else {
-    console.log('🎵 Scenes not loaded yet or empty:', $videoScenes ? $videoScenes.length : 'null');
   }
 
   async function loadVisionData() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    logger.info('Loading vision data', { videoId });
+    logger.info('Loading vision data', { videoId: currentVideoId });
     loadingVision = true;
     try {
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/vision`);
-      logger.debug('Vision API response status', { videoId, status: response.status });
+      const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/vision`);
       if (response.ok) {
         visionData = await response.json();
-        logger.info('Vision data loaded successfully', { videoId, sceneCount: visionData?.length });
-      } else {
-        logger.error('Vision API error', { videoId, status: response.status, statusText: response.statusText });
+        logger.info('Vision data loaded successfully', { videoId: currentVideoId, sceneCount: visionData?.length });
       }
     } catch (error: any) {
-      logger.error('Failed to load vision data', { videoId, error: error?.message });
+      logger.error('Failed to load vision data', { videoId: currentVideoId, error: error?.message });
     } finally {
       loadingVision = false;
     }
   }
 
   async function handleRefresh() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
     refreshing = true;
     try {
-      await refreshVideo(videoId);
+      await refreshVideo(currentVideoId);
       await loadVisionData();
       await loadTranscription();
     } finally {
@@ -150,20 +147,17 @@
   }
 
   async function loadTranscription() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    console.log('🔍 Loading transcription for video:', videoId);
+    console.log('🔍 Loading transcription for video:', currentVideoId);
     loadingTranscription = true;
     try {
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/transcription`);
+      const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/transcription`);
       if (response.ok) {
         transcriptionData = await response.json();
-        console.log('✅ Transcription loaded:', transcriptionData);
       } else if (response.status === 404) {
-        console.log('ℹ️ No transcription found for video:', videoId);
         transcriptionData = null;
-      } else {
-        console.error('❌ Transcription API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('❌ Failed to load transcription:', error);
@@ -173,96 +167,79 @@
   }
 
   async function triggerTranscription() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    logger.info('Triggering transcription', { videoId });
+    logger.info('Triggering transcription', { videoId: currentVideoId });
     try {
       const response = await fetch(
-        `${api.baseUrl}/videos/${videoId}/transcribe`,
+        `${api.baseUrl}/videos/${currentVideoId}/transcribe`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' } }
       );
       
       if (response.ok) {
-        logger.info('Transcription triggered successfully', { videoId });
-        // Wait a moment then reload transcription
+        logger.info('Transcription triggered successfully', { videoId: currentVideoId });
         setTimeout(async () => {
           await loadTranscription();
         }, 2000);
-      } else {
-        logger.error('Failed to trigger transcription', { videoId, status: response.status });
       }
-    } catch (error) {
-      logger.error('Error triggering transcription', { videoId, error: error?.message });
+    } catch (error: any) {
+      logger.error('Error triggering transcription', { videoId: currentVideoId, error: error?.message });
     }
   }
 
   async function triggerAudioSeparation() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    logger.info('Triggering audio separation', { videoId });
+    logger.info('Triggering audio separation', { videoId: currentVideoId });
     separatingAudio = true;
     try {
-      await videosApi.separateAudio(videoId);
-      logger.info('Audio separation triggered successfully', { videoId });
-      // Poll for completion and load audio stems
+      await videosApi.separateAudio(currentVideoId);
       await pollAudioSeparationStatus();
-    } catch (error) {
-      logger.error('Failed to trigger audio separation', { videoId, error: error?.message });
+    } catch (error: any) {
+      logger.error('Failed to trigger audio separation', { videoId: currentVideoId, error: error?.message });
     } finally {
       separatingAudio = false;
     }
   }
 
   async function triggerSpleeterSeparation() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    logger.info('Triggering Spleeter audio separation', { videoId });
+    logger.info('Triggering Spleeter audio separation', { videoId: currentVideoId });
     separatingSpleeter = true;
     try {
-      await videosApi.spleeterSeparateAudio(videoId);
-      logger.info('Spleeter audio separation triggered successfully', { videoId });
-      // Poll for completion and load audio stems
+      await videosApi.spleeterSeparateAudio(currentVideoId);
       await pollAudioSeparationStatus();
-    } catch (error) {
-      logger.error('Failed to trigger Spleeter audio separation', { videoId, error: error?.message });
+    } catch (error: any) {
+      logger.error('Failed to trigger Spleeter audio separation', { videoId: currentVideoId, error: error?.message });
     } finally {
       separatingSpleeter = false;
     }
   }
 
   async function pollAudioSeparationStatus() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    console.log('🔄 Polling audio separation status...');
     let attempts = 0;
-    const maxAttempts = 60; // 60 seconds max
+    const maxAttempts = 60;
     
     const poll = async () => {
       try {
-        const status = await videosApi.getAudioSeparationStatus(videoId);
-        console.log('📊 Audio separation status:', status);
-        
+        const status = await videosApi.getAudioSeparationStatus(currentVideoId);
         if (status.status === 'completed') {
-          console.log('✅ Audio separation completed:', status);
-          // Load audio stems into timeline
           await loadAudioStems();
           return;
-        } else if (status.status === 'failed') {
-          console.error('❌ Audio separation failed:', status.message);
-          return;
-        } else if (status.status === 'not_started') {
-          console.log('ℹ️ Audio separation not started yet');
-          // Continue polling
         }
         
         attempts++;
         if (attempts < maxAttempts) {
-          setTimeout(poll, 1000); // Poll every second
-        } else {
-          console.log('⏰ Audio separation polling timeout');
+          setTimeout(poll, 1000);
         }
       } catch (error) {
-        console.error('❌ Error polling audio separation status:', error);
         attempts++;
         if (attempts < maxAttempts) {
           setTimeout(poll, 1000);
@@ -274,101 +251,245 @@
   }
 
   async function triggerSaliencyAnalysis() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    logger.info('Triggering saliency analysis', { videoId });
+    logger.info('Triggering saliency analysis', { videoId: currentVideoId });
     analyzingSaliency = true;
     try {
-      await saliencyApi.analyzeSaliency(videoId);
-      logger.info('Saliency analysis triggered successfully', { videoId });
-      // Poll for completion
+      await saliencyApi.analyzeSaliency(currentVideoId);
       await pollSaliencyStatus();
-      // Reload saliency status after completion
       await loadSaliencyStatus();
     } catch (error: any) {
-      logger.error('Failed to trigger saliency analysis', { videoId, error: error?.message });
-      const errorMessage = error?.message || 'Failed to start saliency analysis. Please check if the saliency service is running.';
-      alert(_('project.error.saliencyStart', { message: errorMessage }));
+      logger.error('Failed to trigger saliency analysis', { videoId: currentVideoId, error: error?.message });
+      alert(_('project.error.saliencyStart', { message: error?.message || 'Failed to start saliency analysis.' }));
     } finally {
       analyzingSaliency = false;
     }
   }
 
+  async function pollSaliencyStatus() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    let attempts = 0;
+    const maxAttempts = 60;
+    
+    const poll = async () => {
+      try {
+        const status = await saliencyApi.getSaliencyStatus(currentVideoId);
+        if (status.hasAnalysis) {
+          saliencyAnalyzed = true;
+          return;
+        }
+        
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        }
+      } catch (error) {
+        console.error('❌ Error polling saliency status:', error);
+      }
+    };
+    
+    poll();
+  }
 
+  function openReframeModal() {
+    showReframeModal = true;
+  }
 
-  async function triggerQwenVLAnalysis() {
-    if (!videoId) return;
+  async function handlePlayReframed(reframedVideo: ReframedVideo) {
+    if (reframedVideo.status !== 'COMPLETED') return;
+    const videoUrl = `${api.baseUrl}/videos/${reframedVideo.videoId}/reframed/${reframedVideo.id}/download`;
+    window.open(videoUrl, '_blank');
+  }
 
-    analyzingQwenVL = true;
+  async function handleDownloadReframed(reframedVideo: ReframedVideo) {
+    if (reframedVideo.status !== 'COMPLETED') return;
+    const videoUrl = `${api.baseUrl}/videos/${reframedVideo.videoId}/reframed/${reframedVideo.id}/download`;
+    window.open(videoUrl, '_blank');
+  }
+
+  async function handleDeleteReframed(reframedVideo: ReframedVideo) {
     try {
-      logger.info('Triggering Qwen VL analysis', { videoId });
-      const response = await fetch(`${api.baseUrl}/videos/${videoId}/qwenVL`, {
+      await saliencyApi.deleteReframedVideo(reframedVideo.id);
+      await loadReframedVideos();
+    } catch (error) {
+      alert(_('reframe.deleteFailed'));
+    }
+  }
+
+  async function handleReframe(event: CustomEvent<ReframeOptions>) {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    const options = event.detail;
+    reframingVideo = true;
+    try {
+      const response = await saliencyApi.reframeVideo(currentVideoId, options);
+      currentReframingJobId = response.jobId;
+      await pollReframingStatus(response.jobId);
+    } catch (error) {
+      reframingVideo = false;
+    }
+  }
+
+  async function pollReframingStatus(jobId: string) {
+    let attempts = 0;
+    const maxAttempts = 120;
+    
+    const poll = async () => {
+      try {
+        const status = await saliencyApi.getReframingStatus(jobId);
+        reframingProgress = status.progress;
+        
+        if (status.completed) {
+          reframingVideo = false;
+          showReframeModal = false;
+          await loadReframedVideos();
+          await saliencyApi.downloadReframedVideo(jobId);
+          return;
+        }
+        
+        if (status.status === 'ERROR') {
+          reframingVideo = false;
+          showReframeModal = false;
+          alert('Reframing failed: ' + (status.message || 'Unknown error'));
+          return;
+        }
+        
+        attempts++;
+        if (attempts < maxAttempts) {
+          setTimeout(poll, 2000);
+        }
+      } catch (error) {
+        console.error('❌ Error polling reframing status:', error);
+      }
+    };
+    
+    poll();
+  }
+
+  async function loadSaliencyStatus() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    try {
+      saliencyStatus = await saliencyApi.getSaliencyStatus(currentVideoId);
+      saliencyAnalyzed = saliencyStatus && saliencyStatus.hasAnalysis;
+    } catch (error) {
+      saliencyStatus = null;
+      saliencyAnalyzed = false;
+    }
+  }
+
+  async function loadAudioStems() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    try {
+      const audioStems = await videosApi.getAudioStems(currentVideoId);
+      if (audioStems && audioStems.length > 0) {
+        showAudioTracks(audioStems);
+        if ($videoScenes && $videoScenes.length > 0) {
+          updateAudioClipsWithScenes($videoScenes);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to load audio stems:', error);
+    }
+  }
+
+  async function loadReframedVideos() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    loadingReframedVideos = true;
+    try {
+      const videos = await saliencyApi.getReframedVideos(currentVideoId);
+      reframedVideos = videos;
+    } catch (error) {
+      reframedVideos = [];
+    } finally {
+      loadingReframedVideos = false;
+    }
+  }
+
+  function registerAudioTrack(track: any) {
+    audioTracks.push(track);
+  }
+
+  function unregisterAudioTrack(track: any) {
+    audioTracks = audioTracks.filter(t => t !== track);
+  }
+
+  async function triggerVisionAnalysis() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    try {
+      const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/vision/analyze`, {
         method: 'POST'
       });
-
       if (response.ok) {
-        logger.info('Qwen VL analysis triggered successfully', { videoId });
+        await loadVisionData();
+      }
+    } catch (error) {
+      console.error('Error triggering vision analysis:', error);
+    }
+  }
+
+  async function triggerQwenVLAnalysis() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+    
+    analyzingQwenVL = true;
+    try {
+      const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/qwenVL/analyze`, {
+        method: 'POST'
+      });
+      if (response.ok) {
         await pollQwenVLStatus();
-        await loadQwenVLStatus();
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || response.statusText;
-        logger.error('Failed to trigger Qwen VL analysis', { videoId, error: errorMessage, status: response.status });
-        alert(_('project.error.qwenUnavailable', { error: errorMessage }));
+        alert(_('project.error.qwenUnavailable', { error: 'Service error' }));
       }
     } catch (error: any) {
-      logger.error('Error triggering Qwen VL analysis', { videoId, error: error?.message });
-      const errorMessage = error?.message || 'Unknown error';
-      alert(_('project.error.qwenUnavailable', { error: errorMessage }));
+      alert(_('project.error.qwenUnavailable', { error: error?.message }));
     } finally {
       analyzingQwenVL = false;
     }
   }
 
   async function pollQwenVLStatus() {
-    if (!videoId) return;
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
     
-    console.log('🔄 Polling Qwen VL analysis status...');
     let attempts = 0;
-    const maxAttempts = 300; // 5 minutes max (300 * 2s = 10 minutes for 77 scenes)
+    const maxAttempts = 300;
     
     const poll = async () => {
       try {
-        const response = await fetch(`${api.baseUrl}/videos/${videoId}/qwenVL/status`);
-        if (!response.ok) {
-          throw new Error(`Status check failed: ${response.status}`);
-        }
-        
+        const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/qwenVL/status`);
         const status = await response.json();
         qwenVLStatus = status;
         qwenVLProgress = status.progress || 0;
         
-        console.log('📊 Qwen VL status:', status);
-        
         if (status.isComplete || status.status === 'COMPLETED') {
-          console.log('✅ Qwen VL analysis completed');
           analyzingQwenVL = false;
-          // Reload vision data to show new descriptions
           await loadVisionData();
-          // Update status one more time
           await loadQwenVLStatus();
           return;
         }
         
         attempts++;
         if (attempts < maxAttempts) {
-          setTimeout(poll, 2000); // Poll every 2 seconds
-        } else {
-          console.log('⏰ Qwen VL analysis polling timeout');
-          analyzingQwenVL = false;
+          setTimeout(poll, 2000);
         }
       } catch (error) {
-        console.error('❌ Error polling Qwen VL status:', error);
         attempts++;
         if (attempts < maxAttempts) {
           setTimeout(poll, 2000);
-        } else {
-          analyzingQwenVL = false;
         }
       }
     };
