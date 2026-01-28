@@ -20,13 +20,13 @@
     en: [
       'Create a 60 second video about management presentations with professional tone',
       'Find funny moments with reactions',
-      'Create an energetic product showcase'
+      'Create an energetic product showcase',
     ],
     de: [
       'Erstelle ein 60 Sekunden Video über Management-Präsentationen mit professionellem Ton',
       'Finde lustige Momente mit Reaktionen',
-      'Erstelle eine energiegeladene Produktvorstellung'
-    ]
+      'Erstelle eine energiegeladene Produktvorstellung',
+    ],
   };
 
   onMount(async () => {
@@ -44,9 +44,7 @@
 
   async function handleAnalyze() {
     if (!query.trim()) {
-      error = $currentLocale === 'en' 
-        ? 'Please enter a query'
-        : 'Bitte geben Sie eine Anfrage ein';
+      error = $currentLocale === 'en' ? 'Please enter a query' : 'Bitte geben Sie eine Anfrage ein';
       return;
     }
 
@@ -56,40 +54,45 @@
 
     try {
       // Step 1: Analyzing
-      loadingStep = $currentLocale === 'en' 
-        ? 'Analyzing your request with GPT-5-mini...'
-        : 'Analysiere Ihre Anfrage mit GPT-5-mini...';
-      
+      loadingStep =
+        $currentLocale === 'en'
+          ? 'Analyzing your request with GPT-5-mini...'
+          : 'Analysiere Ihre Anfrage mit GPT-5-mini...';
+
       await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
 
       // Step 2: Searching
-      loadingStep = $currentLocale === 'en' 
-        ? 'Searching for relevant scenes...'
-        : 'Suche nach relevanten Szenen...';
+      loadingStep =
+        $currentLocale === 'en'
+          ? 'Searching for relevant scenes...'
+          : 'Suche nach relevanten Szenen...';
 
       // Step 3: Evaluating
       setTimeout(() => {
-        loadingStep = $currentLocale === 'en'
-          ? 'Evaluating and ranking scenes...'
-          : 'Bewerte und sortiere Szenen...';
+        loadingStep =
+          $currentLocale === 'en'
+            ? 'Evaluating and ranking scenes...'
+            : 'Bewerte und sortiere Szenen...';
       }, 2000);
 
       // Step 4: Creating
       setTimeout(() => {
-        loadingStep = $currentLocale === 'en'
-          ? 'Creating video suggestions...'
-          : 'Erstelle Video-Vorschläge...';
+        loadingStep =
+          $currentLocale === 'en'
+            ? 'Creating video suggestions...'
+            : 'Erstelle Video-Vorschläge...';
       }, 4000);
 
       const result = await aiCreatorApi.analyzeQuery(query, variantCount);
       suggestions = result;
       selectedSuggestionIndex = 0;
-
     } catch (err: any) {
       console.error('Analysis error:', err);
-      error = err.message || ($currentLocale === 'en' 
-        ? 'Failed to analyze query. Please try again.'
-        : 'Analyse fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      error =
+        err.message ||
+        ($currentLocale === 'en'
+          ? 'Failed to analyze query. Please try again.'
+          : 'Analyse fehlgeschlagen. Bitte versuchen Sie es erneut.');
     } finally {
       loading = false;
       loadingStep = '';
@@ -104,19 +107,19 @@
     error = '';
 
     try {
-      loadingStep = $currentLocale === 'en'
-        ? 'Creating project...'
-        : 'Erstelle Projekt...';
+      loadingStep = $currentLocale === 'en' ? 'Creating project...' : 'Erstelle Projekt...';
 
       const projectId = await aiCreatorApi.createProject(suggestion.id);
-      
+
       // Redirect to project page
       goto(`/projects/${projectId}`);
     } catch (err: any) {
       console.error('Create project error:', err);
-      error = err.message || ($currentLocale === 'en'
-        ? 'Failed to create project. Please try again.'
-        : 'Projekt-Erstellung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+      error =
+        err.message ||
+        ($currentLocale === 'en'
+          ? 'Failed to create project. Please try again.'
+          : 'Projekt-Erstellung fehlgeschlagen. Bitte versuchen Sie es erneut.');
       loading = false;
       loadingStep = '';
     }
@@ -143,11 +146,8 @@
 <div class="max-w-6xl mx-auto">
   <!-- Header -->
   <div class="mb-8">
-    <h1 class="text-3xl font-light text-gray-900 dark:text-white mb-2">
-      {$currentLocale === 'en' ? 'AI Creator' : 'KI Creator'}
-    </h1>
     <p class="text-gray-600 dark:text-gray-400">
-      {$currentLocale === 'en' 
+      {$currentLocale === 'en'
         ? 'Describe your video idea and let AI find the perfect scenes'
         : 'Beschreiben Sie Ihre Video-Idee und lassen Sie KI die perfekten Szenen finden'}
     </p>
@@ -161,9 +161,11 @@
       </p>
     </div>
   {:else if !isAvailable}
-    <div class="glass-card p-4 mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+    <div
+      class="glass-card p-4 mb-6 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+    >
       <p class="text-yellow-800 dark:text-yellow-200">
-        ⚠️ {$currentLocale === 'en' 
+        ⚠️ {$currentLocale === 'en'
           ? 'AI Creator service is not available. Please configure OPENAI_API_KEY.'
           : 'KI Creator Service ist nicht verfügbar. Bitte konfigurieren Sie OPENAI_API_KEY.'}
       </p>
@@ -213,10 +215,11 @@
       <div class="flex gap-2">
         {#each [1, 2, 3] as count}
           <button
-            on:click={() => variantCount = count}
+            on:click={() => (variantCount = count)}
             disabled={loading || !isAvailable}
-            class="px-4 py-2 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed {variantCount === count 
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+            class="px-4 py-2 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed {variantCount ===
+            count
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
               : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'}"
           >
             {count}
@@ -232,16 +235,22 @@
         disabled={loading || !isAvailable || !query.trim()}
         class="flex-1 glass-button px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading 
-          ? ($currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...')
-          : ($currentLocale === 'en' ? 'Generate Video Ideas' : 'Generiere Video-Ideen')}
+        {loading
+          ? $currentLocale === 'en'
+            ? 'Analyzing...'
+            : 'Analysiere...'
+          : $currentLocale === 'en'
+            ? 'Generate Video Ideas'
+            : 'Generiere Video-Ideen'}
       </button>
     </div>
   </div>
 
   <!-- Error Message -->
   {#if error}
-    <div class="glass-card p-4 mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+    <div
+      class="glass-card p-4 mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
+    >
       <p class="text-red-800 dark:text-red-200">
         ❌ {error}
       </p>
@@ -252,10 +261,12 @@
   {#if loading}
     <div class="glass-card p-8 text-center">
       <div class="flex flex-col items-center gap-4">
-        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
+        ></div>
         <p class="text-gray-700 dark:text-gray-300 font-medium">{loadingStep}</p>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          {$currentLocale === 'en' 
+          {$currentLocale === 'en'
             ? 'This may take a few moments...'
             : 'Dies kann einige Momente dauern...'}
         </p>
@@ -271,19 +282,24 @@
         <div class="flex gap-3 overflow-x-auto pb-2">
           {#each suggestions as suggestion, i}
             <button
-              on:click={() => selectedSuggestionIndex = i}
-              class="flex-shrink-0 glass-card p-4 rounded-lg transition-all {selectedSuggestionIndex === i
+              on:click={() => (selectedSuggestionIndex = i)}
+              class="flex-shrink-0 glass-card p-4 rounded-lg transition-all {selectedSuggestionIndex ===
+              i
                 ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
                 : 'hover:ring-2 hover:ring-gray-300 dark:hover:ring-gray-600'}"
             >
               <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                {$currentLocale === 'en' ? 'Variant' : 'Variante'} {i + 1}
+                {$currentLocale === 'en' ? 'Variant' : 'Variante'}
+                {i + 1}
               </p>
               <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                 {suggestion.title}
               </p>
               <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {suggestion.scenes.length} {$currentLocale === 'en' ? 'scenes' : 'Szenen'} • {formatDuration(suggestion.totalDuration)}
+                {suggestion.scenes.length}
+                {$currentLocale === 'en' ? 'scenes' : 'Szenen'} • {formatDuration(
+                  suggestion.totalDuration
+                )}
               </p>
             </button>
           {/each}
@@ -302,7 +318,8 @@
             </p>
             <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
               <span>
-                📹 {selectedSuggestion.scenes.length} {$currentLocale === 'en' ? 'scenes' : 'Szenen'}
+                📹 {selectedSuggestion.scenes.length}
+                {$currentLocale === 'en' ? 'scenes' : 'Szenen'}
               </span>
               <span>
                 ⏱️ {formatDuration(selectedSuggestion.totalDuration)}
@@ -319,19 +336,24 @@
               {$currentLocale === 'en' ? 'Scene Timeline' : 'Szenen-Timeline'}
             </h3>
             {#each selectedSuggestion.scenes as scene, i}
-              <div class="glass-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+              <div
+                class="glass-card p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+              >
                 <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center text-sm font-medium">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 flex items-center justify-center text-sm font-medium"
+                  >
                     {i + 1}
                   </div>
                   <div class="flex-1">
                     <div class="flex items-start justify-between mb-2">
                       <div>
                         <p class="text-sm font-medium text-gray-900 dark:text-white">
-                          {$currentLocale === 'en' ? 'Scene' : 'Szene'} {i + 1}
+                          {$currentLocale === 'en' ? 'Scene' : 'Szene'}
+                          {i + 1}
                         </p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                          {formatDuration(scene.startTime)} - {formatDuration(scene.endTime)} 
+                          {formatDuration(scene.startTime)} - {formatDuration(scene.endTime)}
                           ({formatDuration(scene.endTime - scene.startTime)})
                         </p>
                       </div>
@@ -370,7 +392,9 @@
     <div class="glass-card p-12 text-center">
       <div class="text-6xl mb-4">🎬</div>
       <h3 class="text-xl font-light text-gray-900 dark:text-white mb-2">
-        {$currentLocale === 'en' ? 'Create Your First AI Video' : 'Erstellen Sie Ihr erstes KI-Video'}
+        {$currentLocale === 'en'
+          ? 'Create Your First AI Video'
+          : 'Erstellen Sie Ihr erstes KI-Video'}
       </h3>
       <p class="text-gray-600 dark:text-gray-400">
         {$currentLocale === 'en'
@@ -389,4 +413,3 @@
     overflow: hidden;
   }
 </style>
-

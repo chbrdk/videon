@@ -463,10 +463,6 @@ let scrollAnimationId: number | null = null;
 </svelte:head>
 
 <div class="max-w-7xl mx-auto space-y-8">
-  <!-- Header -->
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{_('pages.videoGallery.title')}</h1>
-  </div>
 
   <!-- Breadcrumbs -->
   <MsqdxBreadcrumbs />
