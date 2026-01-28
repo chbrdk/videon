@@ -97,8 +97,6 @@
 
 <div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
   <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-    <h2 class="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">User Settings</h2>
-
     <div class="space-y-6">
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"

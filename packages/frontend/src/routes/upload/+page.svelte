@@ -18,9 +18,12 @@
 
   async function handleUpload() {
     const locale = get(currentLocale);
-    
+
     if (!files || files.length === 0) {
-      error = locale === 'en' ? 'Please select at least one video file' : 'Bitte wählen Sie mindestens eine Videodatei aus';
+      error =
+        locale === 'en'
+          ? 'Please select at least one video file'
+          : 'Bitte wählen Sie mindestens eine Videodatei aus';
       return;
     }
 
@@ -28,18 +31,20 @@
     const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
+
       if (!file.type.startsWith('video/')) {
-        error = locale === 'en' 
-          ? `File "${file.name}" is not a video file` 
-          : `Datei "${file.name}" ist keine Videodatei`;
+        error =
+          locale === 'en'
+            ? `File "${file.name}" is not a video file`
+            : `Datei "${file.name}" ist keine Videodatei`;
         return;
       }
 
       if (file.size > maxSize) {
-        error = locale === 'en' 
-          ? `File "${file.name}" is too large (max 10GB)` 
-          : `Datei "${file.name}" ist zu groß (max 10GB)`;
+        error =
+          locale === 'en'
+            ? `File "${file.name}" is too large (max 10GB)`
+            : `Datei "${file.name}" ist zu groß (max 10GB)`;
         return;
       }
     }
@@ -54,8 +59,8 @@
       for (let i = 0; i < files.length; i++) {
         currentFileIndex = i;
         const file = files[i];
-        
-        const response = await videosApi.uploadVideo(file, (p) => {
+
+        const response = await videosApi.uploadVideo(file, p => {
           // Calculate overall progress across all files
           const filesCompleted = i;
           const currentFileProgress = p / 100;
@@ -70,7 +75,12 @@
         goto(`${base}/videos`);
       }, 1000);
     } catch (err) {
-      error = err instanceof Error ? err.message : (locale === 'en' ? 'Upload failed' : 'Upload fehlgeschlagen');
+      error =
+        err instanceof Error
+          ? err.message
+          : locale === 'en'
+            ? 'Upload failed'
+            : 'Upload fehlgeschlagen';
       uploading = false;
       progress = 0;
     }
@@ -95,12 +105,15 @@
   function handleDrop(event: DragEvent) {
     event.preventDefault();
     dragOver = false;
-    
+
     if (event.dataTransfer?.files) {
       files = event.dataTransfer.files;
       error = null;
     }
   }
+
+  import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   function formatFileSize(bytes: number): string {
     const locale = get(currentLocale);
@@ -113,90 +126,108 @@
 </script>
 
 <svelte:head>
-  <title>{$currentLocale === 'en' ? 'Video Upload' : 'Video Upload'} - PrismVid</title>
-  <meta name="description" content={$currentLocale === 'en' ? 'Upload videos for analysis' : 'Videos zur Analyse hochladen'} />
+  <title>{$currentLocale === 'en' ? 'Video Upload' : 'Video Upload'} - Videon</title>
 </svelte:head>
 
-<div class="max-w-2xl mx-auto space-y-8">
-  <div class="text-center">
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">{$currentLocale === 'en' ? 'Video Upload' : 'Video Upload'}</h1>
-    <p class="text-gray-600 dark:text-white/70 text-base">
-      {$currentLocale === 'en' ? 'Upload your videos for analysis (up to 10 videos, 10GB each)' : 'Laden Sie Ihre Videos zur Analyse hoch (bis zu 10 Videos, je 10GB)'}
-    </p>
-  </div>
+<div class="max-w-4xl mx-auto space-y-8 pb-12">
+  <!-- Intro / Title -->
+  <!-- <div class="text-center mb-8">
+     Title is now in header
+  </div> -->
 
-  <div class="glass-card">
+  <MsqdxGlassCard variant="default">
     <!-- Upload Area -->
-    <div 
-      class="upload-area border-2 border-dashed border-gray-300 dark:border-white/20 rounded-lg p-12 text-center transition-colors {dragOver ? 'border-gray-400 dark:border-white/40 bg-gray-50 dark:bg-white/5' : ''}"
+    <div
+      class="relative group cursor-pointer"
       on:dragover={handleDragOver}
       on:dragleave={handleDragLeave}
       on:drop={handleDrop}
       role="button"
       tabindex="0"
-      on:keydown={(e) => e.key === 'Enter' && document.getElementById('file-input')?.click()}
+      on:keydown={e => e.key === 'Enter' && document.getElementById('file-input')?.click()}
+      on:click={() => document.getElementById('file-input')?.click()}
     >
-      <div class="space-y-4">
-        <div class="text-6xl text-gray-400 dark:text-white/40">📹</div>
-        
-        <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {files && files.length > 0 
-              ? ($currentLocale === 'en' ? `${files.length} File(s) Selected` : `${files.length} Datei(en) ausgewählt`) 
-              : ($currentLocale === 'en' ? 'Drop videos here or click to select' : 'Videos hier ablegen oder klicken zum Auswählen')}
-          </h3>
-          <p class="text-gray-600 dark:text-white/60">
-            {$currentLocale === 'en' ? 'Supported formats: MP4, AVI, MOV, WMV, MKV' : 'Unterstützte Formate: MP4, AVI, MOV, WMV, MKV'}
-          </p>
-          <p class="text-gray-600 dark:text-white/60 ">
-            {$currentLocale === 'en' ? 'Maximum file size: 10GB per file' : 'Maximale Dateigröße: 10GB pro Datei'}
-          </p>
-          <p class="text-gray-600 dark:text-white/60 text-sm mt-1">
-            {$currentLocale === 'en' ? 'You can upload multiple videos at once (max 10)' : 'Sie können mehrere Videos gleichzeitig hochladen (max 10)'}
-          </p>
+      <div
+        class="
+          border-2 border-dashed rounded-2xl p-16 text-center transition-all duration-300
+          {dragOver
+          ? 'border-white/60 bg-white/10 scale-[1.01]'
+          : 'border-white/20 hover:border-white/40 hover:bg-white/5'}
+        "
+      >
+        <div class="flex flex-col items-center justify-center space-y-6">
+          <div
+            class="mb-2 p-4 rounded-full bg-white/5 border border-white/10 group-hover:scale-110 transition-transform duration-300"
+          >
+            <MaterialSymbol icon="cloud_upload" fontSize={48} class="text-white/80" />
+          </div>
+
+          <div>
+            <h3 class="text-xl font-light tracking-wide text-white mb-2">
+              {files && files.length > 0
+                ? $currentLocale === 'en'
+                  ? `${files.length} File(s) Selected`
+                  : `${files.length} Datei(en) ausgewählt`
+                : $currentLocale === 'en'
+                  ? 'Drag & Drop your videos here'
+                  : 'Videos hier ablegen'}
+            </h3>
+            <p class="text-white/60 font-light">
+              {$currentLocale === 'en'
+                ? 'or click to browse from your device'
+                : 'oder klicken zum Durchsuchen'}
+            </p>
+          </div>
+
+          <div class="flex gap-4 text-xs text-white/40 uppercase tracking-widest">
+            <span>MP4</span>
+            <span>AVI</span>
+            <span>MOV</span>
+            <span>MKV</span>
+          </div>
         </div>
-
-        <input
-          id="file-input"
-          type="file"
-          accept="video/*"
-          multiple
-          bind:files
-          on:change={handleFileSelect}
-          class="hidden"
-        />
-
-        <button
-          type="button"
-          class="glass-button "
-          on:click={() => document.getElementById('file-input')?.click()}
-          disabled={uploading}
-        >
-{$currentLocale === 'en' ? 'Select Video(s)' : 'Video(s) auswählen'}
-        </button>
       </div>
+
+      <input
+        id="file-input"
+        type="file"
+        accept="video/*"
+        multiple
+        bind:files
+        on:change={handleFileSelect}
+        class="hidden"
+      />
     </div>
 
     <!-- Selected Files Info -->
     {#if files && files.length > 0}
-      <div class="mt-6 p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
-        <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
-          {$currentLocale === 'en' ? `Selected File${files.length > 1 ? 's' : ''}:` : `Ausgewählte Datei${files.length > 1 ? 'en' : ''}:`}
+      <div class="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-white/50 mb-4 pl-1">
+          {$currentLocale === 'en' ? 'Selected Files' : 'Ausgewählte Dateien'}
         </h4>
         <div class="space-y-3">
           {#each Array.from(files) as file, index}
-            <div class="p-3 bg-white/50 dark:bg-white/10 rounded border border-gray-200 dark:border-white/20">
-              <p class="text-gray-700 dark:text-white/80 font-medium">{index + 1}. {file.name}</p>
-              <div class="flex gap-4 mt-1 text-sm text-gray-600 dark:text-white/60">
-                <span>{formatFileSize(file.size)}</span>
-                <span>{file.type || 'video/*'}</span>
+            <div
+              class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-300"
+                >
+                  <MaterialSymbol icon="movie" fontSize={20} />
+                </div>
+                <div>
+                  <p class="text-white/90 font-medium text-sm">{file.name}</p>
+                  <p class="text-white/50 text-xs mt-0.5">{file.type || 'video/unknown'}</p>
+                </div>
               </div>
+              <span class="text-white/60 text-sm font-mono">{formatFileSize(file.size)}</span>
             </div>
           {/each}
-          <div class="mt-2 pt-2 border-t border-gray-200 dark:border-white/20">
-            <p class="text-gray-700 dark:text-white/80 font-medium">
-              {$currentLocale === 'en' ? 'Total:' : 'Gesamt:'} {files.length} {$currentLocale === 'en' ? 'file(s)' : 'Datei(en)'} - {formatFileSize(Array.from(files).reduce((sum, f) => sum + f.size, 0))}
-            </p>
+
+          <div class="flex justify-end pt-2 text-white/40 text-xs font-mono">
+            {$currentLocale === 'en' ? 'Total:' : 'Gesamt:'}
+            {formatFileSize(Array.from(files).reduce((sum, f) => sum + f.size, 0))}
           </div>
         </div>
       </div>
@@ -204,62 +235,83 @@
 
     <!-- Error Message -->
     {#if error}
-      <div class="mt-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
-        <p class="text-red-200">{error}</p>
+      <div
+        class="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3"
+      >
+        <MaterialSymbol icon="error" class="text-red-400 mt-0.5" fontSize={20} />
+        <p class="text-red-200 text-sm">{error}</p>
       </div>
     {/if}
 
     <!-- Progress Bar -->
     {#if uploading}
-      <div class="mt-6">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-gray-700 dark:text-white/80">
-            {$currentLocale === 'en' 
-              ? `Uploading ${currentFileIndex + 1} of ${totalFiles}...` 
-              : `Lade ${currentFileIndex + 1} von ${totalFiles} hoch...`}
+      <div class="mt-8 p-6 bg-black/20 rounded-2xl border border-white/5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-white/80 text-sm font-medium">
+            {$currentLocale === 'en'
+              ? `Uploading ${currentFileIndex + 1} of ${totalFiles}`
+              : `Lade ${currentFileIndex + 1} von ${totalFiles} hoch`}
           </span>
-          <span class="text-gray-600 dark:text-white/60">{Math.round(progress)}%</span>
+          <span class="text-indigo-400 font-mono text-sm">{Math.round(progress)}%</span>
         </div>
-        <MsqdxProgress progress={progress} />
-        <p class="text-gray-600 dark:text-white/60 mt-2">
-          {$currentLocale === 'en' 
-            ? `Please wait while your video${totalFiles > 1 ? 's are' : ' is'} being uploaded...` 
-            : `Bitte warten Sie, während Ihr${totalFiles > 1 ? 'e Videos werden' : ' Video wird'} hochgeladen wird...`}
+        <MsqdxProgress {progress} />
+        <p class="text-white/40 text-xs mt-3 text-center animate-pulse">
+          {$currentLocale === 'en' ? 'Processing video...' : 'Verarbeite Video...'}
         </p>
-        {#if uploadedVideos.length > 0}
-          <p class="text-green-600 dark:text-green-400 text-sm mt-2">
-            ✅ {uploadedVideos.length} {$currentLocale === 'en' ? 'video(s) uploaded successfully' : 'Video(s) erfolgreich hochgeladen'}
-          </p>
-        {/if}
       </div>
     {/if}
 
     <!-- Upload Button -->
     {#if files && files.length > 0 && !uploading}
-      <div class="mt-6">
+      <div class="mt-8">
         <button
           type="button"
-          class="glass-button w-full "
+          class="
+            w-full py-4 px-6 rounded-xl
+            bg-gradient-to-r from-indigo-500 to-purple-600
+            hover:from-indigo-400 hover:to-purple-500
+            text-white font-semibold tracking-wide text-sm uppercase
+            shadow-lg shadow-indigo-500/20
+            transform hover:scale-[1.01] active:scale-[0.99]
+            transition-all duration-200
+            flex items-center justify-center gap-2
+          "
           on:click={handleUpload}
           disabled={uploading}
         >
-{$currentLocale === 'en' 
-  ? `Upload ${files.length > 1 ? `${files.length} Videos` : 'Video'}` 
-  : `${files.length > 1 ? `${files.length} Videos` : 'Video'} hochladen`}
+          <MaterialSymbol icon="rocket_launch" fontSize={20} />
+          <span>
+            {$currentLocale === 'en'
+              ? `Start Upload (${files.length})`
+              : `Upload Starten (${files.length})`}
+          </span>
         </button>
       </div>
     {/if}
-  </div>
+  </MsqdxGlassCard>
 
-  <!-- Help Section -->
-  <div class="glass-card">
-    <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-4">{$currentLocale === 'en' ? 'Help' : 'Hilfe'}</h3>
-    <div class="space-y-3 text-gray-600 dark:text-white/70">
-      <p>• {$currentLocale === 'en' ? 'Supported video formats: MP4, AVI, MOV, WMV, MKV' : 'Unterstützte Video-Formate: MP4, AVI, MOV, WMV, MKV'}</p>
-      <p>• {$currentLocale === 'en' ? 'Maximum file size: 10GB per video' : 'Maximale Dateigröße: 10GB pro Video'}</p>
-      <p>• {$currentLocale === 'en' ? 'Upload up to 10 videos at once' : 'Bis zu 10 Videos gleichzeitig hochladen'}</p>
-      <p>• {$currentLocale === 'en' ? 'Vision analysis starts automatically after upload' : 'Nach dem Upload startet automatisch die Vision-Analyse'}</p>
-      <p>• {$currentLocale === 'en' ? 'Analysis may take several minutes per video' : 'Die Analyse kann einige Minuten pro Video dauern'}</p>
+  <!-- Help Section (Subtler) -->
+  <div class="px-6 py-4">
+    <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">
+      {$currentLocale === 'en' ? 'Upload Guidelines' : 'Hinweise'}
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-white/50">
+      <div class="flex items-start gap-3">
+        <MaterialSymbol icon="check_circle" fontSize={18} class="text-white/20 mt-0.5" />
+        <span>{$currentLocale === 'en' ? 'Max 10GB per file' : 'Max 10GB pro Datei'}</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <MaterialSymbol icon="check_circle" fontSize={18} class="text-white/20 mt-0.5" />
+        <span
+          >{$currentLocale === 'en'
+            ? 'Video formats: MP4, MOV, MKV, AVI'
+            : 'Formate: MP4, MOV, MKV, AVI'}</span
+        >
+      </div>
+      <div class="flex items-start gap-3">
+        <MaterialSymbol icon="auto_awesome" fontSize={18} class="text-white/20 mt-0.5" />
+        <span>{$currentLocale === 'en' ? 'Auto-analysis enabled' : 'Automatische KI-Analyse'}</span>
+      </div>
     </div>
   </div>
 </div>
