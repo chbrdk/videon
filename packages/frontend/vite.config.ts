@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit()],
-  base: process.env.VITE_BASE_PATH || '/videon',
+  base: process.env.VITE_BASE_PATH === '/' ? '' : (process.env.VITE_BASE_PATH || '/videon'),
   server: {
     port: 3010,
     host: true,
@@ -15,7 +15,7 @@ export default defineConfig({
   preview: {
     port: 3010,
     host: true,
-    base: process.env.VITE_BASE_PATH || '/videon'
+    base: process.env.VITE_BASE_PATH === '/' ? '' : (process.env.VITE_BASE_PATH || '/videon')
   },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
