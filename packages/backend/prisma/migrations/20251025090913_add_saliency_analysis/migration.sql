@@ -10,7 +10,7 @@ CREATE TABLE "saliency_analyses" (
     "sampleRate" INTEGER NOT NULL DEFAULT 1,
     "modelVersion" TEXT NOT NULL,
     "processingTime" REAL NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "saliency_analyses_sceneId_fkey" FOREIGN KEY ("sceneId") REFERENCES "scenes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "saliency_analyses_videoId_fkey" FOREIGN KEY ("videoId") REFERENCES "videos" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
