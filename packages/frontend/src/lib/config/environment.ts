@@ -43,19 +43,21 @@ const getBackendUrl = () => {
   if (BACKEND_URL_BUILD_TIME) {
     return BACKEND_URL_BUILD_TIME;
   }
-  
+
   if (typeof window !== 'undefined') {
-    const { hostname, protocol, pathname } = window.location;
-    
-    // If accessed via /videon, use relative API path (proxied by Nginx)
-    if (pathname.startsWith('/videon')) {
-      return `${protocol}//${hostname}`;
+    const { hostname, protocol } = window.location;
+    // Assume backend is on port 4001 in development, or use relative root API if proxied
+    // For production builds without explicit backend URL, we might want to assume same origin /api
+    // But here we return base backend URL (without /api)
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return `${protocol}//${hostname}:4001`;
     }
-    
-    // Otherwise use direct backend URL (development)
-    return `${protocol}//${hostname}:4001`;
+    // In production (if not passed via env), assume same origin handling or fail gracefully
+    // Currently we prefer explicit env var.
+    return `${protocol}//${hostname}`;
   }
-  
+
   return 'http://localhost:4001';
 };
 
@@ -94,10 +96,8 @@ const config: Config = {
 // Frontend-spezifische APIs
 // If accessed via /videon, API path should be /videon/api (proxied by Nginx)
 // Otherwise use direct backend URL (development)
+// Frontend-spezifische APIs
 const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/videon')) {
-    return '/videon/api';
-  }
   return `${config.urls.backend}/api`;
 };
 
