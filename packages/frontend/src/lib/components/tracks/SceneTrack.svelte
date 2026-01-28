@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { api } from '$lib/config/environment';
   import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
-  import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
+
   import { MaterialSymbol } from '$lib/components/ui';
   
   const dispatch = createEventDispatcher();
