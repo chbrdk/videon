@@ -35,9 +35,12 @@ RUN node -v && npm -v
 RUN npm list vite || true
 RUN ls -la node_modules/.bin/vite || echo "vite binary not found"
 
-# Debug: Print config files
-RUN cat svelte.config.js
-RUN cat vite.config.ts
+# Debug: List ALL files in current directory to verify COPY worked
+RUN ls -la
+
+# Debug: Print config files (if they exist)
+RUN cat svelte.config.js || echo "svelte.config.js missing"
+RUN cat vite.config.ts || echo "vite.config.ts missing"
 
 # Run build with debug logging
 RUN npx vite build --debug
