@@ -21,5 +21,8 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,ts}'],
     environment: 'jsdom',
     setupFiles: ['src/test-setup.ts']
+  },
+  build: {
+    sourcemap: false
   }
 });
