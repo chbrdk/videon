@@ -65,6 +65,46 @@ router.post('/logout', (req, res, next) => {
     });
 });
 
+// Update Password
+router.put('/password', async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = req.user as any;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Current and new password are required' });
+    }
+
+    try {
+        // Fetch user with password hash
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+
+        if (!dbUser || !dbUser.passwordHash) {
+            return res.status(400).json({ message: 'User not found or has no password set' });
+        }
+
+        // Verify current password
+        const valid = await bcrypt.compare(currentPassword, dbUser.passwordHash);
+        if (!valid) {
+            return res.status(400).json({ message: 'Incorrect current password' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(newPassword, salt);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { passwordHash }
+        });
+
+        res.json({ message: 'Password updated successfully' });
+    } catch (e) {
+        res.status(500).json({ message: 'Failed to update password', error: e });
+    }
+});
+
 // Current User
 router.get('/me', (req, res) => {
     if (req.isAuthenticated()) {
