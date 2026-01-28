@@ -4,6 +4,7 @@
   import { theme } from '$lib/stores/theme.store';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
+  import { api } from '$lib/config/environment';
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -32,6 +33,15 @@
     expanded = !expanded;
   }
 
+  async function handleLogout() {
+    try {
+      await fetch(`${api.baseUrl}/auth/logout`, { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }
+
   function handleItemClick() {
     if (mounted && isMobile) {
       onClose();
@@ -53,7 +63,6 @@
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
     { label: 'Projekte', path: '/projects', icon: 'folder' },
     { label: 'Hochladen', path: '/upload', icon: 'upload_file' },
-    { label: 'Styleguide', path: '/styleguide', icon: 'palette' },
   ];
 
   let isExpanded = $derived(mounted && isMobile ? open : mounted ? expanded : false);
@@ -227,6 +236,25 @@
           color: rgba(255, 255, 255, 0.7);
         ">{$theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span
         >
+      {/if}
+    </button>
+    <button
+      on:click={handleLogout}
+      title="Sign Out"
+      style="
+        width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};
+        height: {isMobile ? '60px' : '40px'};
+        justify-content: {isExpanded ? 'flex-start' : 'center'};
+        color: #f87171;
+      "
+    >
+      <MaterialSymbol
+        icon="logout"
+        fontSize={28}
+        style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
+      />
+      {#if isExpanded}
+        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">Sign Out</span>
       {/if}
     </button>
   </div>

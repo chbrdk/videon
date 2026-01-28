@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { api } from '$lib/config/environment';
   import { _, currentLocale, type Locale } from '$lib/i18n';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol, MsqdxFormField } from '$lib/components/ui';
 
   let user = {
     name: '',
@@ -100,64 +100,57 @@
   }
 </script>
 
-<div class="max-w-2xl mx-auto space-y-8 animate-fade-in">
-  <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+<div class="max-w-2xl mx-auto space-y-8 animate-fade-in p-4">
+  <div class="glass-card p-6">
     <div class="space-y-6">
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >{_('settings.email')}</label
-        >
-        <input
-          type="email"
-          id="email"
-          disabled
-          value={user.email}
-          class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 cursor-not-allowed text-gray-500"
-        />
-        <p class="mt-1 text-xs text-gray-500">{_('settings.emailHelp')}</p>
-      </div>
+      <MsqdxFormField
+        label={_('settings.email')}
+        type="email"
+        disabled={true}
+        value={user.email}
+        icon="mail"
+        placeholder="your@email.com"
+      />
+      <p class="mt-1 text-xs text-white/40 ml-2">{_('settings.emailHelp')}</p>
 
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >{_('settings.displayName')}</label
-        >
-        <input
-          type="text"
-          id="name"
-          bind:value={user.name}
-          class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 text-gray-900 dark:text-white"
-        />
-      </div>
+      <MsqdxFormField
+        label={_('settings.displayName')}
+        type="text"
+        bind:value={user.name}
+        icon="person"
+        placeholder="Your Name"
+      />
 
       {#if message}
         <div
-          class="p-3 rounded-md text-sm {message.includes('Error') || message.includes('Fehler')
-            ? 'bg-red-100 text-red-700'
-            : 'bg-green-100 text-green-700'}"
+          class="p-3 rounded-lg text-sm {message.includes('Error') || message.includes('Fehler')
+            ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+            : 'bg-green-500/10 text-green-500 border border-green-500/20'}"
         >
           {message}
         </div>
       {/if}
 
-      <div
-        class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700"
-      >
-        <button on:click={handleLogout} class="text-red-600 hover:text-red-800 text-sm font-medium">
+      <div class="flex items-center justify-between pt-6 border-t border-white/10">
+        <button
+          on:click={handleLogout}
+          class="text-red-500 hover:text-red-400 text-sm font-medium transition-colors"
+        >
           {_('settings.signOut')}
         </button>
 
         <button
           on:click={handleSave}
           disabled={isLoading}
-          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50"
         >
           {isLoading ? _('settings.saving') : _('settings.saveProfile')}
         </button>
       </div>
 
       <!-- Language Section -->
-      <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <div class="pt-8 mt-8 border-t border-white/10">
+        <h3 class="text-lg font-medium text-white mb-4">
           {$currentLocale === 'en' ? 'App Language' : 'App-Sprache'}
         </h3>
 
@@ -166,16 +159,16 @@
             on:click={() => setLanguage('de')}
             class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
             'de'
-              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
-              : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}"
+              ? 'border-blue-500 bg-blue-500/10'
+              : 'border-white/5 hover:border-white/20 bg-white/5'}"
           >
             <div class="flex items-center gap-3">
               <span class="text-2xl">🇩🇪</span>
-              <span class="font-medium text-gray-900 dark:text-white">Deutsch</span>
+              <span class="font-medium text-white">Deutsch</span>
             </div>
             {#if $currentLocale === 'de'}
               <div class="text-blue-500">
-                <MaterialSymbol name="check_circle" filled />
+                <MaterialSymbol icon="check_circle" filled />
               </div>
             {/if}
           </button>
@@ -184,16 +177,16 @@
             on:click={() => setLanguage('en')}
             class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
             'en'
-              ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
-              : 'border-gray-100 dark:border-gray-700 hover:border-gray-300'}"
+              ? 'border-blue-500 bg-blue-500/10'
+              : 'border-white/5 hover:border-white/20 bg-white/5'}"
           >
             <div class="flex items-center gap-3">
               <span class="text-2xl">🇺🇸</span>
-              <span class="font-medium text-gray-900 dark:text-white">English</span>
+              <span class="font-medium text-white">English</span>
             </div>
             {#if $currentLocale === 'en'}
               <div class="text-blue-500">
-                <MaterialSymbol name="check_circle" filled />
+                <MaterialSymbol icon="check_circle" filled />
               </div>
             {/if}
           </button>
@@ -201,59 +194,41 @@
       </div>
 
       <!-- Password Change Section -->
-      <div class="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+      <div class="pt-8 mt-8 border-t border-white/10">
+        <h3 class="text-lg font-medium text-white mb-4">
           {_('settings.changePassword')}
         </h3>
 
         <div class="space-y-4">
-          <div>
-            <label
-              for="currentPassword"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >{_('settings.currentPassword')}</label
-            >
-            <input
-              type="password"
-              id="currentPassword"
-              bind:value={passwords.current}
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 text-gray-900 dark:text-white"
-            />
-          </div>
+          <MsqdxFormField
+            label={_('settings.currentPassword')}
+            type="password"
+            bind:value={passwords.current}
+            icon="lock"
+            placeholder="••••••••"
+          />
 
-          <div>
-            <label
-              for="newPassword"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >{_('settings.newPassword')}</label
-            >
-            <input
-              type="password"
-              id="newPassword"
-              bind:value={passwords.new}
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 text-gray-900 dark:text-white"
-            />
-          </div>
+          <MsqdxFormField
+            label={_('settings.newPassword')}
+            type="password"
+            bind:value={passwords.new}
+            icon="lock_open"
+            placeholder="••••••••"
+          />
 
-          <div>
-            <label
-              for="confirmPassword"
-              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >{_('settings.confirmPassword')}</label
-            >
-            <input
-              type="password"
-              id="confirmPassword"
-              bind:value={passwords.confirm}
-              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 text-gray-900 dark:text-white"
-            />
-          </div>
+          <MsqdxFormField
+            label={_('settings.confirmPassword')}
+            type="password"
+            bind:value={passwords.confirm}
+            icon="verified_user"
+            placeholder="••••••••"
+          />
 
-          <div class="flex justify-end">
+          <div class="flex justify-end pt-2">
             <button
               on:click={handleChangePassword}
               disabled={isPasswordLoading}
-              class="inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              class="px-6 py-2 border border-white/10 hover:bg-white/5 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50"
             >
               {isPasswordLoading ? _('settings.updating') : _('settings.updatePassword')}
             </button>

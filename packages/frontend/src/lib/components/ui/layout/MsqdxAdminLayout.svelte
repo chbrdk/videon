@@ -94,6 +94,7 @@
   let pageIcon = $derived(getPageIcon());
 </script>
 
+a
 <div
   class="msqdx-admin-layout"
   style="
@@ -103,10 +104,10 @@
     width: 100%;
     max-width: 100vw;
     overflow-x: visible;
-    padding-top: {isMobile ? `${MSQDX_SPACING.scale.xxs}px` : `${MSQDX_SPACING.scale.xs}px`};
-    padding-right: {isMobile ? `${MSQDX_SPACING.scale.xxs}px` : `${MSQDX_SPACING.scale.xs}px`};
-    padding-bottom: {isMobile ? `${MSQDX_SPACING.scale.xxs}px` : `${MSQDX_SPACING.scale.xs}px`};
-    padding-left: {isMobile ? `${MSQDX_SPACING.scale.xxs}px` : '0'};
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
     box-sizing: border-box;
     background-color: var(--msqdx-color-brand-orange);
     height: {isMobile
@@ -237,7 +238,7 @@
           "
         >
           <img
-            src="{base}/assets/msqdx-logo.svg"
+            src="{base}/videon/assets/msqdx-logo.svg"
             alt="MSQDX logo"
             width="120"
             height="30"
