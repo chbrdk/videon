@@ -41,6 +41,9 @@ RUN pnpm run build
 # Production stage
 FROM nginx:alpine AS production
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Copy built application to Nginx web root
 COPY --from=build /app/build /usr/share/nginx/html
 
@@ -48,7 +51,7 @@ COPY --from=build /app/build /usr/share/nginx/html
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
-EXPOSE 3003
+EXPOSE 80
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -95,11 +95,16 @@ services:
     # ports:
     #   - "3000:3003" # Commented out to avoid Host Port conflicts. Coolify proxies to 3003 internally.
     expose:
-      - "3003"
+      - "80"
     networks:
       - prismvid-network
     depends_on:
       - backend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: always
 
   # Analyzer Service
