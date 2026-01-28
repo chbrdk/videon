@@ -50,29 +50,11 @@ ENV VITE_BASE_PATH=$VITE_BASE_PATH
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync
 
-# Ensure SvelteKit types are generated
-RUN npx svelte-kit sync
-
 # Debug: Check generated tsconfig
 RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 
-# Debug: Create a shell script to run the build with "Trojan Horse" logging
-# STRATEGY: If build fails, deploy the error log as the website so we can read it.
-RUN echo '#!/bin/sh' > debug-build.sh && \
-    echo 'echo "--- STARTING BUILD ---"' >> debug-build.sh && \
-    echo 'if npm run build > build.output.txt 2>&1; then' >> debug-build.sh && \
-    echo '  echo "Build Succeeded"' >> debug-build.sh && \
-    echo '  exit 0' >> debug-build.sh && \
-    echo 'else' >> debug-build.sh && \
-    echo '  echo "Build Failed! Packaging logs as index.html..."' >> debug-build.sh && \
-    echo '  mkdir -p build' >> debug-build.sh && \
-    echo '  echo "<html><body><h1>Build Failed</h1><pre>" > build/index.html' >> debug-build.sh && \
-    echo '  cat build.output.txt >> build/index.html' >> debug-build.sh && \
-    echo '  echo "</pre></body></html>" >> build/index.html' >> debug-build.sh && \
-    echo '  exit 0' >> debug-build.sh && \
-    echo 'fi' >> debug-build.sh
-
-RUN chmod +x debug-build.sh && ./debug-build.sh
+# Run build
+RUN npm run build
 
 # Production stage
 # Production stage
