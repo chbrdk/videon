@@ -31,8 +31,10 @@ ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-# Use verbose logging to debug build failures
-RUN pnpm run build --logLevel info
+# Increase memory limit for build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Run build and print logs on failure
+RUN pnpm run build --logLevel info > build.log 2>&1 || (cat build.log && exit 1)
 
 # Production stage
 # Production stage
