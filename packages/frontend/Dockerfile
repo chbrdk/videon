@@ -28,11 +28,19 @@ ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-# Debug: List installed packages to verify vite is present
-RUN npm list --depth=0 || true
+# Debug: Print versions
+RUN node -v && npm -v
 
-# Run build directly using npx to ensure we use the local binary
-RUN npx vite build --logLevel info
+# Debug: Verify vite installation
+RUN npm list vite || true
+RUN ls -la node_modules/.bin/vite || echo "vite binary not found"
+
+# Debug: Print config files
+RUN cat svelte.config.js
+RUN cat vite.config.ts
+
+# Run build with debug logging
+RUN npx vite build --debug
 
 # Production stage
 # Production stage
