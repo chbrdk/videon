@@ -39,7 +39,10 @@ COPY packages/saliency-service/tests ./tests
 COPY packages/saliency-service/pytest.ini ./
 
 # Create storage directories
-RUN mkdir -p storage/saliency storage/models storage/temp
+RUN mkdir -p storage/saliency models storage/temp
+
+# Download SAM model (vit_b)
+RUN curl -L -o models/sam_vit_b_01ec64.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
 
 # Set environment variables
 ENV PYTHONPATH=/app/src
