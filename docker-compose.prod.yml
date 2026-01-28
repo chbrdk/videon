@@ -83,8 +83,8 @@ services:
   # Frontend Service
   frontend:
     build:
-      context: ./packages/frontend
-      dockerfile: Dockerfile
+      context: ./packages
+      dockerfile: frontend/Dockerfile
       args:
         PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL}
     container_name: prismvid-frontend
