@@ -2,6 +2,7 @@
   import { searchApi, type SearchResult } from '$lib/api/search';
   import { projectsApi } from '$lib/api/projects';
   import { currentLocale, _ } from '$lib/i18n';
+  import { base } from '$app/paths';
   import { getVideoUrl, getCoverImageUrl } from '$lib/config/environment';
   import SearchIcon from '@material-icons/svg/svg/search/baseline.svg?raw';
   import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
@@ -216,7 +217,9 @@
                 <button class="glass-button text-xs flex-1" on:click={() => openAddToProjectModal(result)}>
                   {_('search.addToProject')}
                 </button>
-                <button class="glass-button text-xs" on:click={() => window.location.href = `/videos/${result.videoId}`}>
+                <button class="glass-button text-xs" on:click={() => {
+                  window.location.href = `${base}/videos/${result.videoId}`;
+                }}>
                   {_('search.viewVideo')}
                 </button>
               </div>

@@ -5,8 +5,8 @@
   },
   "pages": {
     "dashboard": {
-      "title": "PrismVid - Dashboard",
-      "description": "PrismVid Video Analysis Dashboard",
+      "title": "VIDEON - Dashboard",
+      "description": "VIDEON Video Analysis Dashboard",
       "redirecting": "Redirecting...",
       "redirectMessage": "You will be redirected to the Video Gallery."
     },

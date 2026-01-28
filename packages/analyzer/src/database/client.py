@@ -21,6 +21,10 @@ class DatabaseClient:
         """Get database connection"""
         try:
             conn = psycopg2.connect(self.connection_string)
+            # Set search_path to videon schema for PostgreSQL
+            with conn.cursor() as cursor:
+                cursor.execute('SET search_path TO videon, public')
+            conn.commit()
             return conn
         except Exception as e:
             logger.error(f"Failed to connect to database: {e}")
@@ -31,6 +35,7 @@ class DatabaseClient:
         try:
             with self.get_connection() as conn:
                 with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
                     if status == 'ANALYZED':
                         cursor.execute(
                             'UPDATE videos SET status = %s, "analyzedAt" = NOW() WHERE id = %s',
@@ -61,6 +66,7 @@ class DatabaseClient:
             scene_id = str(uuid.uuid4())
             with self.get_connection() as conn:
                 with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
                     cursor.execute(
                         '''
                         INSERT INTO scenes (id, "videoId", "startTime", "endTime", "keyframePath", "createdAt")
@@ -84,6 +90,7 @@ class DatabaseClient:
         try:
             with self.get_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute('SET search_path TO videon, public')
                     cursor.execute(
                         '''
                         SELECT id, "videoId", "startTime", "endTime", "keyframePath", "createdAt"
@@ -116,6 +123,7 @@ class DatabaseClient:
             log_id = str(uuid.uuid4())
             with self.get_connection() as conn:
                 with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
                     cursor.execute(
                         '''
                         INSERT INTO analysis_logs (id, "videoId", level, message, metadata, "createdAt")

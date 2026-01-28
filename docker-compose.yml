@@ -1,78 +1,58 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: prismvid-postgres
-    environment:
-      POSTGRES_USER: prismvid
-      POSTGRES_PASSWORD: prismvid_dev
-      POSTGRES_DB: prismvid
-    ports:
-      - "0.0.0.0:5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - prismvid-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prismvid"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: prismvid-redis
-    ports:
-      - "0.0.0.0:6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - prismvid-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
+  # NOTE: PostgreSQL and Redis are now provided by STORION/UNION
+  # Remove local postgres/redis services and use external networks
+  # Database: STORION PostgreSQL (msqdx-unison-postgres-1:5432/storion)
+  # Redis: UNION Redis (msqdx-unison-redis-1:6379)
 
   # Backend Service
   backend:
     build:
       context: ./packages/backend
       dockerfile: Dockerfile
-    container_name: prismvid-backend
+    container_name: videon-backend
     environment:
       NODE_ENV: production
       PORT: 4001
-      DATABASE_URL: postgresql://prismvid:prismvid_dev@postgres:5432/prismvid
-      REDIS_URL: redis://redis:6379
+      # STORION Database (with videon schema)
+      USE_STORION_DB: ${USE_STORION_DB:-true}
+      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
+      # DATABASE_URL must use container name, not localhost, and postgresql:// (not postgresql+psycopg://) for Prisma
+      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion?schema=videon
+      # Note: Container name (msqdx-unison-postgres-1) must be used in Docker, not localhost
+      # UNION Redis
+      REDIS_URL: ${REDIS_URL:-redis://msqdx-unison-redis-1:6379/0}
+      # STORION Storage
+      STORION_STORAGE_URL: ${STORION_STORAGE_URL:-http://storion:8003}
+      STORION_BASE_URL: ${STORION_BASE_URL:-http://storion:8003}
+      # UNION Integration
+      UNION_BASE_URL: ${UNION_BASE_URL:-http://msqdx-unison-unison-1:8000}
+      UNION_SETTINGS_ENABLED: ${UNION_SETTINGS_ENABLED:-true}
+      UNION_SETTINGS_CACHE_TTL: ${UNION_SETTINGS_CACHE_TTL:-900}
+      # Other services
       OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-dummy-key-for-development}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
       ANALYZER_SERVICE_URL: http://analyzer:8001
       AUDIO_SEPARATION_SERVICE_URL: http://audio-separation-service:8003
       AUDIO_SERVICE_URL: http://audio-service:5679
       SALIENCY_SERVICE_URL: http://saliency-service:8002
       VISION_SERVICE_URL: http://vision-service:8004
       QWEN_VL_SERVICE_URL: http://host.docker.internal:8081
-      CORS_ORIGINS: http://localhost:3003,http://localhost:3000,http://192.168.50.101:3003,http://192.168.50.101:3000
+      CORS_ORIGINS: http://localhost:3010,http://192.168.50.101:3010
+      # Local storage fallback (if not using STORION)
       VIDEOS_STORAGE_PATH: /app/storage/videos
       KEYFRAMES_STORAGE_PATH: /app/storage/keyframes
       AUDIO_STEMS_STORAGE_PATH: /app/storage/audio_stems
       THUMBNAILS_STORAGE_PATH: /app/storage/thumbnails
-      HOST_STORAGE_PATH: /Users/m4-dev/Development/prismvid/storage
+      HOST_STORAGE_PATH: /Users/m4-dev/Development/videon/storage
     ports:
       - "0.0.0.0:4001:4001"
     volumes:
       - ./storage:/app/storage
       - ./packages/backend/prisma:/app/prisma
     networks:
-      - prismvid-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - videon-network
+      - ion-network
+      - echon-network
     restart: unless-stopped
     command: sh -c "cd /app && cp prisma/schema.postgresql.prisma prisma/schema.prisma 2>/dev/null || true && node dist/app.js"
 
@@ -85,18 +65,18 @@ services:
   # Frontend Service
   frontend:
     build:
-      context: ./packages/frontend
-      dockerfile: Dockerfile
+      context: ./packages
+      dockerfile: frontend/Dockerfile
       args:
         PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL:-http://192.168.50.101:4001}
-    container_name: prismvid-frontend
+    container_name: videon-frontend
     environment:
       NODE_ENV: production
       PUBLIC_BACKEND_URL: http://192.168.50.101:4001
     ports:
-      - "0.0.0.0:3003:3003"
+      - "0.0.0.0:3010:3003"
     networks:
-      - prismvid-network
+      - videon-network
     depends_on:
       - backend
     restart: unless-stopped
@@ -106,22 +86,25 @@ services:
     build:
       context: ./packages/analyzer
       dockerfile: Dockerfile
-    container_name: prismvid-analyzer
+    container_name: videon-analyzer
     environment:
       PYTHONPATH: /app/src
-      DATABASE_URL: postgresql://prismvid:prismvid_dev@postgres:5432/prismvid
+      # STORION Database
+      USE_STORION_DB: ${USE_STORION_DB:-true}
+      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
+      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
+      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
       STORAGE_PATH: /app/storage
       BACKEND_URL: http://backend:4001
       VISION_SERVICE_URL: http://host.docker.internal:8080
     ports:
-      - "0.0.0.0:8001:8001"
+      - "0.0.0.0:8004:8001"
     volumes:
       - ./storage:/app/storage
     networks:
-      - prismvid-network
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - videon-network
+      - ion-network
+      - echon-network
     restart: unless-stopped
 
   # Saliency Service
@@ -129,24 +112,28 @@ services:
     build:
       context: ./packages/saliency-service
       dockerfile: Dockerfile
-    container_name: prismvid-saliency-service
+    container_name: videon-saliency-service
     environment:
       PYTHONPATH: /app/src
       LOG_LEVEL: INFO
       BACKEND_URL: http://backend:4001
-      DATABASE_URL: postgresql://prismvid:prismvid_dev@postgres:5432/prismvid
+      # STORION Database
+      USE_STORION_DB: ${USE_STORION_DB:-true}
+      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
+      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
+      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
     ports:
-      - "0.0.0.0:8002:8002"
+      - "0.0.0.0:8005:8002"
     volumes:
       - ./storage:/app/storage
       - ./packages/saliency-service/models:/app/models
     networks:
-      - prismvid-network
+      - videon-network
+      - ion-network
+      - echon-network
     depends_on:
       backend:
         condition: service_started
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
@@ -160,23 +147,27 @@ services:
     build:
       context: .
       dockerfile: packages/audio-separation-service/Dockerfile
-    container_name: prismvid-audio-separation-service
+    container_name: videon-audio-separation-service
     environment:
       PYTHONPATH: /app/src
-      DATABASE_URL: postgresql://prismvid:prismvid_dev@postgres:5432/prismvid
+      # STORION Database
+      USE_STORION_DB: ${USE_STORION_DB:-true}
+      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
+      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
+      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
       ANALYZER_SERVICE_URL: http://analyzer:8001
       STORAGE_PATH: /app/storage
     ports:
-      - "0.0.0.0:8003:8003"
+      - "0.0.0.0:8006:8003"
     volumes:
       - ./storage:/app/storage
     networks:
-      - prismvid-network
+      - videon-network
+      - ion-network
+      - echon-network
     depends_on:
       analyzer:
         condition: service_started
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
@@ -190,20 +181,23 @@ services:
     build:
       context: .
       dockerfile: packages/audio-service/Dockerfile
-    container_name: prismvid-audio-service
+    container_name: videon-audio-service
     environment:
       PYTHONPATH: /app/src
-      DATABASE_URL: postgresql://prismvid:prismvid_dev@postgres:5432/prismvid
+      # STORION Database
+      USE_STORION_DB: ${USE_STORION_DB:-true}
+      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
+      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
+      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
       STORAGE_PATH: /app/storage
     ports:
-      - "0.0.0.0:5679:5679"
+      - "0.0.0.0:5680:5679"
     volumes:
       - ./storage:/app/storage
     networks:
-      - prismvid-network
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - videon-network
+      - ion-network
+      - echon-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5679/health"]
@@ -217,7 +211,7 @@ services:
     build:
       context: ./packages/frontend
       dockerfile: Dockerfile.storybook
-    container_name: prismvid-storybook
+    container_name: videon-storybook
     environment:
       NODE_ENV: development
     ports:
@@ -232,26 +226,33 @@ services:
       - ./packages/frontend/postcss.config.js:/app/postcss.config.js
       - ./packages/frontend/tailwind.config.js:/app/tailwind.config.js
       # Create .svelte-kit directory with dummy tsconfig for Vite
-      - storybook_sveltekit_config:/app/.svelte-kit
+      - videon_storybook_sveltekit_config:/app/.svelte-kit
       # Exclude node_modules from mount (use container's)
       - /app/node_modules
     networks:
-      - prismvid-network
+      - videon-network
     restart: unless-stopped
     # Development mode - no healthcheck needed
     stdin_open: true
     tty: true
 
 volumes:
-  postgres_data:
-  redis_data:
-  storybook_sveltekit_config:
+  videon_storybook_sveltekit_config:
+  # NOTE: postgres_data and redis_data removed - using STORION/UNION
 
 networks:
-  prismvid-network:
+  videon-network:
     driver: bridge
     ipam:
+      driver: default
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.30.0.0/16
+  # External networks for STORION/UNION integration
+  ion-network:
+    name: ion-network
+    external: true
+  echon-network:
+    name: echon-network
+    external: true
 
 

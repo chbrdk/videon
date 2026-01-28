@@ -21,13 +21,13 @@
   let isLoading: boolean = true;
   let error: string = '';
   
-  // Farben für verschiedene Stem-Typen
+  // Farben für verschiedene Stem-Typen (gedämpft, weniger knallig)
   const stemColors = {
-    vocals: '#ff4444',
-    music: '#44ff44', 
-    original: '#4444ff',
-    drums: '#ffaa44',
-    bass: '#aa44ff'
+    vocals: '#cc7777',
+    music: '#77cc77', 
+    original: '#7777cc',
+    drums: '#cc9966',
+    bass: '#9966cc'
   };
   
   $: waveformColor = color || stemColors[stemType] || '#666666';
@@ -180,7 +180,7 @@
         return; // Don't render if no valid peaks
       }
       
-      ctx.strokeStyle = waveformColor;
+      ctx.strokeStyle = waveformColor + 'cc'; // Etwas transparenter für weniger knallig
       ctx.lineWidth = 2;
       ctx.beginPath();
       
@@ -224,13 +224,13 @@
       }
       
       ctx.closePath();
-      ctx.fillStyle = waveformColor + '50'; // Etwas transparenter
+      ctx.fillStyle = waveformColor + '30'; // Weniger knallig, mehr transparent
       ctx.fill();
       ctx.stroke();
     }
     
     // Zentrale Linie
-    ctx.strokeStyle = waveformColor + '80';
+    ctx.strokeStyle = waveformColor + '60'; // Weniger knallig
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, actualHeight / 2);
@@ -276,8 +276,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 2px;
+    background: transparent;
+    border-radius: var(--msqdx-radius-xs);
     overflow: hidden;
   }
   
@@ -290,28 +290,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
-    font-size: 12px;
+    color: var(--msqdx-color-dark-text-secondary);
+    font-size: var(--msqdx-font-size-sm);
+    font-family: var(--msqdx-font-primary);
   }
   
   .loading-spinner {
     width: 16px;
     height: 16px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
+    border: 2px solid var(--msqdx-color-dark-border);
+    border-top: 2px solid var(--msqdx-color-brand-blue);
+    border-radius: var(--msqdx-radius-full);
     animation: spin 1s linear infinite;
-    margin-right: 8px;
+    margin-right: var(--msqdx-spacing-xs);
   }
   
   .error {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #dc3545;
-    font-size: 10px;
+    color: var(--msqdx-color-status-error);
+    font-size: var(--msqdx-font-size-xs);
+    font-family: var(--msqdx-font-primary);
     text-align: center;
-    padding: 4px;
+    padding: var(--msqdx-spacing-xxs);
   }
   
   .error span:first-child {

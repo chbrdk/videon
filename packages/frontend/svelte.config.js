@@ -10,6 +10,10 @@ const config = {
       precompress: false,
       strict: true
     }),
+    paths: {
+      base: process.env.VITE_BASE_PATH || '/videon'
+      // assets wird automatisch aus base abgeleitet - nicht explizit setzen!
+    },
     prerender: {
       entries: ['*']
     }

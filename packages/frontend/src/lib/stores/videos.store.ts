@@ -5,6 +5,8 @@ export const videos = writable<Video[]>([]);
 export const selectedVideo = writable<VideoWithScenes | null>(null);
 export const videoScenes = writable<any[]>([]);
 export const uploadProgress = writable<number>(0);
+export const uploading = writable<boolean>(false);
+export const uploadError = writable<string | null>(null);
 export const error = writable<string | null>(null);
 
 export const loadVideos = async () => {

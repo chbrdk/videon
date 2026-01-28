@@ -27,6 +27,13 @@ class QwenVLService {
   }
 
   /**
+   * Get the service URL
+   */
+  getServiceUrl(): string {
+    return this.qwenVLServiceUrl;
+  }
+
+  /**
    * Konvertiert Container-Pfade zu Host-Pfaden für den lokalen Qwen VL Service
    */
   private convertToHostPath(containerPath: string): string {
@@ -139,7 +146,7 @@ class QwenVLService {
         data: {
           qwenVLDescription: description,
           qwenVLProcessed: true,
-          qwenVLModel: "Qwen3-VL-8B-Instruct-3bit",
+          qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
           qwenVLProcessingTime: null // Wird vom Service gemessen
         }
       });
@@ -193,8 +200,8 @@ class QwenVLService {
           // Pfad-Konvertierung
           // If path starts with /app/storage/, it's already correct for the container
           // No conversion needed as files are mounted at /app/storage/
-          if (keyframePath.startsWith('/Volumes/DOCKER_EXTERN/prismvid/')) {
-            const relativePath = keyframePath.replace('/Volumes/DOCKER_EXTERN/prismvid/', '');
+          if (keyframePath.startsWith('/Volumes/DOCKER_EXTERN/videon/')) {
+            const relativePath = keyframePath.replace('/Volumes/DOCKER_EXTERN/videon/', '');
             const projectRoot = path.resolve(process.cwd(), '..', '..');
             keyframePath = path.join(projectRoot, relativePath);
           } else if (keyframePath.startsWith('storage/') || keyframePath.startsWith('./storage/')) {
@@ -254,7 +261,7 @@ class QwenVLService {
               data: {
                 qwenVLDescription: sceneDescription,
                 qwenVLProcessed: true,
-                qwenVLModel: "Qwen3-VL-8B-Instruct-3bit"
+                qwenVLModel: "Qwen3-VL-8B-Instruct-4bit"
               }
             });
             console.log(`✅ Qwen VL description updated for scene ${scene.id}`);
@@ -265,7 +272,7 @@ class QwenVLService {
                 sceneId: scene.id,
                 qwenVLDescription: sceneDescription,
                 qwenVLProcessed: true,
-                qwenVLModel: "Qwen3-VL-8B-Instruct-3bit",
+                qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
                 objectCount: 0,
                 faceCount: 0,
                 visionVersion: "QwenVL-Only"

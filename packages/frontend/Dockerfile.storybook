@@ -18,7 +18,7 @@ COPY svelte.config.js ./
 COPY vite.config.ts ./
 COPY tsconfig.json ./
 COPY postcss.config.js ./
-COPY tailwind.config.js ./
+COPY tailwind.config.mjs ./
 
 # Copy source code (will be overridden by volume mount, but needed for initial build)
 COPY src ./src

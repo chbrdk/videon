@@ -1,7 +1,7 @@
 {
-  "name": "@prismvid/frontend",
+  "name": "@videon/frontend",
   "version": "1.0.0",
-  "description": "PrismVid Frontend - Video Analysis Dashboard",
+  "description": "VIDEON Frontend - Video Analysis Dashboard",
   "type": "module",
   "scripts": {
     "dev": "vite dev",

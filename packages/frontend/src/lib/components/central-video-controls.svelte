@@ -254,12 +254,11 @@
   .central-controls {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    gap: var(--msqdx-spacing-md);
+    padding: var(--msqdx-spacing-md) var(--msqdx-spacing-lg);
+    background: var(--msqdx-color-dark-paper);
+    backdrop-filter: blur(var(--msqdx-glass-blur));
+    border: 1px solid var(--msqdx-color-dark-border);
     position: relative;
     margin-top: 0 !important;
   }
@@ -269,17 +268,17 @@
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    border-radius: 50%;
+    border: 1px solid var(--msqdx-color-dark-border);
+    color: var(--msqdx-color-dark-text-primary);
+    border-radius: var(--msqdx-radius-full);
     cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0.5rem;
+    transition: all var(--msqdx-transition-standard);
+    padding: var(--msqdx-spacing-sm);
   }
 
   .control-btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: var(--msqdx-color-brand-orange);
     transform: scale(1.05);
   }
 
@@ -292,34 +291,34 @@
   .play-pause-btn {
     width: 3rem;
     height: 3rem;
-    background: rgba(0, 122, 255, 0.2);
-    border-color: rgba(0, 122, 255, 0.4);
+    background: var(--msqdx-color-tint-blue);
+    border-color: var(--msqdx-color-brand-blue);
   }
 
   .play-pause-btn:hover:not(:disabled) {
-    background: rgba(0, 122, 255, 0.3);
-    border-color: rgba(0, 122, 255, 0.6);
+    background: var(--msqdx-color-tint-blue);
+    border-color: var(--msqdx-color-brand-blue);
   }
 
   .control-divider {
     width: 1px;
     height: 2rem;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--msqdx-color-dark-border);
   }
 
   .time-display {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: white;
+    gap: var(--msqdx-spacing-xxs);
+    font-family: var(--msqdx-font-mono);
+    font-size: var(--msqdx-font-size-body1);
+    font-weight: var(--msqdx-font-weight-semibold);
+    color: var(--msqdx-color-dark-text-primary);
     min-width: 6rem;
   }
 
   .current-time {
-    color: #007AFF;
+    color: var(--msqdx-color-brand-blue);
   }
 
   .time-separator {
@@ -344,8 +343,8 @@
   .volume-slider {
     width: 80px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+    background: var(--msqdx-color-dark-border);
+    border-radius: var(--msqdx-radius-xs);
     outline: none;
     cursor: pointer;
     -webkit-appearance: none;
@@ -357,24 +356,25 @@
     appearance: none;
     width: 14px;
     height: 14px;
-    background: #007AFF;
-    border-radius: 50%;
+    background: var(--msqdx-color-brand-blue);
+    border-radius: var(--msqdx-radius-full);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--msqdx-color-brand-white);
   }
 
   .volume-slider::-moz-range-thumb {
     width: 14px;
     height: 14px;
-    background: #007AFF;
-    border-radius: 50%;
+    background: var(--msqdx-color-brand-blue);
+    border-radius: var(--msqdx-radius-full);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--msqdx-color-brand-white);
   }
 
   .volume-percentage {
-    font-size: 0.75rem;
-    color: white;
+    font-size: var(--msqdx-font-size-xs);
+    font-family: var(--msqdx-font-primary);
+    color: var(--msqdx-color-dark-text-primary);
     opacity: 0.8;
     min-width: 2.5rem;
     text-align: center;
@@ -382,18 +382,18 @@
 
   .add-scene-btn {
     position: absolute;
-    right: 1rem;
+    right: var(--msqdx-spacing-md);
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 200, 83, 0.2) !important;
-    border-color: rgba(0, 200, 83, 0.4) !important;
+    background: var(--msqdx-color-tint-green) !important;
+    border-color: var(--msqdx-color-brand-orange) !important;
     width: 2.5rem;
     height: 2.5rem;
   }
 
   .add-scene-btn:hover:not(:disabled) {
-    background: rgba(0, 200, 83, 0.3) !important;
-    border-color: rgba(0, 200, 83, 0.6) !important;
+    background: var(--msqdx-color-tint-green) !important;
+    border-color: var(--msqdx-color-brand-orange) !important;
     transform: translateY(-50%) !important;
     transition: none !important;
   }
@@ -410,16 +410,15 @@
     top: 50%;
     right: 2rem;
     transform: translateY(-50%);
-    background: rgba(42, 52, 60, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 1rem;
-    padding: 1.5rem;
+    background: var(--msqdx-color-dark-paper);
+    backdrop-filter: blur(var(--msqdx-glass-blur));
+    -webkit-backdrop-filter: blur(var(--msqdx-glass-blur));
+    border: 1px solid var(--msqdx-color-dark-border);
+    border-radius: var(--msqdx-radius-lg);
+    padding: var(--msqdx-spacing-lg);
     width: min(400px, 90vw);
     max-height: 60vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     z-index: 1000;
   }
   
@@ -486,41 +485,42 @@
 
   .search-input {
     flex: 1;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 0.75rem;
-    color: white;
-    font-size: 0.875rem;
+    padding: var(--msqdx-spacing-sm) var(--msqdx-spacing-md);
+    background: var(--msqdx-color-dark-paper);
+    border: 1px solid var(--msqdx-color-dark-border);
+    border-radius: var(--msqdx-radius-lg);
+    color: var(--msqdx-color-dark-text-primary);
+    font-size: var(--msqdx-font-size-body1);
+    font-family: var(--msqdx-font-primary);
   }
 
   .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--msqdx-color-dark-text-secondary);
   }
 
   .search-input:focus {
     outline: none;
-    border-color: rgba(0, 122, 255, 0.8);
-    background: rgba(255, 255, 255, 0.25);
+    border-color: var(--msqdx-color-brand-blue);
+    background: var(--msqdx-color-dark-paper);
   }
 
   .search-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 122, 255, 0.2);
-    border: 1px solid rgba(0, 122, 255, 0.4);
-    color: white;
-    border-radius: 0.75rem;
+    background: var(--msqdx-color-tint-blue);
+    border: 1px solid var(--msqdx-color-brand-blue);
+    color: var(--msqdx-color-dark-text-primary);
+    border-radius: var(--msqdx-radius-lg);
     cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0.75rem;
+    transition: all var(--msqdx-transition-standard);
+    padding: var(--msqdx-spacing-sm);
     width: 3rem;
   }
 
   .search-btn:hover:not(:disabled) {
-    background: rgba(0, 122, 255, 0.3);
-    border-color: rgba(0, 122, 255, 0.6);
+    background: var(--msqdx-color-tint-blue);
+    border-color: var(--msqdx-color-brand-blue);
   }
 
   .search-btn:disabled {
@@ -566,28 +566,28 @@
   }
 
   .add-btn {
-    background: rgba(0, 200, 83, 0.2);
-    border: 1px solid rgba(0, 200, 83, 0.4);
-    color: white;
-    border-radius: 0.5rem;
+    background: var(--msqdx-color-tint-green);
+    border: 1px solid var(--msqdx-color-brand-orange);
+    color: var(--msqdx-color-dark-text-primary);
+    border-radius: var(--msqdx-radius-md);
     cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-left: 0.75rem;
+    transition: all var(--msqdx-transition-standard);
+    padding: var(--msqdx-spacing-sm) var(--msqdx-spacing-md);
+    font-size: var(--msqdx-font-size-xs);
+    font-weight: var(--msqdx-font-weight-semibold);
+    font-family: var(--msqdx-font-primary);
+    margin-left: var(--msqdx-spacing-sm);
   }
 
   .add-btn:hover {
-    background: rgba(0, 200, 83, 0.3);
-    border-color: rgba(0, 200, 83, 0.6);
+    background: var(--msqdx-color-tint-green);
+    border-color: var(--msqdx-color-brand-orange);
   }
 
   /* Light theme styles */
   html.light .search-modal {
     background: rgba(255, 255, 255, 0.85);
     border-color: rgba(0, 0, 0, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   }
 
   html.light .close-btn {
@@ -654,69 +654,68 @@
   }
 
   /* Light theme styles */
-  html.light .central-controls {
+  :global(html.light) .central-controls {
+    background: var(--msqdx-color-light-paper);
+    border-color: var(--msqdx-color-light-border);
+  }
+
+  :global(html.light) .control-btn {
     background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border-color: var(--msqdx-color-light-border);
+    color: var(--msqdx-color-light-text-primary);
   }
 
-  html.light .control-btn {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.1);
-    color: black;
-  }
-
-  html.light .control-btn:hover:not(:disabled) {
+  :global(html.light) .control-btn:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.2);
+    border-color: var(--msqdx-color-brand-orange);
   }
 
-  html.light .play-pause-btn {
-    background: rgba(0, 122, 255, 0.1);
-    border-color: rgba(0, 122, 255, 0.2);
+  :global(html.light) .play-pause-btn {
+    background: var(--msqdx-color-tint-blue);
+    border-color: var(--msqdx-color-brand-blue);
   }
 
-  html.light .play-pause-btn:hover:not(:disabled) {
-    background: rgba(0, 122, 255, 0.2);
-    border-color: rgba(0, 122, 255, 0.4);
+  :global(html.light) .play-pause-btn:hover:not(:disabled) {
+    background: var(--msqdx-color-tint-blue);
+    border-color: var(--msqdx-color-brand-blue);
   }
 
-  html.light .control-divider {
-    background: rgba(0, 0, 0, 0.1);
+  :global(html.light) .control-divider {
+    background: var(--msqdx-color-light-border);
   }
 
-  html.light .time-display {
-    color: black;
+  :global(html.light) .time-display {
+    color: var(--msqdx-color-light-text-primary);
   }
 
-  html.light .current-time {
-    color: #007AFF;
+  :global(html.light) .current-time {
+    color: var(--msqdx-color-brand-blue);
   }
 
-  html.light .volume-slider {
-    background: rgba(0, 0, 0, 0.1);
+  :global(html.light) .volume-slider {
+    background: var(--msqdx-color-light-border);
   }
 
-  html.light .volume-slider::-webkit-slider-thumb {
-    border-color: black;
+  :global(html.light) .volume-slider::-webkit-slider-thumb {
+    border-color: var(--msqdx-color-brand-white);
   }
 
-  html.light .volume-slider::-moz-range-thumb {
-    border-color: black;
+  :global(html.light) .volume-slider::-moz-range-thumb {
+    border-color: var(--msqdx-color-brand-white);
   }
 
-  html.light .volume-percentage {
-    color: black;
+  :global(html.light) .volume-percentage {
+    color: var(--msqdx-color-light-text-primary);
   }
 
-  html.light .add-scene-btn {
-    background: rgba(0, 200, 83, 0.1) !important;
-    border-color: rgba(0, 200, 83, 0.2) !important;
+  :global(html.light) .add-scene-btn {
+    background: var(--msqdx-color-tint-green) !important;
+    border-color: var(--msqdx-color-brand-orange) !important;
   }
 
-  html.light .add-scene-btn:hover:not(:disabled) {
-    background: rgba(0, 200, 83, 0.2) !important;
-    border-color: rgba(0, 200, 83, 0.4) !important;
+  :global(html.light) .add-scene-btn:hover:not(:disabled) {
+    background: var(--msqdx-color-tint-green) !important;
+    border-color: var(--msqdx-color-brand-orange) !important;
   }
   
   @media (max-width: 1024px) {

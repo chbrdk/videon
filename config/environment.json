@@ -3,7 +3,7 @@
     "host": "localhost",
     "ports": {
       "backend": 4001,
-      "frontend": 3003,
+      "frontend": 3010,
       "analyzer": 8001,
       "audioService": 5679,
       "audioSeparationService": 8003,
@@ -12,25 +12,25 @@
     },
     "urls": {
       "backend": "http://localhost:4001",
-      "frontend": "http://localhost:3003",
-      "analyzer": "http://localhost:8001",
-      "audioService": "http://localhost:5679",
-      "audioSeparationService": "http://localhost:8003",
-      "saliencyService": "http://localhost:8002",
+      "frontend": "http://localhost:3010",
+      "analyzer": "http://localhost:8004",
+      "audioService": "http://localhost:5680",
+      "audioSeparationService": "http://localhost:8006",
+      "saliencyService": "http://localhost:8005",
       "visionService": "http://localhost:8004"
     },
     "storage": {
-      "basePath": "/Volumes/DOCKER_EXTERN/prismvid/storage",
-      "audioStems": "/Volumes/DOCKER_EXTERN/prismvid/storage/audio_stems",
-      "videos": "/Volumes/DOCKER_EXTERN/prismvid/storage/videos",
-      "keyframes": "/Volumes/DOCKER_EXTERN/prismvid/storage/keyframes"
+      "basePath": "/Volumes/DOCKER_EXTERN/videon/storage",
+      "audioStems": "/Volumes/DOCKER_EXTERN/videon/storage/audio_stems",
+      "videos": "/Volumes/DOCKER_EXTERN/videon/storage/videos",
+      "keyframes": "/Volumes/DOCKER_EXTERN/videon/storage/keyframes"
     }
   },
   "production": {
     "host": "0.0.0.0",
     "ports": {
       "backend": 4001,
-      "frontend": 3003,
+      "frontend": 3010,
       "analyzer": 8001,
       "audioService": 5679,
       "audioSeparationService": 8003,
@@ -57,7 +57,7 @@
     "host": "0.0.0.0",
     "ports": {
       "backend": 4001,
-      "frontend": 3003,
+      "frontend": 3010,
       "analyzer": 8001,
       "audioService": 5679,
       "audioSeparationService": 8003,

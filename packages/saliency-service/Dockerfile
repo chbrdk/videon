@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     libgstreamer1.0-0 \
     libgstreamer-plugins-base1.0-0 \
+    gcc \
+    g++ \
+    python3-dev \
     git \
     curl \
     && rm -rf /var/lib/apt/lists/*

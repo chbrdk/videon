@@ -30,7 +30,7 @@ export class ApiClient {
       timeout: this.config.timeout,
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent': 'PrismVid-Backend/1.0.0'
+        'User-Agent': 'VIDEON-Backend/1.0.0'
       }
     });
 

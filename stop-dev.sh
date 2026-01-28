@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PrismVid Development Services Stopper
+# VIDEON Development Services Stopper
 # Stoppt alle gestarteten Services
 
 set -e
@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-PROJECT_ROOT="/Volumes/DOCKER_EXTERN/prismvid"
+PROJECT_ROOT="/Volumes/DOCKER_EXTERN/videon"
 PID_FILE="$PROJECT_ROOT/.dev-services.pid"
 
-echo -e "${YELLOW}🛑 Stopping PrismVid Development Services${NC}"
+echo -e "${YELLOW}🛑 Stopping VIDEON Development Services${NC}"
 echo "=========================================="
 
 if [ ! -f "$PID_FILE" ]; then

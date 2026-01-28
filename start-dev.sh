@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# PrismVid Development Services Starter
+# VIDEON Development Services Starter
 # Startet alle Services für lokale Entwicklung
 
 set -e
@@ -11,10 +11,10 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-PROJECT_ROOT="/Volumes/DOCKER_EXTERN/prismvid"
+PROJECT_ROOT="/Volumes/DOCKER_EXTERN/videon"
 PID_FILE="$PROJECT_ROOT/.dev-services.pid"
 
-echo -e "${GREEN}🚀 Starting PrismVid Development Environment${NC}"
+echo -e "${GREEN}🚀 Starting VIDEON Development Environment${NC}"
 echo "=========================================="
 
 # Funktion zum Service starten

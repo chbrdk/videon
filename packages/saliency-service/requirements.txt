@@ -8,10 +8,11 @@ pydantic==2.5.0
 python-multipart==0.0.6
 
 # Computer Vision & Video Processing
+# Fix numpy compatibility: Use numpy 1.26.4 for OpenCV 4.8.1.78 compatibility
+numpy==1.26.4
 opencv-python-headless==4.8.1.78
 ffmpeg-python==0.2.0
 pillow==10.1.0
-numpy>=1.24.0
 scipy>=1.11.0
 
 # Machine Learning - Apple Silicon optimiert
@@ -36,6 +37,7 @@ aiofiles==23.2.1
 python-dotenv==1.0.1
 loguru==0.7.2
 tqdm>=4.66.0
+psutil>=5.9.0
 
 # Testing
 pytest>=7.4.0

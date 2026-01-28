@@ -1,15 +1,59 @@
 import OpenAI from 'openai';
 import logger from '../utils/logger';
+import { unionSettingsClient } from './union-settings.client';
 
 export class OpenAIService {
   private client: OpenAI;
+  private apiKey: string;
   
-  constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
+  constructor(apiKey?: string) {
+    // If API key provided, use it directly (for testing or manual override)
+    if (apiKey) {
+      this.apiKey = apiKey;
+      this.client = new OpenAI({ apiKey });
+      return;
     }
-    this.client = new OpenAI({ apiKey });
+
+    // Otherwise, try to get key from environment or UNION
+    this.apiKey = this.getApiKey();
+    this.client = new OpenAI({ apiKey: this.apiKey });
+  }
+
+  private getApiKey(): string {
+    // Fallback to environment variable
+    const envKey = process.env.OPENAI_API_KEY;
+    
+    if (!envKey) {
+      throw new Error('OPENAI_API_KEY is not set in environment variables');
+    }
+
+    return envKey;
+  }
+
+  /**
+   * Initialize with UNION keys (async)
+   * Call this after service creation to load keys from UNION
+   */
+  async initializeFromUnion(): Promise<void> {
+    try {
+      const keys = await unionSettingsClient.getApiKeys('videon');
+      const unionKey = keys['openai_api_key'];
+      
+      if (unionKey && unionKey !== this.apiKey) {
+        // Update API key and recreate client
+        this.apiKey = unionKey;
+        this.client = new OpenAI({ apiKey: unionKey });
+        logger.info('OpenAI client initialized with key from UNION');
+      } else if (unionKey) {
+        logger.debug('OpenAI key from UNION matches environment variable');
+      } else {
+        logger.debug('No OpenAI key found in UNION, using environment variable');
+      }
+    } catch (error: any) {
+      logger.warn('Failed to load OpenAI key from UNION, using environment variable', {
+        error: error.message,
+      });
+    }
   }
   
   async createEmbedding(text: string): Promise<number[]> {

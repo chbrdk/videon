@@ -15,15 +15,36 @@ const SERVICE_CONTAINERS = {
   frontend: 'frontend'
 };
 
+// Helper to check if Docker is available
+async function isDockerAvailable(): Promise<boolean> {
+  try {
+    await execAsync('docker --version');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 // Helper to find container name dynamically
 async function findContainerName(serviceName: string): Promise<string | null> {
   try {
-    // Try to find container by name pattern
-    const { stdout } = await execAsync(`docker ps -a --filter "name=${SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS]}" --format "{{.Names}}"`);
+    // Check if Docker is available first
+    const dockerAvailable = await isDockerAvailable();
+    if (!dockerAvailable) {
+      return null;
+    }
+    
+    // Try to find container by name pattern with timeout
+    const { stdout } = await Promise.race([
+      execAsync(`docker ps -a --filter "name=${SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS]}" --format "{{.Names}}"`),
+      new Promise<{ stdout: string }>((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 2000)
+      )
+    ]);
     const containerName = stdout.trim().split('\n')[0];
     return containerName || null;
   } catch (error) {
-    logger.error(`Error finding container for ${serviceName}:`, error);
+    // Silently fail - Docker not available or timeout
     return null;
   }
 }
@@ -32,18 +53,44 @@ async function findContainerName(serviceName: string): Promise<string | null> {
 router.get('/status', async (req: Request, res: Response) => {
   try {
     const statuses: Record<string, any> = {};
+    const dockerAvailable = await isDockerAvailable();
     
     for (const serviceName of Object.keys(SERVICE_CONTAINERS)) {
       try {
+        if (!dockerAvailable) {
+          // Docker not available - return basic status
+          statuses[serviceName] = {
+            running: false,
+            status: 'docker_unavailable',
+            container: null
+          };
+          continue;
+        }
+        
         const containerName = await findContainerName(serviceName);
         
         if (containerName) {
-          const { stdout } = await execAsync(`docker ps --filter "name=${containerName}" --format "{{.Status}}"`);
-          statuses[serviceName] = {
-            running: stdout.trim() !== '',
-            status: stdout.trim() || 'stopped',
-            container: containerName
-          };
+          try {
+            // Add timeout for docker ps command
+            const { stdout } = await Promise.race([
+              execAsync(`docker ps --filter "name=${containerName}" --format "{{.Status}}"`),
+              new Promise<{ stdout: string }>((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), 2000)
+              )
+            ]);
+            statuses[serviceName] = {
+              running: stdout.trim() !== '',
+              status: stdout.trim() || 'stopped',
+              container: containerName
+            };
+          } catch (error) {
+            // Timeout or error - assume not running
+            statuses[serviceName] = {
+              running: false,
+              status: 'check_timeout',
+              container: containerName
+            };
+          }
         } else {
           statuses[serviceName] = {
             running: false,

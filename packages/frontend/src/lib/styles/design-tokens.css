@@ -1,0 +1,116 @@
+/**
+ * MSQDX Design Tokens as CSS Custom Properties
+ * 
+ * Diese Datei definiert alle Design-Tokens als CSS-Variablen,
+ * damit sie in CSS-Blöcken verwendet werden können.
+ */
+
+:root {
+  /* Colors - Brand */
+  --msqdx-color-brand-purple: #b638ff;
+  --msqdx-color-brand-yellow: #fef14d;
+  --msqdx-color-brand-pink: #f256b6;
+  --msqdx-color-brand-orange: #ff6a3b;
+  --msqdx-color-brand-blue: #3b82f6;
+  --msqdx-color-brand-green: #00ca55;
+  --msqdx-color-brand-green-rgb: 0, 202, 85;
+  --msqdx-color-brand-orange-rgb: 255, 106, 59;
+  --msqdx-color-brand-white: #ffffff;
+  --msqdx-color-brand-black: #000000;
+
+  /* Colors - Tints */
+  --msqdx-color-tint-purple: rgba(182, 56, 255, 0.15);
+  --msqdx-color-tint-yellow: rgba(254, 241, 77, 0.15);
+  --msqdx-color-tint-pink: rgba(242, 86, 182, 0.15);
+  --msqdx-color-tint-orange: rgba(255, 106, 59, 0.15);
+  --msqdx-color-tint-blue: rgba(59, 130, 246, 0.15);
+  --msqdx-color-tint-green: rgba(0, 202, 85, 0.15);
+
+  /* Colors - Status */
+  --msqdx-color-status-success: #22c55e;
+  --msqdx-color-status-warning: #f97316;
+  --msqdx-color-status-error: #f87171;
+  --msqdx-color-status-info: #3b82f6;
+
+  /* Colors - Dark Theme */
+  --msqdx-color-dark-background: #0f0f0f;
+  --msqdx-color-dark-paper: #1a1a1a;
+  --msqdx-color-dark-border: rgba(255, 255, 255, 0.12);
+  --msqdx-color-dark-text-primary: #ffffff;
+  --msqdx-color-dark-text-secondary: #cccccc;
+
+  /* Colors - Light Theme */
+  --msqdx-color-light-background: #f8f6f0;
+  --msqdx-color-light-paper: #ffffff;
+  --msqdx-color-light-border: rgba(0, 0, 0, 0.12);
+  --msqdx-color-light-text-primary: #0f172a;
+  --msqdx-color-light-text-secondary: #475569;
+
+  /* Typography - Font Family */
+  --msqdx-font-primary: "Noto Sans JP", sans-serif;
+  --msqdx-font-mono: "JetBrains Mono", monospace;
+
+  /* Typography - Font Weights */
+  --msqdx-font-weight-thin: 100;
+  --msqdx-font-weight-extralight: 200;
+  --msqdx-font-weight-light: 300;
+  --msqdx-font-weight-regular: 400;
+  --msqdx-font-weight-medium: 500;
+  --msqdx-font-weight-semibold: 600;
+  --msqdx-font-weight-bold: 700;
+  --msqdx-font-weight-extrabold: 800;
+  --msqdx-font-weight-black: 900;
+
+  /* Typography - Font Sizes */
+  --msqdx-font-size-xs: 0.625rem;
+  --msqdx-font-size-sm: 0.75rem;
+  --msqdx-font-size-body2: 0.8125rem;
+  --msqdx-font-size-body1: 0.875rem;
+  --msqdx-font-size-base: 1rem;
+  --msqdx-font-size-lg: 1.125rem;
+  --msqdx-font-size-xl: 1.25rem;
+  --msqdx-font-size-2xl: 1.5rem;
+  --msqdx-font-size-3xl: 2rem;
+  --msqdx-font-size-4xl: 2.5rem;
+
+  /* Typography - Line Heights */
+  --msqdx-line-height-tight: 1.2;
+  --msqdx-line-height-normal: 1.4;
+  --msqdx-line-height-relaxed: 1.6;
+  --msqdx-line-height-loose: 1.8;
+
+  /* Spacing - Border Radius */
+  --msqdx-radius-none: 0px;
+  --msqdx-radius-xs: 4px;
+  --msqdx-radius-sm: 8px;
+  --msqdx-radius-md: 16px;
+  --msqdx-radius-lg: 24px;
+  --msqdx-radius-xl: 32px;
+  --msqdx-radius-xxl: 40px;
+  --msqdx-radius-full: 999px;
+
+  /* Spacing - Scale */
+  --msqdx-spacing-none: 0px;
+  --msqdx-spacing-xxs: 4px;
+  --msqdx-spacing-xs: 8px;
+  --msqdx-spacing-sm: 12px;
+  --msqdx-spacing-md: 16px;
+  --msqdx-spacing-lg: 24px;
+  --msqdx-spacing-xl: 32px;
+  --msqdx-spacing-xxl: 48px;
+  --msqdx-spacing-xxxl: 64px;
+
+  /* Effects - Transitions */
+  --msqdx-transition-fast: 0.15s ease-out;
+  --msqdx-transition-standard: 0.2s ease-in-out;
+  --msqdx-transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --msqdx-transition-spring: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Effects - Glass */
+  --msqdx-glass-blur: 12px;
+  --msqdx-glass-saturate: 150%;
+
+  /* Legacy aliases for compatibility */
+  --font-primary: var(--msqdx-font-primary);
+  --font-noto-sans-jp: var(--msqdx-font-primary);
+}

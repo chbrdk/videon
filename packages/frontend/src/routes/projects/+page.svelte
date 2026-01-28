@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { projectsApi, type Project } from '$lib/api/projects';
   import { _, currentLocale } from '$lib/i18n';
+  import { base, resolve } from '$app/paths';
   
   let projects: Project[] = [];
   let loading = true;
@@ -15,7 +16,7 @@
     const name = prompt($currentLocale === 'en' ? 'Project name:' : 'Projektname:');
     if (name) {
       const project = await projectsApi.createProject({ name });
-      window.location.href = `/projects/${project.id}`;
+      window.location.href = resolve(`/projects/${project.id}`);
     }
   }
   
@@ -50,7 +51,7 @@
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
       {#each projects as project}
-        <a href="/projects/{project.id}" class="glass-card hover:scale-[1.02] transition-transform p-6">
+        <a href={resolve(`/projects/${project.id}`)} class="glass-card hover:scale-[1.02] transition-transform p-6">
           <h3 class="text-xl font-semibold mb-2">{project.name}</h3>
           {#if project.description}
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{project.description}</p>

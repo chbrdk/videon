@@ -36,12 +36,30 @@ export interface Config {
 // Vite replaces import.meta.env.PUBLIC_BACKEND_URL at build time if the env var is set
 const BACKEND_URL_BUILD_TIME = import.meta.env.PUBLIC_BACKEND_URL;
 
-// Runtime detection: Always use browser's hostname (even if localhost) to ensure consistency
-// If user accesses via IP, use IP. If via localhost, use localhost.
-const BACKEND_URL = BACKEND_URL_BUILD_TIME || 
-  (typeof window !== 'undefined' 
-    ? `http://${window.location.hostname}:4001`
-    : 'http://localhost:4001');
+// Runtime detection: Always use browser's hostname and protocol to ensure consistency
+// If accessed via /videon prefix, use relative API path (proxied through Nginx)
+// Otherwise use direct backend URL
+const getBackendUrl = () => {
+  if (BACKEND_URL_BUILD_TIME) {
+    return BACKEND_URL_BUILD_TIME;
+  }
+  
+  if (typeof window !== 'undefined') {
+    const { hostname, protocol, pathname } = window.location;
+    
+    // If accessed via /videon, use relative API path (proxied by Nginx)
+    if (pathname.startsWith('/videon')) {
+      return `${protocol}//${hostname}`;
+    }
+    
+    // Otherwise use direct backend URL (development)
+    return `${protocol}//${hostname}:4001`;
+  }
+  
+  return 'http://localhost:4001';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 // Zentrale Konfiguration - Development
 const config: Config = {
@@ -58,30 +76,39 @@ const config: Config = {
   },
   urls: {
     backend: BACKEND_URL,
-    frontend: 'http://localhost:3003',
-    analyzer: 'http://localhost:8001',
-    audioService: 'http://localhost:5679',
-    audioSeparationService: 'http://localhost:8003',
-    saliencyService: 'http://localhost:8002',
+    frontend: 'http://localhost:3010',
+    analyzer: 'http://localhost:8004',
+    audioService: 'http://localhost:5680',
+    audioSeparationService: 'http://localhost:8006',
+    saliencyService: 'http://localhost:8005',
     visionService: 'http://localhost:8004'
   },
   storage: {
-    basePath: '/Volumes/DOCKER_EXTERN/prismvid/storage',
-    audioStems: '/Volumes/DOCKER_EXTERN/prismvid/storage/audio_stems',
-    videos: '/Volumes/DOCKER_EXTERN/prismvid/storage/videos',
-    keyframes: '/Volumes/DOCKER_EXTERN/prismvid/storage/keyframes'
+    basePath: '/Volumes/DOCKER_EXTERN/videon/storage',
+    audioStems: '/Volumes/DOCKER_EXTERN/videon/storage/audio_stems',
+    videos: '/Volumes/DOCKER_EXTERN/videon/storage/videos',
+    keyframes: '/Volumes/DOCKER_EXTERN/videon/storage/keyframes'
   }
 };
 
 // Frontend-spezifische APIs
+// If accessed via /videon, API path should be /videon/api (proxied by Nginx)
+// Otherwise use direct backend URL (development)
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/videon')) {
+    return '/videon/api';
+  }
+  return `${config.urls.backend}/api`;
+};
+
 export const api = {
-  baseUrl: `${config.urls.backend}/api`,
-  videos: `${config.urls.backend}/api/videos`,
-  projects: `${config.urls.backend}/api/projects`,
-  audioStems: `${config.urls.backend}/api/audio-stems`,
-  search: `${config.urls.backend}/api/search`,
-  folders: `${config.urls.backend}/api/folders`,
-  health: `${config.urls.backend}/api/health`
+  baseUrl: getApiBaseUrl(),
+  videos: `${getApiBaseUrl()}/videos`,
+  projects: `${getApiBaseUrl()}/projects`,
+  audioStems: `${getApiBaseUrl()}/audio-stems`,
+  search: `${getApiBaseUrl()}/search`,
+  folders: `${getApiBaseUrl()}/folders`,
+  health: `${getApiBaseUrl()}/health`
 };
 
 // Hilfsfunktionen für Frontend

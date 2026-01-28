@@ -102,7 +102,12 @@ export class ElevenLabsClient {
       {
         text: options.text,
         model_id: 'eleven_multilingual_v2',
-        voice_settings: options.settings
+        voice_settings: {
+          stability: options.settings.stability,
+          similarity_boost: options.settings.similarityBoost,
+          style: options.settings.style || 0,
+          use_speaker_boost: options.settings.useSpeakerBoost !== false
+        }
       },
       {
         headers: {

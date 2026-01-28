@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     libgomp1 \
+    gcc \
+    g++ \
+    python3-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

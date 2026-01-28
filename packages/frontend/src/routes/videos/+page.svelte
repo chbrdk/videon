@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount, tick, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { page } from '$app/stores';
   import { 
     folders, 
@@ -31,15 +32,18 @@ import { onMount, tick, onDestroy } from 'svelte';
   import { videosApi } from '$lib/api/videos';
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
-  import UdgGlassViewToggle from '$lib/components/udg-glass-view-toggle.svelte';
-  import UdgGlassBreadcrumbs from '$lib/components/udg-glass-breadcrumbs.svelte';
-  import UdgGlassSearchBar from '$lib/components/udg-glass-search-bar.svelte';
-  import UdgGlassFolderCard from '$lib/components/udg-glass-folder-card.svelte';
-  import UdgGlassVideoCard from '$lib/components/udg-glass-video-card.svelte';
-  import UdgGlassContextMenu from '$lib/components/udg-glass-context-menu.svelte';
-  import UdgGlassFolderDialog from '$lib/components/udg-glass-folder-dialog.svelte';
-  import UdgGlassDeleteModal from '$lib/components/udg-glass-delete-modal.svelte';
+  import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
+  import MsqdxBreadcrumbs from '$lib/components/msqdx-breadcrumbs.svelte';
+  import MsqdxSearchBar from '$lib/components/msqdx-search-bar.svelte';
+  import MsqdxFolderCard from '$lib/components/msqdx-folder-card.svelte';
+  import MsqdxVideoCard from '$lib/components/msqdx-video-card.svelte';
+  import MsqdxContextMenu from '$lib/components/msqdx-context-menu.svelte';
+  import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
+  import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
   import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
+  import CreateFolderIcon from '@material-icons/svg/svg/create_new_folder/baseline.svg?raw';
+  import UploadIcon from '@material-icons/svg/svg/file_upload/baseline.svg?raw';
+  import { MsqdxButton } from '$lib/components/ui';
 
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
@@ -178,6 +182,7 @@ let scrollAnimationId: number | null = null;
 
   // Video handlers
   function handleVideoClick(videoId: string) {
+    console.log('Navigating to video:', videoId);
     goto(`/videos/${videoId}`);
   }
 
@@ -464,46 +469,32 @@ let scrollAnimationId: number | null = null;
   </div>
 
   <!-- Breadcrumbs -->
-  <UdgGlassBreadcrumbs />
+  <MsqdxBreadcrumbs />
 
   <!-- Toolbar -->
   <div class="flex items-center justify-between gap-4">
     <div class="flex items-center gap-4">
-      <UdgGlassSearchBar />
-      <UdgGlassViewToggle />
-    </div>
-    <div class="flex items-center gap-2 reveal-controls">
-      <button 
-        class="reveal-toggle-button"
-        on:click={toggleRevealMode}
-        title={revealMode ? 'Reveal-Modus beenden' : 'Reveal-Modus starten'}
-      >
-        {revealMode ? 'Reveal-Modus beenden' : 'Reveal-Modus'}
-      </button>
-      {#if revealMode}
-        <span class="reveal-progress">{Math.min(revealedCount, totalVideos)}/{totalVideos}</span>
-      {/if}
+      <MsqdxSearchBar />
+      <MsqdxViewToggle />
     </div>
     <!-- Action Buttons -->
-    <div class="glass-button-group">
-      <button 
-        class="glass-button"
+    <div class="glass-button-group" style="display: flex; gap: 0.5rem;">
+      <MsqdxButton 
+        variant="text"
+        glass={true}
         on:click={handleCreateFolder}
         title={_('folder.create')}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19,12H16V9H14V12H11V14H14V17H16V14H19M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8A2,2 0 0,0 20,6H12M10,4V6H20V4H10Z"/>
-        </svg>
-      </button>
-      <a 
-        href="/upload" 
-        class="glass-button"
+        <div class="icon-20px">{@html CreateFolderIcon}</div>
+      </MsqdxButton>
+      <MsqdxButton 
+        variant="text"
+        glass={true}
+        href={resolve('/upload')}
         title={_('pages.videoGallery.newVideo')}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/>
-        </svg>
-      </a>
+        <div class="icon-20px">{@html UploadIcon}</div>
+      </MsqdxButton>
     </div>
   </div>
 
@@ -515,18 +506,20 @@ let scrollAnimationId: number | null = null;
           {$selectedItems.size} {_('selection.selected')}
         </span>
         <div class="flex items-center gap-2">
-          <button 
-            class="glass-button secondary "
+          <MsqdxButton 
+            variant="outlined"
+            glass={true}
             on:click={() => moveVideos(Array.from($selectedItems), null)}
           >
             {_('actions.move')}
-          </button>
-          <button 
-            class="glass-button secondary "
+          </MsqdxButton>
+          <MsqdxButton 
+            variant="outlined"
+            glass={true}
             on:click={deselectAll}
           >
             {_('actions.deselect')}
-          </button>
+          </MsqdxButton>
         </div>
       </div>
     </div>
@@ -538,12 +531,14 @@ let scrollAnimationId: number | null = null;
       <div class="text-red-200">
         <h3 class="font-semibold mb-2">{_('errors.loadingError')}</h3>
         <p>{$error}</p>
-        <button 
-          class="glass-button mt-4 " 
+        <MsqdxButton 
+          variant="contained"
+          glass={true}
+          class="mt-4"
           on:click={() => loadFolders(folderId)}
         >
           {_('actions.retry')}
-        </button>
+        </MsqdxButton>
       </div>
     </div>
   {:else if $isLoading}
@@ -570,12 +565,20 @@ let scrollAnimationId: number | null = null;
       </p>
       {#if !$searchQuery}
         <div class="flex items-center justify-center gap-4">
-          <button on:click={handleCreateFolder} class="glass-button ">
+          <MsqdxButton 
+            variant="contained"
+            glass={true}
+            on:click={handleCreateFolder}
+          >
             {_('pages.videoGallery.emptyState.createFolder')}
-          </button>
-          <a href="/upload" class="glass-button ">
+          </MsqdxButton>
+          <MsqdxButton 
+            variant="contained"
+            glass={true}
+            href={resolve('/upload')}
+          >
             {_('pages.videoGallery.emptyState.uploadVideo')}
-          </a>
+          </MsqdxButton>
         </div>
       {/if}
     </div>
@@ -613,7 +616,7 @@ let scrollAnimationId: number | null = null;
             on:dragleave={handleFolderDragLeave}
             on:drop={(e) => handleFolderDrop(e, folder)}
           >
-            <UdgGlassFolderCard 
+            <MsqdxFolderCard 
               {folder} 
               selected={$selectedItems.has(folder.id)}
               onSelect={toggleSelection}
@@ -624,14 +627,13 @@ let scrollAnimationId: number | null = null;
         
         <!-- Videos -->
         {#each currentContents.videos as video (video.id)}
-          <div
-            class="video-card-wrapper"
-            style:opacity={revealedVideoIds.has(video.id) ? 1 : 0}
-            style:pointer-events={revealedVideoIds.has(video.id) ? 'auto' : 'none'}
-          >
-            <UdgGlassVideoCard 
+          <div class="video-card-wrapper">
+            <MsqdxVideoCard 
               video={video}
-              on:select={(e) => handleVideoClick(e.detail.id)}
+              on:select={(e) => {
+                console.log('Video card select event:', e.detail);
+                handleVideoClick(e.detail.id);
+              }}
             />
           </div>
         {/each}
@@ -654,8 +656,8 @@ let scrollAnimationId: number | null = null;
               on:dragover={item.type === 'folder' ? (e) => handleFolderDragOver(e, item) : undefined}
               on:dragleave={item.type === 'folder' ? handleFolderDragLeave : undefined}
               on:drop={item.type === 'folder' ? (e) => handleFolderDrop(e, item) : undefined}
-              style:opacity={item.type === 'video' ? (revealedVideoIds.has(item.id) ? 1 : 0) : 1}
-              style:pointer-events={item.type === 'video' && !revealedVideoIds.has(item.id) ? 'none' : 'auto'}
+              style:opacity={1}
+              style:pointer-events="auto"
             >
               <input 
                 type="checkbox" 
@@ -692,7 +694,7 @@ let scrollAnimationId: number | null = null;
 
 <!-- Context Menu -->
 {#if contextMenu.show}
-  <UdgGlassContextMenu 
+  <MsqdxContextMenu 
     x={contextMenu.x}
     y={contextMenu.y}
     items={contextMenu.items}
@@ -701,7 +703,7 @@ let scrollAnimationId: number | null = null;
 {/if}
 
 <!-- Folder Dialog -->
-<UdgGlassFolderDialog 
+<MsqdxFolderDialog 
   bind:open={folderDialog.open}
   mode={folderDialog.mode}
   initialName={folderDialog.folder?.name || ''}
@@ -710,7 +712,7 @@ let scrollAnimationId: number | null = null;
 />
 
 <!-- Delete Modal -->
-<UdgGlassDeleteModal 
+<MsqdxDeleteModal 
   bind:open={deleteModalOpen}
   video={videoToDelete}
   on:close={() => { deleteModalOpen = false; videoToDelete = null; }}
@@ -720,36 +722,47 @@ let scrollAnimationId: number | null = null;
 <style>
   .glass-button-group {
     display: flex;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 32px;
-    padding: 4px;
+    gap: var(--msqdx-spacing-xs);
   }
 
-  .glass-button-group .glass-button {
+  .glass-button-group :global(.msqdx-button) {
+    border-radius: var(--msqdx-radius-full) !important;
+    padding: var(--msqdx-spacing-sm) !important;
+    min-width: auto;
+    min-height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border: none;
-    border-radius: 28px;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    color: var(--msqdx-color-brand-black) !important;
   }
 
-  .glass-button-group .glass-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+  .glass-button-group :global(.msqdx-button) :global(svg) {
+    color: var(--msqdx-color-brand-black) !important;
+    fill: var(--msqdx-color-brand-black) !important;
   }
 
-  .glass-button-group .glass-button:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.3);
-    outline-offset: 2px;
+  :global(html.light) .glass-button-group :global(.msqdx-button) {
+    color: var(--msqdx-color-brand-black) !important;
+  }
+
+  :global(html.light) .glass-button-group :global(.msqdx-button) :global(svg) {
+    color: var(--msqdx-color-brand-black) !important;
+    fill: var(--msqdx-color-brand-black) !important;
+  }
+
+  .icon-20px {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-20px :global(svg) {
+    width: 100%;
+    height: 100%;
+    color: var(--msqdx-color-brand-black) !important;
+    fill: var(--msqdx-color-brand-black) !important;
   }
 
   .reveal-controls {

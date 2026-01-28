@@ -1,7 +1,7 @@
 {
-  "name": "@prismvid/audio-separation-service",
+  "name": "@videon/audio-separation-service",
   "version": "1.0.0",
-  "description": "Audio separation service for PrismVid - handles Spleeter and Demucs separation",
+  "description": "Audio separation service for VIDEON - handles Spleeter and Demucs separation",
   "main": "src/api/server.py",
   "scripts": {
     "dev": "python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8003 --reload",
@@ -17,7 +17,7 @@
     "music",
     "vocals"
   ],
-  "author": "PrismVid Team",
+  "author": "VIDEON Team",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {}

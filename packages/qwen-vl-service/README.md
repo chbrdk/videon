@@ -63,17 +63,17 @@ curl -X POST http://localhost:8081/analyze/image \
 
 ## Modell-Auswahl
 
-Standard: `mlx-community/Qwen3-VL-8B-Instruct-3bit` (~3GB)
+Standard: `mlx-community/Qwen3-VL-8B-Instruct-4bit` (~4GB, optimale Balance)
 
 Alternative Modelle:
-- `mlx-community/Qwen3-VL-8B-Instruct-4bit` (~4GB, bessere Qualität)
-- `mlx-community/Qwen3-VL-8B-Instruct-5bit` (~5GB, beste Qualität)
+- `mlx-community/Qwen3-VL-8B-Instruct-3bit` (~3GB, kleinste Größe)
+- `mlx-community/Qwen3-VL-8B-Instruct-6bit` (~6GB, beste Qualität)
 
 ## Performance
 
 - **Model Loading**: ~2-5 Sekunden (einmalig)
 - **Image Analysis**: ~0.5-2 Sekunden
-- **RAM Usage**: 8-12GB (für 3-bit Model)
+- **RAM Usage**: 10-14GB (für 4-bit Model, Standard)
 
 ## Integration
 

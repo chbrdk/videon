@@ -75,8 +75,15 @@ export const saliencyApi = {
     });
     
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to start saliency analysis');
+      let errorMessage = 'Failed to start saliency analysis';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || error.message || errorMessage;
+      } catch (e) {
+        // If response is not JSON, use status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
   },
   
@@ -169,29 +176,5 @@ export const saliencyApi = {
       const error = await response.json();
       throw new Error(error.error || 'Failed to delete reframed video');
     }
-  },
-  
-  /**
-   * Gets saliency analysis status for a video
-   */
-  async getSaliencyStatus(videoId: string): Promise<{
-    hasAnalysis: boolean;
-    analysisCount: number;
-    latestAnalysis: {
-      id: string;
-      createdAt: string;
-      frameCount: number;
-      sampleRate: number;
-      modelVersion: string;
-    } | null;
-  }> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/saliency/status`);
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to get saliency status');
-    }
-    
-    return response.json();
   }
 };
