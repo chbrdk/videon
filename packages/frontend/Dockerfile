@@ -1,5 +1,5 @@
 # Multi-stage build for SvelteKit frontend
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 WORKDIR /app
 
 # Copy package files
@@ -12,6 +12,7 @@ RUN rm -f package-lock.json
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 ENV NODE_ENV=development
+
 # Check actual configuration
 RUN npm config list
 
@@ -34,33 +35,22 @@ COPY frontend/postcss.config.js ./
 COPY frontend/tailwind.config.mjs ./
 COPY frontend/playwright.config.ts ./
 COPY frontend/vitest.config.ts ./
+
 # Build stage
 FROM base AS build
 WORKDIR /app
+
 # Allow PUBLIC_BACKEND_URL to be passed at build time
 ARG PUBLIC_BACKEND_URL=http://192.168.50.101:4001
 ENV PUBLIC_BACKEND_URL=$PUBLIC_BACKEND_URL
 ARG VITE_BASE_PATH=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
-# Debug: Print versions
-RUN node -v && npm -v
 
-# Debug: Verify vite installation
-RUN npm list vite || true
-RUN ls -la node_modules/.bin || echo "node_modules/.bin missing"
+# Ensure SvelteKit types are generated
+RUN npx svelte-kit sync
 
-# Debug: List ALL files in current directory to verify COPY worked
-RUN ls -la
-
-# Debug: Print config files (if they exist)
-RUN cat svelte.config.js || echo "svelte.config.js missing"
-RUN cat vite.config.ts || echo "vite.config.ts missing"
-
-# Run checks
-RUN npx svelte-check --tsconfig ./tsconfig.json --threshold error || echo "Typescript check failed"
-
-# Run build and capture logs to ensure visibility on failure
-RUN npm run build -- --debug > build.log 2>&1 || (cat build.log && exit 1)
+# Run build
+RUN npm run build
 
 # Production stage
 # Production stage
