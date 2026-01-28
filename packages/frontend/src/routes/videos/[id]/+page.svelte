@@ -291,15 +291,7 @@
     }
   }
 
-  // ... (lines 294-413)
 
-        if (status.status === 'ERROR') {
-          console.log('❌ Reframing failed');
-          reframingVideo = false;
-          showReframeModal = false;
-          alert(_('project.error.reframeFailed', { message: status.message || 'Unknown error' }));
-          return;
-        }
 
   // ... (lines 418-557)
 
