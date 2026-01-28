@@ -58,8 +58,10 @@ services:
       AUDIO_STEMS_STORAGE_PATH: /app/storage/audio_stems
       THUMBNAILS_STORAGE_PATH: /app/storage/thumbnails
       HOST_STORAGE_PATH: /app/storage # Internal path mapping
-    ports:
-      - "4001:4001"
+    # ports:
+    #   - "4001:4001" # Disabled for production to avoid conflicts. Use Coolify Domain routing.
+    expose:
+      - "4001"
     volumes:
       - app_data:/app/storage
     networks:
@@ -88,8 +90,10 @@ services:
     environment:
       NODE_ENV: production
       PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL}
-    ports:
-      - "3000:3003"
+    # ports:
+    #   - "3000:3003" # Commented out to avoid Host Port conflicts. Coolify proxies to 3003 internally.
+    expose:
+      - "3003"
     networks:
       - prismvid-network
     depends_on:
