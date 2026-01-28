@@ -293,8 +293,23 @@
 
 
 
-  // ... (lines 418-557)
+  async function triggerQwenVLAnalysis() {
+    if (!videoId) return;
 
+    analyzingQwenVL = true;
+    try {
+      logger.info('Triggering Qwen VL analysis', { videoId });
+      const response = await fetch(`${api.baseUrl}/videos/${videoId}/qwenVL`, {
+        method: 'POST'
+      });
+
+      if (response.ok) {
+        logger.info('Qwen VL analysis triggered successfully', { videoId });
+        await pollQwenVLStatus();
+        await loadQwenVLStatus();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || response.statusText;
         logger.error('Failed to trigger Qwen VL analysis', { videoId, error: errorMessage, status: response.status });
         alert(_('project.error.qwenUnavailable', { error: errorMessage }));
       }
