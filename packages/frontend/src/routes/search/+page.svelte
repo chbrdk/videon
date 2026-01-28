@@ -1,12 +1,8 @@
-<script lang="ts">
   import { searchApi, type SearchResult } from '$lib/api/search';
   import { projectsApi } from '$lib/api/projects';
   import { currentLocale, _ } from '$lib/i18n';
   import { base } from '$app/paths';
   import { getVideoUrl, getCoverImageUrl } from '$lib/config/environment';
-  import SearchIcon from '@material-icons/svg/svg/search/baseline.svg?raw';
-  import PlayArrowIcon from '@material-icons/svg/svg/play_arrow/baseline.svg?raw';
-  import PauseIcon from '@material-icons/svg/svg/pause/baseline.svg?raw';
 
   import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
   import { MaterialSymbol } from '$lib/components/ui';

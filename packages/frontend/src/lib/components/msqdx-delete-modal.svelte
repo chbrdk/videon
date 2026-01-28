@@ -1,8 +1,6 @@
-<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { MsqdxGlassCard, MsqdxButton, MsqdxChip } from '$lib/components/ui';
-  import DeleteIcon from '@material-icons/svg/svg/delete/baseline.svg?raw';
-  import CloseIcon from '@material-icons/svg/svg/close/baseline.svg?raw';
+  import { MaterialSymbol } from '$lib/components/ui';
   import { _ } from '$lib/i18n';
 
   export let video: { id: string; filename: string; originalName: string } | null;
@@ -49,7 +47,7 @@
     <MsqdxGlassCard class="max-w-lg w-full mx-4">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-          {@html DeleteIcon}
+          <MaterialSymbol icon="delete" fontSize={32} class="text-white" />
           {_('delete.videoTitle')}
         </h2>
         <button
@@ -57,7 +55,7 @@
           class="text-white/60 hover:text-white transition-colors"
           disabled={deleting}
         >
-          {@html CloseIcon}
+          <MaterialSymbol icon="close" fontSize={24} />
         </button>
       </div>
 
