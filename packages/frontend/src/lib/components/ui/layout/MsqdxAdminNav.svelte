@@ -6,13 +6,13 @@
   import { base, resolve } from '$app/paths';
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
-  
+
   let { open = false, onClose = () => {} }: { open?: boolean; onClose?: () => void } = $props();
-  
+
   let expanded = $state(false);
   let mounted = $state(false);
   let isMobile = $state(false);
-  
+
   onMount(() => {
     mounted = true;
     checkMobile();
@@ -21,23 +21,23 @@
       window.removeEventListener('resize', checkMobile);
     };
   });
-  
+
   function checkMobile() {
     if (typeof window !== 'undefined') {
       isMobile = window.innerWidth < 900; // md breakpoint
     }
   }
-  
+
   function handleToggleExpand() {
     expanded = !expanded;
   }
-  
+
   function handleItemClick() {
     if (mounted && isMobile) {
       onClose();
     }
   }
-  
+
   function isActive(path: string) {
     const currentPath = $page.url.pathname;
     const fullPath = `${base}${path}`;
@@ -46,7 +46,7 @@
     }
     return currentPath?.startsWith(fullPath) ?? false;
   }
-  
+
   const navItems = [
     { label: 'Videos', path: '/videos', icon: 'video_file' },
     { label: 'Suche', path: '/search', icon: 'search' },
@@ -55,9 +55,11 @@
     { label: 'Hochladen', path: '/upload', icon: 'upload_file' },
     { label: 'Styleguide', path: '/styleguide', icon: 'palette' },
   ];
-  
-  let isExpanded = $derived(mounted && isMobile ? open : (mounted ? expanded : false));
-  let sidebarWidth = $derived(isExpanded ? (isMobile ? '95%' : '240px') : (isMobile ? '95%' : '64px'));
+
+  let isExpanded = $derived(mounted && isMobile ? open : mounted ? expanded : false);
+  let sidebarWidth = $derived(
+    isExpanded ? (isMobile ? '95%' : '240px') : isMobile ? '95%' : '64px'
+  );
 </script>
 
 <nav
@@ -89,51 +91,55 @@
       </button>
     </div>
   {/if}
-  
+
   <div class="nav-list-wrapper">
     <ul class="nav-list" style="align-items: {isExpanded ? 'stretch' : 'center'};">
-    {#if !isMobile}
-      <li class="nav-item">
-        <button
-          on:click={handleToggleExpand}
-          aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
-          style="
+      {#if !isMobile}
+        <li class="nav-item">
+          <button
+            on:click={handleToggleExpand}
+            aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
+            style="
             width: {isExpanded ? 'calc(100% - 0.5rem)' : '40px'};
             justify-content: {isExpanded ? 'flex-start' : 'center'};
           "
-        >
-          <MaterialSymbol 
-            icon={isExpanded ? "menu_open" : "menu"} 
-            fontSize={28}
-            style="margin-right: {isExpanded ? '0.75rem' : '0'};"
-          />
-          {#if isExpanded}
-            <span style="
+          >
+            <MaterialSymbol
+              icon={isExpanded ? 'menu_open' : 'menu'}
+              fontSize={28}
+              style="margin-right: {isExpanded ? '0.75rem' : '0'};"
+            />
+            {#if isExpanded}
+              <span
+                style="
               font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
-              font-size: {isMobile ? MSQDX_TYPOGRAPHY.fontSize.lg : MSQDX_TYPOGRAPHY.fontSize.body2};
+              font-size: {isMobile
+                  ? MSQDX_TYPOGRAPHY.fontSize.lg
+                  : MSQDX_TYPOGRAPHY.fontSize.body2};
               font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};
               line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
               color: rgba(255, 255, 255, 0.7);
-            ">Menu</span>
-          {/if}
-        </button>
-      </li>
-    {/if}
-    
-    {#each navItems as item}
-      {@const active = isActive(item.path)}
-      <li class="nav-item">
-        <a
-          href={resolve(item.path)}
-          on:click={(e) => {
-            e.preventDefault();
-            handleItemClick();
-            goto(resolve(item.path));
-          }}
-          class:active={active}
-          title={!isExpanded ? item.label : undefined}
-          style="
-            width: {isExpanded ? 'calc(100% - 0.5rem)' : (isMobile ? '60px' : '40px')};
+            ">Menu</span
+              >
+            {/if}
+          </button>
+        </li>
+      {/if}
+
+      {#each navItems as item}
+        {@const active = isActive(item.path)}
+        <li class="nav-item">
+          <a
+            href={resolve(item.path)}
+            on:click={e => {
+              e.preventDefault();
+              handleItemClick();
+              goto(resolve(item.path));
+            }}
+            class:active
+            title={!isExpanded ? item.label : undefined}
+            style="
+            width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};
             height: {isMobile ? '60px' : '40px'};
             justify-content: {isExpanded ? 'flex-start' : 'center'};
             background-color: {active ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
@@ -141,51 +147,86 @@
             border-left: {active ? '3px solid #ffffff' : '3px solid transparent'};
             font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
             font-size: {isMobile ? MSQDX_TYPOGRAPHY.fontSize.lg : MSQDX_TYPOGRAPHY.fontSize.body2};
-            font-weight: {active ? MSQDX_TYPOGRAPHY.fontWeight.semibold : MSQDX_TYPOGRAPHY.fontWeight.regular};
+            font-weight: {active
+              ? MSQDX_TYPOGRAPHY.fontWeight.semibold
+              : MSQDX_TYPOGRAPHY.fontWeight.regular};
           "
-        >
-          <MaterialSymbol 
-            icon={item.icon} 
-            fontSize={28}
-            style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
-          />
-          {#if isExpanded}
-            <span style="
+          >
+            <MaterialSymbol
+              icon={item.icon}
+              fontSize={28}
+              style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
+            />
+            {#if isExpanded}
+              <span
+                style="
               font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
-              font-size: {isMobile ? MSQDX_TYPOGRAPHY.fontSize.lg : MSQDX_TYPOGRAPHY.fontSize.body2};
-              font-weight: {active ? MSQDX_TYPOGRAPHY.fontWeight.semibold : MSQDX_TYPOGRAPHY.fontWeight.regular};
+              font-size: {isMobile
+                  ? MSQDX_TYPOGRAPHY.fontSize.lg
+                  : MSQDX_TYPOGRAPHY.fontSize.body2};
+              font-weight: {active
+                  ? MSQDX_TYPOGRAPHY.fontWeight.semibold
+                  : MSQDX_TYPOGRAPHY.fontWeight.regular};
               line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
-            ">{item.label}</span>
-          {/if}
-        </a>
-      </li>
-    {/each}
+            ">{item.label}</span
+              >
+            {/if}
+          </a>
+        </li>
+      {/each}
     </ul>
   </div>
-  
+
   <div class="nav-footer">
-    <button
-      on:click={() => theme.toggle()}
-      aria-label="Toggle theme"
+    <a
+      href="/settings"
+      on:click={e => {
+        handleItemClick();
+      }}
+      title="Settings"
+      class:active={isActive('/settings')}
       style="
-        width: {isExpanded ? 'calc(100% - 0.5rem)' : (isMobile ? '60px' : '40px')};
+        width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};
         height: {isMobile ? '60px' : '40px'};
         justify-content: {isExpanded ? 'flex-start' : 'center'};
+        font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+        font-size: {isMobile ? MSQDX_TYPOGRAPHY.fontSize.lg : MSQDX_TYPOGRAPHY.fontSize.body2};
       "
     >
-      <MaterialSymbol 
-        icon={$theme === 'dark' ? "light_mode" : "dark_mode"} 
+      <MaterialSymbol
+        icon="settings"
         fontSize={28}
         style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
       />
       {#if isExpanded}
-        <span style="
+        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">Settings</span>
+      {/if}
+    </a>
+
+    <button
+      on:click={() => theme.toggle()}
+      aria-label="Toggle theme"
+      style="
+        width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};
+        height: {isMobile ? '60px' : '40px'};
+        justify-content: {isExpanded ? 'flex-start' : 'center'};
+      "
+    >
+      <MaterialSymbol
+        icon={$theme === 'dark' ? 'light_mode' : 'dark_mode'}
+        fontSize={28}
+        style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
+      />
+      {#if isExpanded}
+        <span
+          style="
           font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
           font-size: {isMobile ? MSQDX_TYPOGRAPHY.fontSize.lg : MSQDX_TYPOGRAPHY.fontSize.body2};
           font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};
           line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
           color: rgba(255, 255, 255, 0.7);
-        ">{$theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        ">{$theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span
+        >
       {/if}
     </button>
   </div>
@@ -199,16 +240,18 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0.75rem 0.5rem;
-    transition: width 0.3s ease, transform 0.3s ease;
+    transition:
+      width 0.3s ease,
+      transform 0.3s ease;
   }
-  
+
   .nav-close-button {
     display: flex;
     justify-content: flex-end;
     padding: 0.5rem;
     padding-top: 1rem;
   }
-  
+
   .nav-close-button button {
     background: transparent;
     border: none;
@@ -216,18 +259,18 @@
     border-radius: 8px;
     transition: all 0.2s ease;
   }
-  
+
   .nav-close-button button:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-  
+
   .nav-list-wrapper {
     flex: 1;
     position: relative;
     min-height: 0;
     width: 100%;
   }
-  
+
   .nav-list {
     list-style: none;
     padding: 0;
@@ -241,13 +284,13 @@
     left: 0;
     right: 0;
   }
-  
+
   .nav-item {
     width: 100%;
     display: flex;
     justify-content: center;
   }
-  
+
   .nav-item button,
   .nav-item a {
     display: flex;
@@ -264,30 +307,34 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .nav-item button:hover,
   .nav-item a:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: #ffffff;
   }
-  
+
   .nav-item a.active {
     background-color: rgba(255, 255, 255, 0.15);
   }
-  
+
   .nav-item a.active:hover {
     background-color: rgba(255, 255, 255, 0.2);
   }
-  
+
   .nav-footer {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
     justify-content: center;
     padding: 0.5rem;
     margin-top: auto;
     padding-bottom: 1rem;
   }
-  
-  .nav-footer button {
+
+  .nav-footer button,
+  .nav-footer a {
     display: flex;
     align-items: center;
     padding: 0.5rem 1rem;
@@ -297,9 +344,13 @@
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.7);
   }
-  
-  .nav-footer button:hover {
+
+  .nav-footer button:hover,
+  .nav-footer a:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
   }
 </style>
