@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build --logLevel info",
+    "dev": "vite dev",
+    "build": "vite build --debug",
+    "preview": "vite preview",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",

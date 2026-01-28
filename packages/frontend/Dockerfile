@@ -52,11 +52,14 @@ RUN npx svelte-kit sync
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync
 
+# Debug: Check generated tsconfig
+RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
+
 # Debug: Print NODE_OPTIONS to ensure memory limit is applied
 RUN printenv NODE_OPTIONS
 
-# Run build and capture logs to ensure visibility on failure
-RUN npm run build > build.log 2>&1 || { cat build.log; exit 1; }
+# Run build (simple command to ensure logs stream to stdout)
+RUN npm run build
 
 # Production stage
 # Production stage
