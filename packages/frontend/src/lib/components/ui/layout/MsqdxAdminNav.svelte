@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { theme } from '$lib/stores/theme.store';
   import { goto } from '$app/navigation';
-  import { base, resolve } from '$app/paths';
+  import { base } from '$app/paths';
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -130,11 +130,11 @@
         {@const active = isActive(item.path)}
         <li class="nav-item">
           <a
-            href={resolve(item.path)}
+            href={`${base}${item.path}`}
             on:click={e => {
               e.preventDefault();
               handleItemClick();
-              goto(resolve(item.path));
+              goto(`${base}${item.path}`);
             }}
             class:active
             title={!isExpanded ? item.label : undefined}
