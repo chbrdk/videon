@@ -49,11 +49,17 @@ RUN ls -la
 RUN cat svelte.config.js || echo "svelte.config.js missing"
 RUN cat vite.config.ts || echo "vite.config.ts missing"
 
+# Debug: Verify vite package exists on disk
+RUN ls -la node_modules/vite/bin/vite.js || echo "vite.js missing"
+
+# Debug: Run vite version directly via node (bypassing symlinks)
+RUN node node_modules/vite/bin/vite.js --version || echo "Failed to run vite via node"
+
 # Ensure SvelteKit types are generated
 RUN npx svelte-kit sync || echo "svelte-kit sync failed"
 
-# Run build with debug logging using npx (safer than direct path)
-RUN npx vite build --debug
+# Run build using npm script (standard method)
+RUN npm run build -- --debug
 
 # Production stage
 # Production stage
