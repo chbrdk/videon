@@ -3,6 +3,7 @@ FROM python:3.9-slim
 # System dependencies
 RUN apt-get update && apt-get install -y \
     ffmpeg \
+    curl \
     libsndfile1 \
     libsndfile1-dev \
     && rm -rf /var/lib/apt/lists/*

@@ -33,6 +33,7 @@ WORKDIR /app
 # Install system dependencies for Prisma, Python3, FFmpeg, and PySceneDetect
 RUN apt-get update && apt-get install -y \
     openssl \
+    curl \
     python3 \
     python3-pip \
     ffmpeg \
