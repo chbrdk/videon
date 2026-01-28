@@ -1,0 +1,232 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: prismvid-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-prismvid}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prismvid_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-prismvid}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - prismvid-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prismvid}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: prismvid-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - prismvid-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # Backend Service
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+    container_name: prismvid-backend
+    environment:
+      NODE_ENV: production
+      PORT: 4001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANALYZER_SERVICE_URL: http://analyzer:8001
+      AUDIO_SEPARATION_SERVICE_URL: http://audio-separation-service:8003
+      AUDIO_SERVICE_URL: http://audio-service:5679
+      SALIENCY_SERVICE_URL: http://saliency-service:8002
+      VISION_SERVICE_URL: http://vision-service:8080
+      # Qwen VL is disabled in production unless a suitable replacement is configured
+      QWEN_VL_SERVICE_URL: ${QWEN_VL_SERVICE_URL} 
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      VIDEOS_STORAGE_PATH: /app/storage/videos
+      KEYFRAMES_STORAGE_PATH: /app/storage/keyframes
+      AUDIO_STEMS_STORAGE_PATH: /app/storage/audio_stems
+      THUMBNAILS_STORAGE_PATH: /app/storage/thumbnails
+      HOST_STORAGE_PATH: /app/storage # Internal path mapping
+    ports:
+      - "4001:4001"
+    volumes:
+      - app_data:/app/storage
+    networks:
+      - prismvid-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: sh -c "cp prisma/schema.postgresql.prisma prisma/schema.prisma 2>/dev/null || true && npx prisma migrate deploy && node dist/app.js"
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL}
+    container_name: prismvid-frontend
+    environment:
+      NODE_ENV: production
+      PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL}
+    ports:
+      - "3000:3003"
+    networks:
+      - prismvid-network
+    depends_on:
+      - backend
+    restart: always
+
+  # Analyzer Service
+  analyzer:
+    build:
+      context: ./packages/analyzer
+      dockerfile: Dockerfile
+    container_name: prismvid-analyzer
+    environment:
+      PYTHONPATH: /app/src
+      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
+      STORAGE_PATH: /app/storage
+      BACKEND_URL: http://backend:4001
+      # Vision service is on vision-service host in prod
+      VISION_SERVICE_URL: http://vision-service:8080
+    volumes:
+      - app_data:/app/storage
+    networks:
+      - prismvid-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Saliency Service
+  saliency-service:
+    build:
+      context: ./packages/saliency-service
+      dockerfile: Dockerfile
+    container_name: prismvid-saliency-service
+    environment:
+      PYTHONPATH: /app/src
+      LOG_LEVEL: INFO
+      BACKEND_URL: http://backend:4001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
+    volumes:
+      - app_data:/app/storage
+      # Models should ideally be built into the image or volume mounted if large
+    networks:
+      - prismvid-network
+    depends_on:
+      backend:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Audio Separation Service
+  audio-separation-service:
+    build:
+      context: .
+      dockerfile: packages/audio-separation-service/Dockerfile
+    container_name: prismvid-audio-separation-service
+    environment:
+      PYTHONPATH: /app/src
+      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
+      ANALYZER_SERVICE_URL: http://analyzer:8001
+      STORAGE_PATH: /app/storage
+    volumes:
+      - app_data:/app/storage
+    networks:
+      - prismvid-network
+    depends_on:
+      analyzer:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Audio Service
+  audio-service:
+    build:
+      context: .
+      dockerfile: packages/audio-service/Dockerfile
+    container_name: prismvid-audio-service
+    environment:
+      PYTHONPATH: /app/src
+      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
+      STORAGE_PATH: /app/storage
+    volumes:
+      - app_data:/app/storage
+    networks:
+      - prismvid-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5679/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Vision Service (Swift)
+  vision-service:
+    build:
+      context: .
+      dockerfile: docker/vision.Dockerfile
+    container_name: prismvid-vision-service
+    volumes:
+      - app_data:/app/storage
+    networks:
+      - prismvid-network
+    restart: always
+    # Swift Vapor/Vision service typically runs on 8080 or similar.
+    # Dockerfile exposes 8080.
+    
+  # Qwen VL Service (MLX)
+  # NOTE: This service runs on MLX (Apple Silicon) so it cannot be containerized
+  # easily for standard Linux servers. It is commented out for deployment.
+  # If you have a separate GPU server, you can point QWEN_VL_SERVICE_URL to it.
+  # qwen-vl-service: ...
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_data: # Shared volume for all services
+
+networks:
+  prismvid-network:
+    driver: bridge
