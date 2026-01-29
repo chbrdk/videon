@@ -24,6 +24,10 @@ model Video {
   folderId String?
   folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
+  // User relation
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   uploadedAt       DateTime           @default(now())
   analyzedAt       DateTime?
   scenes           Scene[]
@@ -129,6 +133,10 @@ model Folder {
   parent   Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children Folder[] @relation("FolderHierarchy")
 
+  // User relation
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   // Physical path for file system
   path String // e.g., "/root/projects/2024"
 
@@ -224,6 +232,10 @@ model Project {
   id          String  @id @default(cuid())
   name        String
   description String?
+
+  // User relation
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Project scenes (ordered)
   scenes ProjectScene[]
@@ -396,8 +408,34 @@ model VoiceClone {
   gender   String? // "male", "female", "neutral"
   ageRange String? // "young", "adult", "senior"
 
+  // User relation
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("voice_clones")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String?   // Nullable for OAuth users
+  name          String?
+  role          String    @default("USER") // USER, ADMIN
+  provider      String    @default("LOCAL") // LOCAL, MICROSOFT
+  providerId    String?   // ID from Microsoft
+  avatarUrl     String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  videos        Video[]
+  folders       Folder[]
+  projects      Project[]
+  voiceClones   VoiceClone[]
+  
+  @@map("users")
 }

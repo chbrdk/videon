@@ -29,6 +29,10 @@ passport.use(
         async (email, password, done) => {
             console.log('🔐 Login attempt for:', email);
             try {
+                console.log('🔍 Prisma keys:', Object.keys(prisma));
+                // @ts-ignore
+                console.log('👤 Has prisma.user?', !!prisma.user);
+
                 const user = await prisma.user.findUnique({ where: { email } });
                 console.log('👤 User found:', user ? user.id : 'null');
 
