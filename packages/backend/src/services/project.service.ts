@@ -20,7 +20,7 @@ export class ProjectService {
     if (!isAdmin && userId) {
       where.OR = [
         { userId },
-        { shares: { some: { userId } } }
+        { projectShares: { some: { userId } } }
       ];
     } else if (!isAdmin && !userId) {
       return [];
@@ -34,7 +34,7 @@ export class ProjectService {
           orderBy: { order: 'asc' }
         },
         user: { select: { name: true, email: true } },
-        shares: { where: { userId } }
+        projectShares: { where: { userId } }
       },
       orderBy: { updatedAt: 'desc' }
     });
@@ -50,7 +50,7 @@ export class ProjectService {
           include: { video: true },
           orderBy: { order: 'asc' }
         },
-        shares: true
+        projectShares: true
       }
     });
 
@@ -58,12 +58,12 @@ export class ProjectService {
 
     if (!isAdmin && userId) {
       const isOwner = project.userId === userId;
-      const share = project.shares.find(s => s.userId === userId);
+      const share = project.projectShares.find(s => s.userId === userId);
 
       if (!isOwner && !share) return null;
     }
 
-    return this.mapProjectToResponse(project, (project as any).shares?.[0]?.role);
+    return this.mapProjectToResponse(project, (project as any).projectShares?.[0]?.role);
   }
 
   private mapProjectToResponse(project: any, role?: string) {
@@ -74,7 +74,7 @@ export class ProjectService {
       createdAt: project.createdAt.toISOString(),
       updatedAt: project.updatedAt.toISOString(),
       scenes: project.scenes?.map((s: any) => this.mapProjectSceneToResponse(s)) || [],
-      sharedRole: (role || project.shares?.[0]?.role) as 'VIEWER' | 'EDITOR'
+      sharedRole: (role || project.projectShares?.[0]?.role) as 'VIEWER' | 'EDITOR'
     };
   }
 

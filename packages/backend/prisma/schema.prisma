@@ -38,7 +38,7 @@ model Video {
   projectScenes    ProjectScene[]
   saliencyAnalyses SaliencyAnalysis[]
   reframedVideos   ReframedVideo[]
-  shares           VideoShare[]
+  videoShares           VideoShare[]
 
   @@index([folderId])
   @@map("videos")
@@ -249,7 +249,7 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  shares    ProjectShare[]
+  projectShares    ProjectShare[]
 
   @@map("projects")
 }
