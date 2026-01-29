@@ -175,10 +175,14 @@
   <!-- Query Input Section -->
   <div class="glass-card p-6 mb-6">
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      <label
+        for="video-query"
+        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+      >
         {$currentLocale === 'en' ? 'Describe your video' : 'Beschreiben Sie Ihr Video'}
       </label>
       <textarea
+        id="video-query"
         bind:value={query}
         disabled={loading || !isAvailable}
         placeholder={$currentLocale === 'en'
@@ -209,9 +213,9 @@
 
     <!-- Variant Count -->
     <div class="mb-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         {$currentLocale === 'en' ? 'Number of variants' : 'Anzahl der Varianten'}
-      </label>
+      </span>
       <div class="flex gap-2">
         {#each [1, 2, 3] as count}
           <button

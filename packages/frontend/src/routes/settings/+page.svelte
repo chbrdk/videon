@@ -144,7 +144,13 @@
       <div
         class="flex flex-col items-center justify-center space-y-4 pb-6 border-b border-white/10"
       >
-        <div class="relative group cursor-pointer" on:click={() => fileInput.click()}>
+        <div
+          class="relative group cursor-pointer"
+          role="button"
+          tabindex="0"
+          on:click={() => fileInput.click()}
+          on:keydown={e => e.key === 'Enter' && fileInput.click()}
+        >
           <div
             class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-blue-500 transition-all bg-white/5 flex items-center justify-center"
           >
