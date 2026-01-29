@@ -26,9 +26,15 @@
   }
 
   onMount(() => {
-    // Calculate position
-    if (menuElement && menuElement.parentElement) {
-      const parentRect = menuElement.parentElement.getBoundingClientRect();
+    // 1. Capture parent for positioning reference BEFORE moving
+    const triggerContainer = menuElement?.parentElement;
+
+    if (triggerContainer) {
+      // 2. Move to body to escape stacking contexts (transform, overflow:hidden)
+      document.body.appendChild(menuElement);
+
+      // 3. Calculate position relative to viewport
+      const parentRect = triggerContainer.getBoundingClientRect();
 
       // Default to bottom-right alignment relative to parent
       let top = parentRect.bottom + 8;
@@ -39,14 +45,20 @@
         left = window.innerWidth - width - 16;
       }
 
+      // Apply styles
       menuElement.style.top = `${top}px`;
       menuElement.style.left = `${left}px`;
-      menuElement.style.position = 'fixed'; // Force fixed
+      menuElement.style.position = 'fixed';
     }
 
     document.addEventListener('click', handleClickOutside);
+
     return () => {
       document.removeEventListener('click', handleClickOutside);
+      // Cleanup: Remove from body if it's still there
+      if (menuElement && menuElement.parentElement === document.body) {
+        document.body.removeChild(menuElement);
+      }
     };
   });
 </script>
