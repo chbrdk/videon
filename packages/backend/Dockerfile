@@ -29,7 +29,7 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 # Generate Prisma client before building TypeScript
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 RUN pnpm run build
 
 # Production stage
@@ -64,11 +64,11 @@ COPY --from=base /app/src/services/*.js ./dist/services/
 RUN pnpm install --frozen-lockfile || pnpm install
 
 # Generate Prisma client
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
 # Expose port
 EXPOSE 4001
 
 # Start the application
 # Start the application with auto DB push
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/app.js"]
+CMD ["sh", "-c", "pnpm exec prisma db push --accept-data-loss && node dist/app.js"]
