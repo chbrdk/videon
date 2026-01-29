@@ -442,6 +442,15 @@ class QwenVLService {
    */
   async isAvailable(): Promise<boolean> {
     try {
+      // Different health check for Ollama
+      if (this.provider === 'ollama') {
+        const response = await axios.get(`${this.qwenVLServiceUrl}/`, {
+          timeout: 5000
+        });
+        // Ollama usually returns "Ollama is running" string or JSON
+        return response.status === 200;
+      }
+
       const response = await axios.get(`${this.qwenVLServiceUrl}/health`, {
         timeout: 5000
       });
