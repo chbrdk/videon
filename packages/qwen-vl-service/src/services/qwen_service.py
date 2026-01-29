@@ -5,6 +5,10 @@ import os
 from typing import Optional, List, Dict, Any, Union
 from pathlib import Path
 from loguru import logger
+import base64
+import io
+import tempfile
+import uuid
 
 try:
     from mlx_vlm import load, generate
@@ -68,7 +72,8 @@ class QwenVLService:
     
     def analyze_image(
         self,
-        image_path: str,
+        image_path: Optional[str] = None,
+        image_base64: Optional[str] = None,
         prompt: str = "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
         max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
@@ -76,7 +81,8 @@ class QwenVLService:
         Analysiert ein einzelnes Bild mit Qwen VL
         
         Args:
-            image_path: Pfad zum Bild
+            image_path: Pfad zum Bild (optional wenn image_base64 gegeben)
+            image_base64: Base64 kodiertes Bild (optional wenn image_path gegeben)
             prompt: Prompt für die Analyse
             max_tokens: Maximale Tokens (optional, überschreibt default)
         
@@ -88,8 +94,38 @@ class QwenVLService:
         
         # Validiere Bild-Pfad
         image_path_obj = Path(image_path)
-        if not image_path_obj.exists():
-            raise FileNotFoundError(f"Image not found: {image_path}")
+        # Determine image source
+        temp_file_created = False
+        image_path_obj = None
+
+        if image_base64:
+            # Handle Base64 image
+            try:
+                # Remove data URI prefix if present
+                if "base64," in image_base64:
+                    image_base64 = image_base64.split("base64,")[1]
+                
+                image_data = base64.b64decode(image_base64)
+                temp_dir = Path(tempfile.gettempdir())
+                temp_path = temp_dir / f"qwen_upload_{uuid.uuid4()}.jpg"
+                
+                # Verify it's a valid image
+                from PIL import Image
+                img = Image.open(io.BytesIO(image_data))
+                img.save(temp_path, "JPEG")
+                
+                image_path_obj = temp_path
+                temp_file_created = True
+                logger.info(f"Created temp file from base64: {temp_path}")
+            except Exception as e:
+                raise ValueError(f"Invalid base64 image data: {e}")
+        elif image_path:
+            # Handle local file path
+            image_path_obj = Path(image_path)
+            if not image_path_obj.exists():
+                raise FileNotFoundError(f"Image not found: {image_path}")
+        else:
+            raise ValueError("Either image_path or image_base64 must be provided")
         
         # Resize Bild um Memory-Probleme zu vermeiden (max 1024x1024)
         from PIL import Image
@@ -164,10 +200,19 @@ class QwenVLService:
         except Exception as e:
             logger.error(f"Error analyzing image: {e}")
             raise
+        finally:
+            # Cleanup temp file if we created one from base64
+            if temp_file_created and image_path_obj and image_path_obj.exists():
+                try:
+                    os.remove(image_path_obj)
+                    logger.info(f"Removed temp file: {image_path_obj}")
+                except Exception as cleanup_error:
+                    logger.warning(f"Failed to remove temp file {image_path_obj}: {cleanup_error}")
     
     def analyze_video_frames(
         self,
-        frame_paths: List[str],
+        frame_paths: Optional[List[str]] = None,
+        frame_base64_images: Optional[List[str]] = None,
         prompt: str = "Beschreibe was in diesen Video-Frames passiert. Was ist die Story oder der Kontext?",
         max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
@@ -176,6 +221,7 @@ class QwenVLService:
         
         Args:
             frame_paths: Liste von Pfaden zu Keyframes
+            frame_base64_images: Liste von Base64 Keyframes
             prompt: Prompt für Video-Analyse
             max_tokens: Maximale Tokens
         
@@ -185,16 +231,47 @@ class QwenVLService:
         if not self._loaded:
             self.load_model()
         
-        logger.info(f"Analyzing {len(frame_paths)} video frames")
+        count = len(frame_paths) if frame_paths else len(frame_base64_images) if frame_base64_images else 0
+        logger.info(f"Analyzing {count} video frames")
         
-        # Validiere alle Pfade
+        temp_files = []
         valid_frames = []
-        for frame_path in frame_paths:
-            if Path(frame_path).exists():
-                valid_frames.append(frame_path)
-            else:
-                logger.warning(f"Frame not found: {frame_path}")
         
+        if frame_base64_images:
+             # Process Base64 Frames
+            try:
+                temp_dir = Path(tempfile.gettempdir())
+                for i, b64 in enumerate(frame_base64_images):
+                    if "base64," in b64:
+                        b64 = b64.split("base64,")[1]
+                    
+                    img_data = base64.b64decode(b64)
+                    temp_path = temp_dir / f"qwen_frame_{uuid.uuid4()}_{i}.jpg"
+                    
+                    from PIL import Image
+                    img = Image.open(io.BytesIO(img_data))
+                    img.save(temp_path, "JPEG")
+                    
+                    valid_frames.append(str(temp_path))
+                    temp_files.append(temp_path)
+                logger.info(f"Created {len(temp_files)} temp frames from base64")
+            except Exception as e:
+                # Cleanup on error
+                for p in temp_files:
+                    try:
+                        os.remove(p)
+                    except: pass
+                raise ValueError(f"Invalid base64 frame data: {e}")
+        elif frame_paths:
+             # Process File Paths
+            for frame_path in frame_paths:
+                if Path(frame_path).exists():
+                    valid_frames.append(frame_path)
+                else:
+                    logger.warning(f"Frame not found: {frame_path}")
+        else:
+             raise ValueError("Either frame_paths or frame_base64_images must be provided")
+
         if not valid_frames:
             raise ValueError("No valid frames found")
         
@@ -276,6 +353,13 @@ class QwenVLService:
         except Exception as e:
             logger.error(f"Error analyzing video frames: {e}")
             raise
+        finally:
+            # Cleanup temp files
+            for p in temp_files:
+                if p.exists():
+                    try:
+                        os.remove(p)
+                    except: pass
     
     def is_loaded(self) -> bool:
         """Prüft ob Modell geladen ist"""

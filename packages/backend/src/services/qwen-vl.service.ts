@@ -10,18 +10,24 @@ const prisma = new PrismaClient();
 class QwenVLService {
   private qwenVLServiceUrl: string;
   private storagePath: string;
+  private provider: string;
+  private modelName: string;
 
   constructor() {
     // Qwen VL Service läuft auf Port 8081
     // In Docker: qwen-vl-service:8081
     // Lokal: host.docker.internal:8081 oder localhost:8081
-    this.qwenVLServiceUrl = 
-      process.env.QWEN_VL_SERVICE_URL || 
+    this.qwenVLServiceUrl =
+      process.env.QWEN_VL_SERVICE_URL ||
       process.env.QWEN_VL_URL ||
       'http://localhost:8081';
-    
+
+    // Provider Configuration
+    this.provider = process.env.QWEN_VL_PROVIDER || 'custom'; // 'custom' (default) or 'ollama'
+    this.modelName = process.env.QWEN_VL_MODEL || 'qwen3-vl:8b'; // Default for Ollama
+
     // Storage-Pfad für Pfad-Konvertierung
-    this.storagePath = process.env.STORAGE_PATH 
+    this.storagePath = process.env.STORAGE_PATH
       ? require('path').resolve(process.cwd(), '..', '..', process.env.STORAGE_PATH.replace('./', ''))
       : require('path').join(process.cwd(), '..', '..', 'storage');
   }
@@ -42,13 +48,28 @@ class QwenVLService {
       console.warn('⚠️ HOST_STORAGE_PATH not set, using container path');
       return containerPath;
     }
-    
+
     // Convert /app/storage/... to host path
     if (containerPath.startsWith('/app/storage/')) {
       return containerPath.replace('/app/storage/', `${hostStoragePath}/`);
     }
-    
+
     return containerPath;
+  }
+
+  /**
+   * Prüft ob der Remote-Modus aktiviert ist
+   */
+  private isRemoteMode(): boolean {
+    if (process.env.QWEN_VL_REMOTE_MODE === 'true') return true;
+
+    // Auto-detect based on URL
+    const url = this.qwenVLServiceUrl;
+    if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('qwen-vl-service')) {
+      return false;
+    }
+    // If external URL, assume remote mode
+    return true;
   }
 
   /**
@@ -56,9 +77,62 @@ class QwenVLService {
    */
   async analyzeImage(imagePath: string, prompt?: string): Promise<string> {
     try {
+      // Check for Remote Mode
+      if (this.isRemoteMode()) {
+        console.log(`🖼️ Calling Remote Qwen VL for image: ${imagePath}`);
+        const fs = require('fs').promises;
+        const imageBuffer = await fs.readFile(imagePath);
+        const base64Image = imageBuffer.toString('base64');
+
+        if (this.provider === 'ollama') {
+          console.log(`🦙 Calling Ollama API (${this.modelName}) for image analysis`);
+          const response = await axios.post(
+            `${this.qwenVLServiceUrl}/api/chat`,
+            {
+              model: this.modelName,
+              messages: [
+                {
+                  role: 'user',
+                  content: prompt || "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+                  images: [base64Image]
+                }
+              ],
+              stream: false
+            },
+            { timeout: 180000 }
+          );
+
+          if (!response.data || !response.data.message || !response.data.message.content) {
+            throw new Error('No content returned from Ollama API');
+          }
+          return response.data.message.content;
+        }
+
+        // Custom Provider (Default)
+        const response = await axios.post(
+          `${this.qwenVLServiceUrl}/analyze/image`,
+          {
+            image_base64: base64Image,
+            prompt: prompt || "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+            max_tokens: 500
+          },
+          { timeout: 180000 }
+        );
+
+        if (!response.data || (!response.data.description && !response.data.text)) {
+          throw new Error('No description returned from Remote Qwen VL service');
+        }
+        return response.data.description || response.data.text;
+      }
+
+      // Local Mode (Legacy) - ONLY for Custom Provider
+      if (this.provider === 'ollama') {
+        throw new Error('Ollama provider does not support local file path mode. Enable QWEN_VL_REMOTE_MODE=true');
+      }
+
       // Convert to host path for local Qwen VL service
       const hostPath = this.convertToHostPath(imagePath);
-      console.log(`🖼️ Calling Qwen VL for image: ${hostPath} (original: ${imagePath})`);
+      console.log(`🖼️ Calling Local Qwen VL for image: ${hostPath} (original: ${imagePath})`);
       const response = await axios.post(
         `${this.qwenVLServiceUrl}/analyze/image`,
         {
@@ -91,6 +165,69 @@ class QwenVLService {
    */
   async analyzeVideoFrames(framePaths: string[], prompt?: string): Promise<string> {
     try {
+      if (this.isRemoteMode()) {
+        console.log(`🎬 Calling Remote Qwen VL (${this.provider}) for ${framePaths.length} frames`);
+
+        const fs = require('fs').promises;
+
+        // For Ollama, we currently process frame by frame or combine them if model supports it
+        // qwen3-vl supports multiple images in one message
+
+        if (this.provider === 'ollama') {
+          // Read all frames
+          const imagesBase64 = await Promise.all(framePaths.map(async (p) => {
+            const buf = await fs.readFile(p);
+            return buf.toString('base64');
+          }));
+
+          console.log(`🦙 Calling Ollama API (${this.modelName}) for video frames`);
+          const response = await axios.post(
+            `${this.qwenVLServiceUrl}/api/chat`,
+            {
+              model: this.modelName,
+              messages: [
+                {
+                  role: 'user',
+                  content: prompt || "Analysiere diese Video-Frames. Was passiert in diesem Video? Beschreibe die Story, Personen, Aktivitäten und den Kontext.",
+                  images: imagesBase64
+                }
+              ],
+              stream: false,
+              options: {
+                num_ctx: 4096 // Increase context for multiple images
+              }
+            },
+            { timeout: 300000 }
+          );
+
+          if (!response.data || !response.data.message || !response.data.message.content) {
+            throw new Error('No content returned from Ollama API');
+          }
+          return response.data.message.content;
+        }
+
+        // Custom Provider Logic
+        const framesBase64 = await Promise.all(framePaths.map(async (p) => {
+          const buf = await fs.readFile(p);
+          return buf.toString('base64');
+        }));
+
+        const response = await axios.post(
+          `${this.qwenVLServiceUrl}/analyze/video-frames`,
+          {
+            frame_base64_images: framesBase64,
+            prompt: prompt || "Analysiere diese Video-Frames. Was passiert in diesem Video? Beschreibe die Story, Personen, Aktivitäten und den Kontext.",
+            max_tokens: 800
+          },
+          { timeout: 300000 } // Higher timeout for upload
+        );
+        return response.data.video_description;
+      }
+
+      if (this.provider === 'ollama') {
+        throw new Error('Ollama provider requires remote mode. Enable QWEN_VL_REMOTE_MODE=true');
+      }
+
       const response = await axios.post(
         `${this.qwenVLServiceUrl}/analyze/video-frames`,
         {
@@ -178,12 +315,12 @@ class QwenVLService {
       // Analysiere JEDE Szene einzeln
       // Pro Szene sammle Keyframes basierend auf der Szenen-Dauer (z.B. 1 Frame pro Sekunde)
       const framesPerSecond = parseFloat(process.env.QWEN_VL_FRAMES_PER_SECOND || '1'); // Standard: 1 Frame/Sekunde
-      
+
       console.log(`🎬 Analyzing ${scenes.length} scenes with ${framesPerSecond} frame(s) per second`);
-      
+
       let successCount = 0;
       let errorCount = 0;
-      
+
       for (const scene of scenes) {
         try {
           if (!scene.keyframePath) {
@@ -191,12 +328,12 @@ class QwenVLService {
             errorCount++;
             continue;
           }
-          
+
           // Konvertiere Docker-Pfad zu lokalem Pfad
           let keyframePath = scene.keyframePath;
           const path = require('path');
           const fs = require('fs');
-          
+
           // Pfad-Konvertierung
           // If path starts with /app/storage/, it's already correct for the container
           // No conversion needed as files are mounted at /app/storage/
@@ -208,7 +345,7 @@ class QwenVLService {
             // Relative paths need to be joined with /app
             keyframePath = path.join('/app', keyframePath.replace('./', ''));
           }
-          
+
           // Prüfe ob Keyframe existiert
           if (!fs.existsSync(keyframePath)) {
             // Versuche alternativen Pfad
@@ -222,17 +359,17 @@ class QwenVLService {
               continue;
             }
           }
-          
+
           // Berechne Anzahl Frames für diese Szene basierend auf Dauer
           const sceneDuration = scene.endTime - scene.startTime;
           const framesForScene = Math.max(1, Math.ceil(sceneDuration * framesPerSecond));
-          
+
           // Für jetzt verwenden wir den Hauptkeyframe, später könnten wir
           // zusätzliche Frames aus dem Video extrahieren
           const framePaths = [keyframePath];
-          
+
           console.log(`🔍 Analyzing scene ${scene.id} (${sceneDuration.toFixed(1)}s, ${framesForScene} frame(s))...`);
-          
+
           // Analysiere diese Szene
           let sceneDescription: string;
           try {
@@ -249,12 +386,12 @@ class QwenVLService {
             errorCount++;
             continue;
           }
-          
+
           // Speichere Beschreibung für diese Szene
           const existingVisionAnalysis = await prisma.visionAnalysis.findUnique({
             where: { sceneId: scene.id }
           });
-          
+
           if (existingVisionAnalysis) {
             await prisma.visionAnalysis.update({
               where: { sceneId: scene.id },
@@ -286,9 +423,9 @@ class QwenVLService {
           errorCount++;
         }
       }
-      
+
       console.log(`✅ Qwen VL analysis completed: ${successCount} successful, ${errorCount} errors`);
-      
+
       if (successCount === 0) {
         throw new Error(`Failed to analyze any scenes`);
       }

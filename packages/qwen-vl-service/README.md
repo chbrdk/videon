@@ -59,6 +59,14 @@ curl -X POST http://localhost:8081/analyze/image \
     "image_path": "/path/to/image.jpg",
     "prompt": "Beschreibe diese Szene detailliert."
   }'
+
+# Remote/Base64 Usage
+curl -X POST http://localhost:8081/analyze/image \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image_base64": "data:image/jpeg;base64,...",
+    "prompt": "Beschreibe diese Szene detailliert."
+  }'
 ```
 
 ## Modell-Auswahl
