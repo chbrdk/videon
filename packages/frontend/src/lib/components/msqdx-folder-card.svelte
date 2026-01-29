@@ -5,8 +5,8 @@
 
   export let folder;
   export let selected = false;
-  export let onSelect = () => {};
-  export let onContextMenu = () => {};
+  export let onSelect = undefined;
+  export let onContextMenu = undefined;
   export let className = '';
 
   const dispatch = createEventDispatcher();
@@ -18,7 +18,9 @@
 
   function handleContextMenu(e) {
     e.preventDefault();
-    onContextMenu(e, folder);
+    if (onContextMenu) {
+      onContextMenu(e, folder);
+    }
   }
 
 <MsqdxGlassCard
