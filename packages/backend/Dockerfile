@@ -1,5 +1,11 @@
 # Multi-stage build for Node.js backend
-FROM node:18-alpine AS base
+FROM node:18-slim AS base
+
+# Install system dependencies needed for build and runtime (openssl for Prisma)
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
 RUN npm install -g pnpm
