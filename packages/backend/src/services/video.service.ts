@@ -13,7 +13,7 @@ export class VideoService {
       if (!isAdmin && userId) {
         where.OR = [
           { userId: userId },
-          { videoShares: { some: { userId: userId } } }
+          { shares: { some: { userId: userId } } }
         ];
       } else if (!isAdmin && !userId) {
         return [];
@@ -23,7 +23,7 @@ export class VideoService {
         where,
         include: {
           folder: true,
-          videoShares: userId ? { where: { userId } } : false
+          shares: userId ? { where: { userId } } : false
         },
         orderBy: { uploadedAt: 'desc' },
       });
@@ -41,7 +41,7 @@ export class VideoService {
       if (!isAdmin && userId) {
         where.OR = [
           { userId: userId },
-          { videoShares: { some: { userId: userId } } }
+          { shares: { some: { userId: userId } } }
         ];
       } else if (!isAdmin && !userId) {
         return [];
@@ -51,7 +51,7 @@ export class VideoService {
         where,
         include: {
           folder: true,
-          videoShares: userId ? { where: { userId } } : false
+          shares: userId ? { where: { userId } } : false
         },
         orderBy: { uploadedAt: 'desc' }
       });
@@ -137,7 +137,7 @@ export class VideoService {
           analysisLogs: {
             orderBy: { createdAt: 'desc' },
           },
-          videoShares: userId ? { where: { userId } } : false
+          shares: userId ? { where: { userId } } : false
         },
       });
 
@@ -259,7 +259,7 @@ export class VideoService {
       uploadedAt: video.uploadedAt.toISOString(),
       analyzedAt: video.analyzedAt?.toISOString(),
       file_path: filePath, // Add file_path for audio service
-      sharedRole: video.videoShares?.[0]?.role as 'VIEWER' | 'EDITOR'
+      sharedRole: video.shares?.[0]?.role as 'VIEWER' | 'EDITOR'
     };
   }
 
