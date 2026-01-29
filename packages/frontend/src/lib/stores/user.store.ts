@@ -5,6 +5,7 @@ export interface User {
     email: string;
     name?: string;
     role: 'USER' | 'ADMIN';
+    avatarUrl?: string;
 }
 
 export const userStore = writable<User | null>(null);

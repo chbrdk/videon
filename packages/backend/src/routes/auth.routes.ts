@@ -3,9 +3,42 @@ import { Router } from 'express';
 import passport from 'passport';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// Multer Config for Avatars
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = process.env.AVATARS_STORAGE_PATH || '/app/storage/avatars';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const timestamp = Date.now();
+        const ext = path.extname(file.originalname);
+        const filename = `${req.user ? (req.user as any).id : 'unknown'}_${timestamp}${ext}`;
+        cb(null, filename);
+    },
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        const safeTypes = ['image/png', 'image/jpeg', 'image/webp'];
+        if (safeTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'));
+        }
+    }
+});
 
 // Register Local
 router.post('/register', async (req, res) => {
@@ -116,6 +149,46 @@ router.get('/me', (req, res) => {
         res.json({ isAuthenticated: true, user: { id: user.id, email: user.email, name: user.name, role: user.role, avatarUrl: user.avatarUrl } });
     } else {
         res.json({ isAuthenticated: false });
+    }
+});
+
+// Avatar Upload
+router.post('/me/avatar', (req, res, next) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: 'Unauthorized' });
+    next();
+}, upload.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+        const user = req.user as any;
+        const avatarUrl = `/api/auth/avatars/${req.file.filename}`;
+
+        // Update DB
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { avatarUrl }
+        });
+
+        // Update session user? Depends on passport strategy.
+        // Usually passport uses ID from session to fetch User, so next request will have new data.
+
+        res.json({ message: 'Avatar updated', avatarUrl });
+    } catch (e) {
+        console.error('Avatar upload error:', e);
+        res.status(500).json({ message: 'Upload failed' });
+    }
+});
+
+// Serve Avatar
+router.get('/avatars/:filename', (req, res) => {
+    const { filename } = req.params;
+    const avatarsPath = process.env.AVATARS_STORAGE_PATH || '/app/storage/avatars';
+    const filePath = path.join(avatarsPath, filename);
+
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).json({ message: 'Avatar not found' });
     }
 });
 

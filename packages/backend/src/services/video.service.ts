@@ -11,17 +11,20 @@ export class VideoService {
     try {
       const where: any = {};
       if (!isAdmin && userId) {
-        where.userId = userId;
+        where.OR = [
+          { userId: userId },
+          { videoShares: { some: { userId: userId } } }
+        ];
       } else if (!isAdmin && !userId) {
-        // Fallback for no user context? Return nothing or public?
-        // Returning only items with null userId?
-        // Strategy: if no user, return nothing
         return [];
       }
 
       const videos = await prisma.video.findMany({
         where,
-        include: { folder: true },
+        include: {
+          folder: true,
+          videoShares: userId ? { where: { userId } } : false
+        },
         orderBy: { uploadedAt: 'desc' },
       });
 
@@ -36,14 +39,20 @@ export class VideoService {
     try {
       const where: any = { folderId: folderId || null };
       if (!isAdmin && userId) {
-        where.userId = userId;
+        where.OR = [
+          { userId: userId },
+          { videoShares: { some: { userId: userId } } }
+        ];
       } else if (!isAdmin && !userId) {
         return [];
       }
 
       const videos = await prisma.video.findMany({
         where,
-        include: { folder: true },
+        include: {
+          folder: true,
+          videoShares: userId ? { where: { userId } } : false
+        },
         orderBy: { uploadedAt: 'desc' }
       });
 
@@ -136,8 +145,13 @@ export class VideoService {
       }
 
       // Check permissions
+      // Check permissions
       if (!isAdmin && userId && video.userId !== userId) {
-        return null; // Or throw error
+        // Check share
+        const share = await prisma.videoShare.findUnique({
+          where: { videoId_userId: { videoId: id, userId } }
+        });
+        if (!share) return null;
       }
 
       return {
@@ -244,6 +258,7 @@ export class VideoService {
       uploadedAt: video.uploadedAt.toISOString(),
       analyzedAt: video.analyzedAt?.toISOString(),
       file_path: filePath, // Add file_path for audio service
+      sharedRole: video.videoShares?.[0]?.role
     };
   }
 

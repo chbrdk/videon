@@ -46,6 +46,7 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
+  import ShareDialog from '$lib/components/sharing/ShareDialog.svelte';
 
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
@@ -63,7 +64,9 @@ import { onMount, tick, onDestroy } from 'svelte';
     video: _('actions.rename')
   };
   
+  
   let deleteDialog = { open: false, type: 'video' as 'video'|'folder'|'project', item: null };
+  let shareDialog = { open: false, type: 'video' as 'video'|'project', item: null as any };
   
   let unifiedDialogOpen = false;
   let activeMenuProjectId: string | null = null;
@@ -92,6 +95,14 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   function handleDeleteProject(project) {
     deleteDialog = { open: true, type: 'project', item: project };
+  }
+
+  function handleShareProject(project) {
+    shareDialog = { open: true, type: 'project', item: project };
+  }
+
+  function handleShareVideo(video) {
+    shareDialog = { open: true, type: 'video', item: video };
   }
 let revealMode = false;
 let revealedCount = 0;
@@ -426,6 +437,29 @@ let scrollAnimationId: number | null = null;
             deleteDialog = { open: true, type: 'video', item };
           }
         }
+      contextMenu.items = [
+        {
+          label: _('actions.share') ?? 'Share',
+          icon: 'share',
+          action: () => {
+            shareDialog = { open: true, type: 'video', item };
+          }
+        },
+        {
+          label: _('contextMenu.moveToFolder'),
+          icon: 'folder',
+          action: () => {
+            // TODO: Implement folder selection dialog
+            console.log('Move video to folder:', item.originalName);
+          }
+        },
+        {
+          label: _('actions.delete'),
+          icon: 'delete',
+          action: () => {
+            deleteDialog = { open: true, type: 'video', item };
+          }
+        }
       ];
     }
     contextMenu.show = true;
@@ -700,6 +734,8 @@ let scrollAnimationId: number | null = null;
                       align="right"
                       items={[
                         { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
+                        { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
+                        { label: 'Share', icon: 'share', action: () => handleShareProject(project) },
                         { label: 'Delete', icon: 'delete', danger: true, action: () => handleDeleteProject(project) }
                       ]}
                       on:close={() => activeMenuProjectId = null}
@@ -891,6 +927,15 @@ let scrollAnimationId: number | null = null;
   on:confirm={handleDeleteConfirm} 
   on:close={() => deleteDialog = { ...deleteDialog, open: false }} 
 />
+
+  {#if shareDialog.open}
+    <ShareDialog
+      isOpen={shareDialog.open}
+      projectId={shareDialog.type === 'project' ? shareDialog.item.id : undefined}
+      videoId={shareDialog.type === 'video' ? shareDialog.item.id : undefined}
+      on:close={() => shareDialog = { ...shareDialog, open: false }}
+    />
+  {/if}
 
 <style>
   .glass-button-group {

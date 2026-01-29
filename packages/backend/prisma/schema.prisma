@@ -38,6 +38,7 @@ model Video {
   projectScenes    ProjectScene[]
   saliencyAnalyses SaliencyAnalysis[]
   reframedVideos   ReframedVideo[]
+  shares           VideoShare[]
 
   @@index([folderId])
   @@map("videos")
@@ -247,6 +248,8 @@ model Project {
   duration  Float? // Berechnet aus allen Szenen
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  shares    ProjectShare[]
 
   @@map("projects")
 }
@@ -435,7 +438,37 @@ model User {
   videos        Video[]
   folders       Folder[]
   projects      Project[]
+  projects      Project[]
   voiceClones   VoiceClone[]
   
+  projectShares ProjectShare[]
+  videoShares   VideoShare[]
+  
   @@map("users")
+}
+
+model ProjectShare {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("VIEWER") // VIEWER, EDITOR
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@map("project_shares")
+}
+
+model VideoShare {
+  id        String   @id @default(cuid())
+  videoId   String
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("VIEWER") // VIEWER, EDITOR
+  createdAt DateTime @default(now())
+
+  @@unique([videoId, userId])
+  @@map("video_shares")
 }

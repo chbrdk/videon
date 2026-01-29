@@ -4,7 +4,7 @@ import logger from '../utils/logger';
 const prisma = new PrismaClient();
 
 export class ProjectService {
-  async createProject(data: { name: string; description?: string }) {
+  async createProject(data: { name: string; description?: string; userId?: string }) {
     return await prisma.project.create({ data });
   }
 
@@ -15,28 +15,62 @@ export class ProjectService {
     });
   }
 
-  async getProjects() {
-    return await prisma.project.findMany({
+  async getProjects(userId?: string, isAdmin: boolean = false) {
+    const where: any = {};
+    if (!isAdmin && userId) {
+      where.OR = [
+        { userId },
+        { projectShares: { some: { userId } } }
+      ];
+    } else if (!isAdmin && !userId) {
+      return [];
+    }
+
+    const projects = await prisma.project.findMany({
+      where,
       include: {
         scenes: {
           include: { video: true },
           orderBy: { order: 'asc' }
-        }
+        },
+        user: { select: { name: true, email: true } }, // Include owner info
+        projectShares: { where: { userId } } // Include share info for this user
       },
       orderBy: { updatedAt: 'desc' }
     });
+
+    return projects.map(p => ({
+      ...p,
+      sharedRole: (p as any).projectShares?.[0]?.role
+    }));
   }
 
-  async getProjectById(id: string) {
-    return await prisma.project.findUnique({
+  async getProjectById(id: string, userId?: string, isAdmin: boolean = false) {
+    const project = await prisma.project.findUnique({
       where: { id },
       include: {
         scenes: {
           include: { video: true },
           orderBy: { order: 'asc' }
-        }
+        },
+        projectShares: true
       }
     });
+
+    if (!project) return null;
+
+    if (!isAdmin && userId) {
+      // Build access list
+      const isOwner = project.userId === userId;
+      const share = project.projectShares.find(s => s.userId === userId);
+
+      if (!isOwner && !share) return null;
+    }
+
+    return {
+      ...project,
+      sharedRole: (project as any).projectShares?.[0]?.role
+    };
   }
 
   async addSceneToProject(projectId: string, sceneData: {

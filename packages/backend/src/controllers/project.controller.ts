@@ -159,7 +159,12 @@ export class ProjectController {
   async createProject(req: Request, res: Response) {
     try {
       const { name, description } = req.body;
-      const project = await projectService.createProject({ name, description });
+      const user = (req as any).user;
+      const project = await projectService.createProject({
+        name,
+        description,
+        userId: user?.id
+      });
       res.status(201).json(project);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -183,7 +188,9 @@ export class ProjectController {
 
   async getProjects(req: Request, res: Response) {
     try {
-      const projects = await projectService.getProjects();
+      const user = (req as any).user;
+      const isAdmin = user?.role === 'ADMIN';
+      const projects = await projectService.getProjects(user?.id, isAdmin);
       res.json(projects);
     } catch (error: unknown) {
       logger.error('Get projects error:', error);
@@ -194,7 +201,9 @@ export class ProjectController {
   async getProjectById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const project = await projectService.getProjectById(id);
+      const user = (req as any).user;
+      const isAdmin = user?.role === 'ADMIN';
+      const project = await projectService.getProjectById(id, user?.id, isAdmin);
 
       if (!project) {
         return res.status(404).json({ error: 'Project not found' });

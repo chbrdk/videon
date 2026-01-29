@@ -15,6 +15,7 @@ export interface VideoResponse {
   uploadedAt: string;
   analyzedAt?: string;
   file_path?: string; // Add file_path for audio service
+  sharedRole?: 'VIEWER' | 'EDITOR';
 }
 
 export interface VisionData {
@@ -101,7 +102,9 @@ export interface ProjectResponse {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  updatedAt: string;
   scenes: ProjectSceneResponse[];
+  sharedRole?: 'VIEWER' | 'EDITOR';
 }
 
 export interface ProjectSceneResponse {
