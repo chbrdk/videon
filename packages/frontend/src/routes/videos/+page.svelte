@@ -42,6 +42,9 @@ import { onMount, tick, onDestroy } from 'svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
   import { MsqdxButton, MaterialSymbol } from '$lib/components/ui';
 
+  import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
+  import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
+
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
   $: searchQueryParam = $page.url.searchParams.get('q') || '';
@@ -49,6 +52,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   // State
   let contextMenu = { show: false, x: 0, y: 0, items: [] };
   let folderDialog = { open: false, mode: 'create' as 'create' | 'rename', folder: null };
+  let unifiedDialogOpen = false;
   let deleteModalOpen = false;
   let videoToDelete: VideoResponse | null = null;
 let revealMode = false;
@@ -290,7 +294,9 @@ let scrollAnimationId: number | null = null;
 
   // Folder handlers
   function handleCreateFolder() {
-    folderDialog = { open: true, mode: 'create', folder: null };
+    // folderDialog = { open: true, mode: 'create', folder: null };
+    // Now using unified dialog
+    unifiedDialogOpen = true;
   }
 
   function handleRenameFolder(folder: { id: string; name: string }) {
@@ -320,6 +326,10 @@ let scrollAnimationId: number | null = null;
         alert(`${_('delete.deleteError')}: ${error.message}`);
       }
     }
+  }
+
+  function handleUploadComplete() {
+      loadFolders(folderId);
   }
 
   // Context menu handlers
@@ -583,6 +593,9 @@ let scrollAnimationId: number | null = null;
         on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
         on:drop={handleRootDrop}
       >
+        <!-- Add Item Card -->
+        <MsqdxAddItemCard on:click={() => unifiedDialogOpen = true} />
+
         <!-- Parent folder (if not root) -->
         {#if $currentFolder}
           <div 
@@ -638,47 +651,58 @@ let scrollAnimationId: number | null = null;
         on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
         on:drop={handleRootDrop}
       >
-        <div class="space-y-2">
-          {#each allItems as item (item.id)}
-            <div 
-              class="list-item flex items-center gap-4 p-4 hover:bg-white/5 rounded-lg cursor-pointer {dragOverFolder?.id === item.id ? 'bg-blue-500/20' : ''}"
-              draggable={item.type === 'video'}
-              on:click={(e) => handleItemClick(e, item)}
-              on:contextmenu={(e) => handleContextMenu(e, item)}
-              on:dragstart={item.type === 'video' ? (e) => handleVideoDragStart(e, item as VideoResponse) : undefined}
-              on:dragover={item.type === 'folder' ? (e) => handleFolderDragOver(e, item) : undefined}
-              on:dragleave={item.type === 'folder' ? handleFolderDragLeave : undefined}
-              on:drop={item.type === 'folder' ? (e) => handleFolderDrop(e, item) : undefined}
-              style:opacity={1}
-              style:pointer-events="auto"
+        <div class="space-y-4"> <!-- Increased spacing -->
+             <!-- Add Item (List Look) - Optional, mainly for grid, but good to have access -->
+            <button 
+                class="w-full flex items-center justify-center gap-2 p-4 border border-dashed border-white/20 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                on:click={() => unifiedDialogOpen = true}
             >
-              <input 
-                type="checkbox" 
-                checked={$selectedItems.has(item.id)}
-                on:change={() => toggleSelection(item.id)}
-                class="w-4 h-4"
-              />
-              
-              {#if item.type === 'folder'}
-                <div class="text-2xl">📁</div>
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
-                  <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
+                <MaterialSymbol icon="add" fontSize={24} />
+                <span class="font-medium">Add New Item</span>
+            </button>
+
+          <div class="space-y-2">
+            {#each allItems as item (item.id)}
+                <div 
+                class="list-item flex items-center gap-4 p-4 hover:bg-white/5 rounded-lg cursor-pointer {dragOverFolder?.id === item.id ? 'bg-blue-500/20' : ''}"
+                draggable={item.type === 'video'}
+                on:click={(e) => handleItemClick(e, item)}
+                on:contextmenu={(e) => handleContextMenu(e, item)}
+                on:dragstart={item.type === 'video' ? (e) => handleVideoDragStart(e, item as VideoResponse) : undefined}
+                on:dragover={item.type === 'folder' ? (e) => handleFolderDragOver(e, item) : undefined}
+                on:dragleave={item.type === 'folder' ? handleFolderDragLeave : undefined}
+                on:drop={item.type === 'folder' ? (e) => handleFolderDrop(e, item) : undefined}
+                style:opacity={1}
+                style:pointer-events="auto"
+                >
+                <input 
+                    type="checkbox" 
+                    checked={$selectedItems.has(item.id)}
+                    on:change={() => toggleSelection(item.id)}
+                    class="w-4 h-4"
+                />
+                
+                {#if item.type === 'folder'}
+                    <div class="text-2xl">📁</div>
+                    <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
+                    <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
+                    </div>
+                {:else}
+                    <div class="text-2xl">🎬</div>
+                    <div class="flex-1">
+                    <h3 class="font-semibold text-gray-900 dark:text-white">{item.originalName}</h3>
+                    <div class="flex items-center gap-2">
+                        <span class=" text-gray-600 dark:text-white/60">{formatFileSize(item.fileSize)}</span>
+                        <span class="{getStatusChipClass(item.status)}">
+                        {getStatusText(item.status)}
+                        </span>
+                    </div>
+                    </div>
+                {/if}
                 </div>
-              {:else}
-                <div class="text-2xl">🎬</div>
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900 dark:text-white">{item.originalName}</h3>
-                  <div class="flex items-center gap-2">
-                    <span class=" text-gray-600 dark:text-white/60">{formatFileSize(item.fileSize)}</span>
-                    <span class="{getStatusChipClass(item.status)}">
-                      {getStatusText(item.status)}
-                    </span>
-                  </div>
-                </div>
-              {/if}
-            </div>
-          {/each}
+            {/each}
+          </div>
         </div>
       </div>
     {/if}
@@ -695,7 +719,16 @@ let scrollAnimationId: number | null = null;
   />
 {/if}
 
-<!-- Folder Dialog -->
+<!-- Unified Create Dialog -->
+<MsqdxUnifiedCreateDialog
+  bind:open={unifiedDialogOpen}
+  {currentFolderId}
+  on:uploadComplete={handleUploadComplete}
+  on:projectCreated={(e) => goto(`${base}/projects/${e.detail.id}`)}
+  on:close={() => unifiedDialogOpen = false}
+/> 
+
+<!-- Folder Dialog (Keep for Rename) -->
 <MsqdxFolderDialog 
   bind:open={folderDialog.open}
   mode={folderDialog.mode}
