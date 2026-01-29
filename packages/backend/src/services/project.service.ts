@@ -33,16 +33,13 @@ export class ProjectService {
           include: { video: true },
           orderBy: { order: 'asc' }
         },
-        user: { select: { name: true, email: true } }, // Include owner info
-        projectShares: { where: { userId } } // Include share info for this user
+        user: { select: { name: true, email: true } },
+        projectShares: { where: { userId } }
       },
       orderBy: { updatedAt: 'desc' }
     });
 
-    return projects.map(p => ({
-      ...p,
-      sharedRole: (p as any).projectShares?.[0]?.role
-    }));
+    return projects.map(p => this.mapProjectToResponse(p));
   }
 
   async getProjectById(id: string, userId?: string, isAdmin: boolean = false) {
@@ -60,16 +57,39 @@ export class ProjectService {
     if (!project) return null;
 
     if (!isAdmin && userId) {
-      // Build access list
       const isOwner = project.userId === userId;
       const share = project.projectShares.find(s => s.userId === userId);
 
       if (!isOwner && !share) return null;
     }
 
+    return this.mapProjectToResponse(project, (project as any).projectShares?.[0]?.role);
+  }
+
+  private mapProjectToResponse(project: any, role?: string) {
     return {
-      ...project,
-      sharedRole: (project as any).projectShares?.[0]?.role
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      createdAt: project.createdAt.toISOString(),
+      updatedAt: project.updatedAt.toISOString(),
+      scenes: project.scenes?.map((s: any) => this.mapProjectSceneToResponse(s)) || [],
+      sharedRole: role || project.projectShares?.[0]?.role
+    };
+  }
+
+  private mapProjectSceneToResponse(scene: any) {
+    return {
+      id: scene.id,
+      projectId: scene.projectId,
+      videoId: scene.videoId,
+      startTime: scene.startTime,
+      endTime: scene.endTime,
+      order: scene.order,
+      audioLevel: scene.audioLevel,
+      trimStart: scene.trimStart,
+      trimEnd: scene.trimEnd,
+      createdAt: scene.createdAt?.toISOString() || new Date().toISOString()
     };
   }
 
