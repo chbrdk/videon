@@ -180,7 +180,6 @@ export class VideosController {
       }
 
       // Create video record in database
-      const user = (req as any).user;
       // @ts-ignore
       const video = await videoService.createVideo({
         filename: storagePath, // Use STORION file ID or local filename
