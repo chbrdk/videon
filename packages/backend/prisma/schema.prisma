@@ -3,7 +3,7 @@
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
+  binaryTargets = ["native"]
 }
 
 datasource db {
@@ -438,7 +438,7 @@ model User {
   videos        Video[]
   folders       Folder[]
   projects      Project[]
-  projects      Project[]
+
   voiceClones   VoiceClone[]
   
   projectShares ProjectShare[]

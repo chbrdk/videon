@@ -25,12 +25,8 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 
-# Debug: Check prisma version
-RUN npx prisma -v
-
 # Generate Prisma client
 RUN npx prisma generate --schema=./prisma/schema.prisma
-
 # Build TypeScript
 RUN npm run build
 
