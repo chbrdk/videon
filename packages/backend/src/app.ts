@@ -192,8 +192,6 @@ if (config.nodeEnv !== 'test') {
     // Seed Admin User
     (async () => {
       try {
-        const { PrismaClient } = require('@prisma/client');
-        const bcrypt = require('bcryptjs');
         const prisma = new PrismaClient();
 
         const email = 'admin@udg.de';
