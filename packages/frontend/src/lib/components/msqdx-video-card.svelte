@@ -4,6 +4,7 @@
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
   import { MsqdxChip } from '$lib/components/ui';
+  import { MsqdxGlassMenu } from '$lib/components/ui';
   import { base } from '$app/paths';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -11,9 +12,12 @@
 
   const dispatch = createEventDispatcher<{
     select: { id: string };
+    delete: { id: string };
+    rename: { id: string };
   }>();
 
   let thumbnailUrl = '';
+  let showMenu = false;
 
   function handleClick(event?: Event) {
     const videoPath = `${base}/videos/${video.id}`;
@@ -133,7 +137,6 @@
     --border-top-color: var(--msqdx-color-dark-border);
   "
 >
-  <!-- Video Container -->
   <div
     class="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 overflow-hidden relative rounded-t-[2.5rem] pointer-events-none"
     style={thumbnailUrl
@@ -144,6 +147,38 @@
     <div
       class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 pointer-events-none"
     ></div>
+
+    <!-- Top Right Actions -->
+    <div class="absolute top-3 right-3 z-10 pointer-events-auto">
+      <div class="relative">
+        <button
+          class="p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors backdrop-blur-sm"
+          on:click|stopPropagation={() => (showMenu = !showMenu)}
+        >
+          <MaterialSymbol icon="more_vert" fontSize={20} />
+        </button>
+
+        {#if showMenu}
+          <MsqdxGlassMenu
+            align="right"
+            items={[
+              {
+                label: _('actions.rename'),
+                icon: 'edit',
+                action: () => dispatch('rename', video),
+              },
+              {
+                label: _('actions.delete'),
+                icon: 'delete',
+                danger: true,
+                action: () => dispatch('delete', video),
+              },
+            ]}
+            on:close={() => (showMenu = false)}
+          />
+        {/if}
+      </div>
+    </div>
 
     <!-- Play Overlay -->
     <div

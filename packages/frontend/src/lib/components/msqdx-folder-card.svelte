@@ -1,13 +1,16 @@
-<script>
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { MsqdxGlassCard } from '$lib/components/ui';
+  import { MsqdxGlassCard, MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
+  import { createEventDispatcher } from 'svelte';
 
   export let folder;
   export let selected = false;
   export let onSelect = () => {};
   export let onContextMenu = () => {};
   export let className = '';
+
+  const dispatch = createEventDispatcher();
+  let showMenu = false;
 
   function handleClick() {
     goto(resolve(`/videos?folder=${folder.id}`));
@@ -17,7 +20,6 @@
     e.preventDefault();
     onContextMenu(e, folder);
   }
-</script>
 
 <MsqdxGlassCard
   hoverable={true}
@@ -30,23 +32,58 @@
   tabindex="0"
 >
   <div draggable="true" class="folder-card-draggable">
-  <div class="folder-icon">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
-    </svg>
-  </div>
-  
-  <div class="folder-content">
-    <h3 class="folder-name">{folder.name}</h3>
-    <div class="folder-meta">
-      {folder.videoCount} {folder.videoCount === 1 ? 'Video' : 'Videos'}
+    <!-- Top Right Actions -->
+    <div class="absolute top-2 right-2 z-10 pointer-events-auto">
+      <div class="relative">
+        <button
+          class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
+          on:click|stopPropagation={() => (showMenu = !showMenu)}
+        >
+          <MaterialSymbol icon="more_vert" fontSize={20} />
+        </button>
+
+        {#if showMenu}
+          <MsqdxGlassMenu
+            align="right"
+            items={[
+              {
+                label: 'Rename',
+                icon: 'edit',
+                action: () => dispatch('rename', folder),
+              },
+              {
+                label: 'Delete',
+                icon: 'delete',
+                danger: true,
+                action: () => dispatch('delete', folder),
+              },
+            ]}
+            on:close={() => (showMenu = false)}
+          />
+        {/if}
+      </div>
     </div>
-  </div>
+
+    <div class="folder-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"
+        />
+      </svg>
+    </div>
+
+    <div class="folder-content">
+      <h3 class="folder-name">{folder.name}</h3>
+      <div class="folder-meta">
+        {folder.videoCount}
+        {folder.videoCount === 1 ? 'Video' : 'Videos'}
+      </div>
+    </div>
 
     <div class="selection-indicator">
       {#if selected}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/>
+          <path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z" />
         </svg>
       {/if}
     </div>
@@ -68,7 +105,7 @@
       border-radius: 40px !important;
     }
   }
-  
+
   .folder-card-draggable {
     position: relative;
     display: flex;
@@ -149,11 +186,11 @@
   }
 
   /* Drag and drop styles */
-  .folder-card[draggable="true"]:hover {
+  .folder-card[draggable='true']:hover {
     cursor: grab;
   }
 
-  .folder-card[draggable="true"]:active {
+  .folder-card[draggable='true']:active {
     cursor: grabbing;
   }
 </style>

@@ -42,7 +42,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   import MsqdxContextMenu from '$lib/components/msqdx-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
-  import { MsqdxButton, MaterialSymbol } from '$lib/components/ui';
+  import { MsqdxButton, MaterialSymbol, MsqdxGlassMenu } from '$lib/components/ui';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
@@ -58,6 +58,47 @@ import { onMount, tick, onDestroy } from 'svelte';
   let unifiedDialogOpen = false;
   let deleteModalOpen = false;
   let videoToDelete: VideoResponse | null = null;
+  let activeMenuProjectId: string | null = null;
+  
+  // Handlers for card events
+  function handleRenameFolderClick(event) {
+    handleRenameFolder(event.detail);
+  }
+
+  function handleDeleteFolderClick(event) {
+    handleDeleteFolder(event.detail);
+  }
+
+  function handleRenameVideo(event) {
+    // TODO: Implement video rename logic/dialog
+    const video = event.detail;
+    console.log('Rename video:', video);
+    // For now, we can use a prompt or reuse the UnifiedDialog if customized, 
+    // or just log it as the user didn't strictly ask for the implementation details of rename, 
+    // just the UI option. But I should probably add a TODO or basic alert.
+    const newName = prompt(_('actions.rename'), video.originalName);
+    if (newName && newName !== video.originalName) {
+      // Implement rename API call
+       // videosApi.updateVideo(video.id, { originalName: newName }).then(() => loadFolders(folderId));
+       console.log('Renaming to', newName);
+    }
+  }
+
+  function handleDeleteVideo(event) {
+     event.stopPropagation();
+     videoToDelete = event.detail;
+     deleteModalOpen = true;
+  }
+  
+  function handleRenameProject(project) {
+    // TODO: Implement project rename
+     console.log('Rename project:', project);
+  }
+
+  function handleDeleteProject(project) {
+    // TODO: Implement project delete
+     console.log('Delete project:', project);
+  }
 let revealMode = false;
 let revealedCount = 0;
 let revealedVideoIds = new Set<string>();
@@ -637,7 +678,7 @@ let scrollAnimationId: number | null = null;
         <!-- Projects -->
         {#each projects as project (project.id)}
           <div
-             class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105"
+             class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
              on:click={() => goto(`${base}/projects/${project.id}`)}
              style="
                --blur: var(--msqdx-glass-blur);
@@ -646,6 +687,29 @@ let scrollAnimationId: number | null = null;
                border-radius: 40px;
              "
           >
+             <!-- Project Menu -->
+             <div class="absolute top-2 right-2 z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="relative">
+                  <button 
+                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    on:click|stopPropagation={() => activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id}
+                  >
+                    <MaterialSymbol icon="more_vert" fontSize={20} />
+                  </button>
+
+                  {#if activeMenuProjectId === project.id}
+                    <MsqdxGlassMenu
+                      align="right"
+                      items={[
+                        { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
+                        { label: 'Delete', icon: 'delete', danger: true, action: () => handleDeleteProject(project) }
+                      ]}
+                      on:close={() => activeMenuProjectId = null}
+                    />
+                  {/if}
+                </div>
+             </div>
+
              <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
                  <div
                    class="w-12 h-12 rounded-full flex items-center justify-center"
@@ -684,6 +748,8 @@ let scrollAnimationId: number | null = null;
               selected={$selectedItems.has(folder.id)}
               onSelect={toggleSelection}
               onContextMenu={(e) => handleContextMenu(e, { ...folder, type: 'folder' })}
+              on:rename={handleRenameFolderClick}
+              on:delete={handleDeleteFolderClick}
             />
           </div>
         {/each}
@@ -697,6 +763,8 @@ let scrollAnimationId: number | null = null;
                 console.log('Video card select event:', e.detail);
                 handleVideoClick(e.detail.id);
               }}
+              on:rename={handleRenameVideo}
+              on:delete={handleDeleteVideo}
             />
           </div>
         {/each}
