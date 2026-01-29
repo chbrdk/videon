@@ -54,10 +54,26 @@ export class FolderService {
   // Use environment variable or default to Docker path
   private readonly baseStoragePath = process.env.STORAGE_BASE_PATH || '/app/storage';
 
-  async getAllFolders(parentId?: string): Promise<FolderResponse[]> {
+  async getAllFolders(parentId?: string, userId?: string, isAdmin: boolean = false): Promise<FolderResponse[]> {
     try {
+      const where: any = { parentId: parentId || null };
+
+      if (!isAdmin && userId) {
+        where.userId = userId;
+      } else if (!isAdmin && !userId) {
+        return [];
+      }
+
       const folders = await prisma.folder.findMany({
-        where: { parentId: parentId || null },
+        where,
+
+        // User Isolation
+        // If specific userId is provided (and not explicitly requesting public/all), filter by it. "isAdmin" handling should happen before calling this or added here.
+        // But adhering to the pattern in VideoService:
+        // Note: We need to change signature to accept userId + isAdmin
+        // defaulting to no filter for now to avoid breaking calls without updating signature first
+        // But wait, I can update signature.
+
         include: {
           _count: {
             select: { videos: true }
@@ -81,7 +97,7 @@ export class FolderService {
     }
   }
 
-  async getFolderById(id: string | null): Promise<FolderWithContentsResponse | null> {
+  async getFolderById(id: string | null, userId?: string, isAdmin: boolean = false): Promise<FolderWithContentsResponse | null> {
     try {
       // Get folder info
       let folder = null;
@@ -97,10 +113,10 @@ export class FolderService {
       }
 
       // Get subfolders
-      const folders = await this.getAllFolders(id || undefined);
+      const folders = await this.getAllFolders(id || undefined, userId, isAdmin);
 
       // Get videos in this folder
-      const videos = await this.getVideosByFolder(id);
+      const videos = await this.getVideosByFolder(id, userId, isAdmin);
 
       if (id && !folder) {
         return null;
@@ -163,7 +179,8 @@ export class FolderService {
         data: {
           name: data.name,
           parentId: parentId || null,
-          path: folderPath
+          path: folderPath,
+          userId: data.uploaderId // Save userId
         },
         include: {
           _count: {
@@ -261,7 +278,8 @@ export class FolderService {
       const deletedItems = {
         folder: false,
         videos: 0,
-        movedVideos: 0
+        movedVideos: 0,
+        subfolders: 0 // Track subfolder deletions if we enable recursive delete later
       };
 
       // Check if folder has subfolders
@@ -366,10 +384,19 @@ export class FolderService {
     }
   }
 
-  async getVideosByFolder(folderId: string | null): Promise<VideoResponse[]> {
+  async getVideosByFolder(folderId: string | null, userId?: string, isAdmin: boolean = false): Promise<VideoResponse[]> {
     try {
+      const where: any = { folderId: folderId || null };
+      if (!isAdmin && userId) {
+        where.userId = userId;
+      } else if (!isAdmin && !userId) {
+        // If no user context and not admin, return empty? Or public?
+        // Assuming Strict Mode:
+        return [];
+      }
+
       const videos = await prisma.video.findMany({
-        where: { folderId: folderId || null },
+        where,
         orderBy: { uploadedAt: 'desc' }
       });
 

@@ -8,7 +8,11 @@ export class FolderController {
   async getAllFolders(req: Request, res: Response) {
     try {
       const { parentId } = req.query;
-      const folders = await folderService.getAllFolders(parentId as string);
+      const user = (req as any).user;
+      const userId = user?.id;
+      const isAdmin = user?.role === 'ADMIN';
+
+      const folders = await folderService.getAllFolders(parentId as string, userId, isAdmin);
       res.json(folders);
     } catch (error) {
       logger.error('Error in getAllFolders:', error as Error);
@@ -23,14 +27,18 @@ export class FolderController {
     try {
       const { id } = req.params;
       const folderId = id === 'root' ? null : id;
-      const folder = await folderService.getFolderById(folderId);
-      
+      const user = (req as any).user;
+      const userId = user?.id;
+      const isAdmin = user?.role === 'ADMIN';
+
+      const folder = await folderService.getFolderById(folderId, userId, isAdmin);
+
       if (!folder) {
         return res.status(404).json({
           error: 'Folder not found'
         });
       }
-      
+
       res.json(folder);
     } catch (error) {
       logger.error('Error in getFolderById:', error as Error);
@@ -43,8 +51,8 @@ export class FolderController {
 
   async createFolder(req: Request, res: Response) {
     try {
-      const { name, uploaderId } = req.body;
-      const { parentId } = req.query;
+      const user = (req as any).user;
+      const uploaderId = user?.id; // Securely get ID from session
 
       if (!name || name.trim() === '') {
         return res.status(400).json({
