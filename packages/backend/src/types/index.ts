@@ -102,7 +102,7 @@ export interface ProjectResponse {
   description?: string;
   createdAt: string;
   updatedAt: string;
-  updatedAt: string;
+
   scenes: ProjectSceneResponse[];
   sharedRole?: 'VIEWER' | 'EDITOR';
 }
