@@ -19,6 +19,7 @@ import { localeMiddleware } from './middleware/locale.middleware';
 import config from './config';
 import logger from './utils/logger';
 import { initializeUnionSettings } from './utils/union-init';
+import { seedAdminUser } from './utils/seed-admin';
 
 // Initialize UNION Settings before anything else (non-blocking)
 initializeUnionSettings().catch((error) => {
@@ -188,7 +189,6 @@ if (config.nodeEnv !== 'test') {
     });
 
     // Seed Admin User
-    const { seedAdminUser } = require('./utils/seed-admin');
     seedAdminUser().catch((err: any) => logger.error('Failed to seed admin:', err));
   });
 }
