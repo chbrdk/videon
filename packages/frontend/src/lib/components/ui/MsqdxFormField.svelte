@@ -30,7 +30,7 @@
     disabled = false,
     placeholder,
     type = 'text',
-    value,
+    value = $bindable(),
     onInput,
     onChange,
     class: className = '',
@@ -38,7 +38,6 @@
   }: Props = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let internalValue = $state(value ?? '');
   let isFocused = $state(false);
 
   $effect(() => {
@@ -48,15 +47,9 @@
     return unsubscribe;
   });
 
-  $effect(() => {
-    if (value !== undefined) {
-      internalValue = value;
-    }
-  });
-
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement;
-    internalValue = target.value;
+    value = target.value;
     onInput?.(event);
     onChange?.(event);
   }
@@ -112,7 +105,7 @@
       {type}
       class="msqdx-form-field-input"
       {placeholder}
-      value={internalValue}
+      value={value || ''}
       {disabled}
       on:input={handleInput}
       on:focus={() => (isFocused = true)}

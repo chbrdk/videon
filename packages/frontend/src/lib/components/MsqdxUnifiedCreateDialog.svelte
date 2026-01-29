@@ -412,7 +412,6 @@
                   disabled={!newItemName.trim() || creating}
                   loading={creating}
                   variant="outlined"
-                  style="background-color: transparent"
                 >
                   {mode === 'project' ? _('projects.createProject') : _('folder.create')}
                 </MsqdxButton>
