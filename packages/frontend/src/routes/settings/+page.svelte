@@ -113,10 +113,10 @@
       try {
         const res = await fetch(`${api.baseUrl}/auth/me/avatar`, {
           method: 'POST',
-          body: formData
+          body: formData,
         });
         const data = await res.json();
-        
+
         if (res.ok) {
           // Update local state and global store to refresh Navbar
           user.avatarUrl = data.avatarUrl;
@@ -140,38 +140,50 @@
 <div class="max-w-2xl mx-auto space-y-8 animate-fade-in p-4 mt-12">
   <div class="glass-card p-6">
     <div class="space-y-6">
-    <div class="space-y-6">
-      
       <!-- Avatar Section -->
-      <div class="flex flex-col items-center justify-center space-y-4 pb-6 border-b border-white/10">
+      <div
+        class="flex flex-col items-center justify-center space-y-4 pb-6 border-b border-white/10"
+      >
         <div class="relative group cursor-pointer" on:click={() => fileInput.click()}>
-          <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-blue-500 transition-all bg-white/5 flex items-center justify-center">
+          <div
+            class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-blue-500 transition-all bg-white/5 flex items-center justify-center"
+          >
             {#if user.avatarUrl}
-              <img src={`${api.baseUrl.replace('/api', '')}${user.avatarUrl}`} alt="Avatar" class="w-full h-full object-cover" />
+              <img
+                src={`${api.baseUrl.replace('/api', '')}${user.avatarUrl}`}
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
             {:else}
-              <span class="text-3xl font-bold text-white/20 group-hover:text-blue-500 transition-colors">
+              <span
+                class="text-3xl font-bold text-white/20 group-hover:text-blue-500 transition-colors"
+              >
                 {user.name ? user.name.charAt(0).toUpperCase() : '?'}
               </span>
             {/if}
-            
+
             <!-- Overlay -->
-            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+            <div
+              class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full"
+            >
               <MaterialSymbol icon="edit" className="text-white" />
             </div>
           </div>
-          
+
           {#if isAvatarUploading}
             <div class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-               <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div
+                class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+              ></div>
             </div>
           {/if}
         </div>
         <p class="text-sm text-white/40">Click to change avatar</p>
-        <input 
+        <input
           bind:this={fileInput}
-          type="file" 
-          accept="image/*" 
-          class="hidden" 
+          type="file"
+          accept="image/*"
+          class="hidden"
           on:change={handleAvatarChange}
         />
       </div>

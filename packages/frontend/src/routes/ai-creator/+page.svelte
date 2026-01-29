@@ -186,7 +186,7 @@
           : 'z.B. Erstelle ein 60 Sekunden Video über Management-Präsentationen mit professionellem Ton'}
         rows="4"
         class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-      />
+      ></textarea>
     </div>
 
     <!-- Examples -->
