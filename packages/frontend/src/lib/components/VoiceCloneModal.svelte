@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { currentLocale } from '$lib/i18n';
+  import { _, currentLocale } from '$lib/i18n';
   import { voiceSegmentApi } from '$lib/api/voice-segment';
   import type { VoiceSegment, VoiceClone } from '$lib/api/voice-segment';
   import { api } from '$lib/config/environment';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   export let show: boolean = false;
   export let sourceSegment: VoiceSegment | null = null;
@@ -25,7 +26,7 @@
 
   async function handleClone() {
     if (!name || (!audioFile && !sourceSegment)) {
-      alert($currentLocale === 'en' ? 'Please provide a name and audio source' : 'Bitte geben Sie einen Namen und eine Audioquelle an');
+      alert(_('voiceClone.alertMissing'));
       return;
     }
 
@@ -41,7 +42,7 @@
 
         const uploadResponse = await fetch(`${api.baseUrl}/upload-audio`, {
           method: 'POST',
-          body: formData
+          body: formData,
         });
 
         const { filePath } = await uploadResponse.json();
@@ -53,14 +54,14 @@
       await voiceSegmentApi.cloneVoice({
         name,
         audioFilePath: uploadedPath,
-        description
+        description,
       });
 
       dispatch('success');
       handleClose();
     } catch (error) {
       console.error('Voice cloning failed:', error);
-      alert(($currentLocale === 'en' ? 'Voice cloning failed: ' : 'Fehler beim Klonen der Stimme: ') + (error as Error).message);
+      alert(_('voiceClone.alertFailed') + (error as Error).message);
     } finally {
       isCloning = false;
     }
@@ -76,72 +77,74 @@
 </script>
 
 {#if show}
-<div class="modal-overlay" on:click={handleClose}>
-  <div class="modal-content glass-card" on:click|stopPropagation>
-    <div class="modal-header">
-      <h2>{$currentLocale === 'en' ? '🎤 Clone Your Voice' : '🎤 Stimme klonen'}</h2>
-      <button class="close-btn" on:click={handleClose}>×</button>
-    </div>
-
-    <div class="modal-body">
-      <div class="form-group">
-        <label>{$currentLocale === 'en' ? 'Voice Name:' : 'Stimmenname:'}</label>
-        <input
-          type="text"
-          bind:value={name}
-          placeholder={$currentLocale === 'en' ? 'e.g., My Voice' : 'z.B., Meine Stimme'}
-          required
-        />
+  <div class="modal-overlay" on:click={handleClose}>
+    <div class="modal-content glass-card" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2 class="flex items-center gap-2">
+          <MaterialSymbol icon="mic" fontSize={24} />
+          {_('voiceClone.title')}
+        </h2>
+        <button class="close-btn" on:click={handleClose}>
+          <MaterialSymbol icon="close" fontSize={24} />
+        </button>
       </div>
 
-      <div class="form-group">
-        <label>{$currentLocale === 'en' ? 'Description (optional):' : 'Beschreibung (optional):'}</label>
-        <textarea
-          bind:value={description}
-          rows="2"
-          placeholder={$currentLocale === 'en' ? 'Short description of the voice...' : 'Kurze Beschreibung der Stimme...'}
-        />
-      </div>
-
-      <div class="form-group">
-        <label>{$currentLocale === 'en' ? 'Audio Source:' : 'Audioquelle:'}</label>
-
-        {#if sourceSegment}
-          <div class="source-info">
-            ✅ {$currentLocale === 'en' ? 'Using segment audio:' : 'Verwende Segment-Audio:'} "{sourceSegment.originalText}"
-          </div>
-        {:else}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>{_('voiceClone.name')}</label>
           <input
-            type="file"
-            accept="audio/*"
-            on:change={handleFileUpload}
+            type="text"
+            bind:value={name}
+            placeholder={_('voiceClone.namePlaceholder')}
+            required
           />
-          <small>{$currentLocale === 'en' ? 'Upload a clear audio sample (at least 1 minute recommended)' : 'Laden Sie eine klare Audio-Aufnahme hoch (mindestens 1 Minute empfohlen)'}</small>
+        </div>
+
+        <div class="form-group">
+          <label>{_('voiceClone.description')}</label>
+          <textarea
+            bind:value={description}
+            rows="2"
+            placeholder={_('voiceClone.descPlaceholder')}
+          />
+        </div>
+
+        <div class="form-group">
+          <label>{_('voiceClone.audioSource')}</label>
+
+          {#if sourceSegment}
+            <div class="source-info flex items-center gap-2">
+              <MaterialSymbol icon="check_circle" fontSize={20} class="text-green-400" />
+              <span>{_('voiceClone.usingSegment')} "{sourceSegment.originalText}"</span>
+            </div>
+          {:else}
+            <input type="file" accept="audio/*" on:change={handleFileUpload} />
+            <small>{_('voiceClone.uploadHelp')}</small>
+          {/if}
+        </div>
+
+        {#if isCloning}
+          <div class="cloning-status">
+            <div class="spinner"></div>
+            {_('voiceClone.cloningStatus')}
+          </div>
         {/if}
       </div>
 
-      {#if isCloning}
-        <div class="cloning-status">
-          <div class="spinner"></div>
-          {$currentLocale === 'en' ? 'Cloning voice... This may take a moment.' : 'Klone Stimme... Dies kann einen Moment dauern.'}
-        </div>
-      {/if}
-    </div>
-
-    <div class="modal-footer">
-      <button class="glass-button secondary" on:click={handleClose}>
-        {$currentLocale === 'en' ? 'Cancel' : 'Abbrechen'}
-      </button>
-      <button
-        class="glass-button primary"
-        on:click={handleClone}
-        disabled={!name || (!audioFile && !sourceSegment) || isCloning}
-      >
-        {isCloning ? ($currentLocale === 'en' ? 'Cloning...' : 'Klonen...') : ($currentLocale === 'en' ? 'Clone Voice' : 'Stimme klonen')}
-      </button>
+      <div class="modal-footer">
+        <button class="glass-button secondary" on:click={handleClose}>
+          {_('revoice.cancel')}
+        </button>
+        <button
+          class="glass-button primary"
+          on:click={handleClone}
+          disabled={!name || (!audioFile && !sourceSegment) || isCloning}
+        >
+          {isCloning ? _('voiceClone.cloningButton') : _('voiceClone.cloneButton')}
+        </button>
+      </div>
     </div>
   </div>
-</div>
 {/if}
 
 <style>
@@ -170,42 +173,42 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
   }
-  
+
   @media (max-width: 768px) {
     .modal-content {
       width: 95%;
       max-height: 85vh;
     }
-    
+
     .modal-header {
       padding: 1rem 1rem 0;
     }
-    
+
     .modal-header h2 {
       font-size: 1.25rem;
     }
-    
+
     .modal-body {
       padding: 0 1rem 1rem;
     }
-    
+
     .modal-footer {
       padding: 1rem;
       flex-direction: column;
       gap: 0.5rem;
     }
-    
+
     .glass-button {
       width: 100%;
     }
-    
-    input[type="text"],
+
+    input[type='text'],
     textarea,
-    input[type="file"] {
+    input[type='file'] {
       font-size: 16px;
     }
   }
-  
+
   @media (max-width: 640px) {
     .modal-content {
       width: 100%;
@@ -252,9 +255,9 @@
     font-weight: 500;
   }
 
-  .form-group input[type="text"],
+  .form-group input[type='text'],
   .form-group textarea,
-  .form-group input[type="file"] {
+  .form-group input[type='file'] {
     width: 100%;
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
@@ -285,8 +288,12 @@
   }
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .source-info {

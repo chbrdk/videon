@@ -161,7 +161,7 @@
 
   .msqdx-form-field-label {
     font-size: var(--msqdx-font-size-sm);
-    font-weight: var(--msqdx-font-weight-semibold);
+    font-weight: var(--msqdx-font-weight-regular);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #000000;

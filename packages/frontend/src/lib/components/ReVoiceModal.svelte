@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import { currentLocale } from '$lib/i18n';
+  import { currentLocale, _ } from '$lib/i18n';
   import { voiceSegmentApi } from '$lib/api/voice-segment';
   import type { VoiceSegment, ElevenLabsVoice, VoiceClone } from '$lib/api/voice-segment';
 
@@ -127,10 +127,7 @@
       handleClose();
     } catch (error) {
       console.error('Re-Voice failed:', error);
-      alert(
-        ($currentLocale === 'en' ? 'Re-Voice failed: ' : 'Neu-Vertonung fehlgeschlagen: ') +
-          (error as Error).message
-      );
+      alert(_('revoice.alertFailed') + (error as Error).message);
     }
   }
 
@@ -152,7 +149,7 @@
       <div class="modal-header">
         <h2>
           <span class="icon-24px"><MaterialSymbol icon="mic" fontSize={24} /></span>
-          {$currentLocale === 'en' ? 'Re-Voice Segment' : 'Segment neu vertonen'}
+          {_('revoice.title')}
         </h2>
         <button class="close-btn" on:click={handleClose} title="Close">
           <span class="icon-32px"><MaterialSymbol icon="close" fontSize={32} /></span>
@@ -162,33 +159,27 @@
       <div class="modal-body">
         <!-- Text Editor -->
         <div class="form-group">
-          <label for={textAreaId}>{$currentLocale === 'en' ? 'Text:' : 'Text:'}</label>
+          <label for={textAreaId}>{_('revoice.textLabel')}</label>
           <textarea
             id={textAreaId}
             bind:value={editedText}
             rows="4"
-            placeholder={$currentLocale === 'en'
-              ? 'Enter text to speak...'
-              : 'Text zum Sprechen eingeben...'}
+            placeholder={_('revoice.enterTextPlaceholder')}
             class="text-editor"
           ></textarea>
           <small class="text-info">
-            {$currentLocale === 'en' ? 'Original:' : 'Original:'} "{segment.originalText}"
+            {_('revoice.originalLabel')} "{segment.originalText}"
           </small>
         </div>
 
         <!-- Voice Selection -->
         <div class="form-group">
-          <label for={voiceSelectId}>{$currentLocale === 'en' ? 'Voice:' : 'Stimme:'}</label>
+          <label for={voiceSelectId}>{_('revoice.voiceLabel')}</label>
           <select id={voiceSelectId} bind:value={selectedVoiceId}>
-            <option value=""
-              >{$currentLocale === 'en' ? 'Select a voice...' : 'Stimme auswählen...'}</option
-            >
+            <option value="">{_('revoice.selectVoicePlaceholder')}</option>
 
             {#if voiceClones.length > 0}
-              <optgroup
-                label={$currentLocale === 'en' ? 'Your Cloned Voices' : 'Ihre geklonten Stimmen'}
-              >
+              <optgroup label={_('revoice.clonedVoices')}>
                 {#each voiceClones as clone}
                   <option value={clone.elevenLabsVoiceId}>
                     {clone.name}
@@ -197,7 +188,7 @@
               </optgroup>
             {/if}
 
-            <optgroup label={$currentLocale === 'en' ? 'ElevenLabs Voices' : 'ElevenLabs Stimmen'}>
+            <optgroup label={_('revoice.elevenLabsVoices')}>
               {#each voices as voice}
                 <option value={voice.voice_id}>
                   {voice.name}
@@ -209,11 +200,11 @@
 
         <!-- Voice Settings -->
         <div class="voice-settings">
-          <h3>{$currentLocale === 'en' ? 'Voice Settings' : 'Voice-Einstellungen'}</h3>
+          <h3>{_('revoice.voiceSettings')}</h3>
 
           <div class="setting">
             <label for={stabilityRangeId}
-              >{$currentLocale === 'en' ? 'Stability:' : 'Stabilität:'}
+              >{_('revoice.stability')}
               {stability.toFixed(2)}</label
             >
             <input
@@ -224,16 +215,12 @@
               step="0.01"
               bind:value={stability}
             />
-            <small
-              >{$currentLocale === 'en'
-                ? 'More stable = less expressive'
-                : 'Stabiler = weniger ausdrucksvoll'}</small
-            >
+            <small>{_('revoice.stabilityHelp')}</small>
           </div>
 
           <div class="setting">
             <label for={similarityRangeId}
-              >{$currentLocale === 'en' ? 'Similarity Boost:' : 'Ähnlichkeitsverstärkung:'}
+              >{_('revoice.similarity')}
               {similarityBoost.toFixed(2)}</label
             >
             <input
@@ -244,31 +231,19 @@
               step="0.01"
               bind:value={similarityBoost}
             />
-            <small
-              >{$currentLocale === 'en'
-                ? 'Higher = closer to original voice'
-                : 'Höher = näher an Original-Stimme'}</small
-            >
+            <small>{_('revoice.similarityHelp')}</small>
           </div>
 
           <div class="setting">
-            <label for={styleRangeId}
-              >{$currentLocale === 'en' ? 'Style:' : 'Stil:'} {style.toFixed(2)}</label
-            >
+            <label for={styleRangeId}>{_('revoice.style')} {style.toFixed(2)}</label>
             <input id={styleRangeId} type="range" min="0" max="1" step="0.01" bind:value={style} />
-            <small
-              >{$currentLocale === 'en'
-                ? 'Exaggeration of speaking style'
-                : 'Übertreibung des Sprechstils'}</small
-            >
+            <small>{_('revoice.styleHelp')}</small>
           </div>
 
           <div class="setting">
             <label class="checkbox-label" for={speakerBoostId}>
               <input id={speakerBoostId} type="checkbox" bind:checked={useSpeakerBoost} />
-              {$currentLocale === 'en'
-                ? 'Use Speaker Boost (better clarity)'
-                : 'Speaker Boost verwenden (bessere Klarheit)'}
+              {_('revoice.useSpeakerBoost')}
             </label>
           </div>
         </div>
@@ -277,24 +252,22 @@
         {#if isPreviewPlaying}
           <div class="preview-status">
             <span class="inline-icon-18px"><MaterialSymbol icon="volume_up" fontSize={18} /></span>
-            {$currentLocale === 'en' ? 'Playing preview...' : 'Vorschau läuft...'}
-            <button class="stop-preview-btn" on:click={stopPreview}
-              >{$currentLocale === 'en' ? 'Stop' : 'Stoppen'}</button
-            >
+            {_('revoice.playingPreview')}
+            <button class="stop-preview-btn" on:click={stopPreview}>{_('revoice.stop')}</button>
           </div>
         {/if}
       </div>
 
       <div class="modal-footer">
         <button class="glass-button secondary" on:click={handleClose}>
-          {$currentLocale === 'en' ? 'Cancel' : 'Abbrechen'}
+          {_('revoice.cancel')}
         </button>
         <button
           class="glass-button primary"
           on:click={handleReVoice}
           disabled={!editedText || !selectedVoiceId}
         >
-          {$currentLocale === 'en' ? 'Generate Re-Voiced Audio' : 'Neu-Vertontes Audio generieren'}
+          {_('revoice.generate')}
         </button>
       </div>
     </div>

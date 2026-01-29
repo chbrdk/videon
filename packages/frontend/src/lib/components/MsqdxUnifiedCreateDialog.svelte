@@ -141,9 +141,9 @@
       class="w-full max-w-2xl relative"
       transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}
     >
-      <MsqdxGlassCard variant="default" className="overflow-hidden">
+      <MsqdxGlassCard variant="default" borderRadiusVariant="xl" className="overflow-hidden">
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between">
           <div class="flex items-center gap-3">
             {#if mode !== 'menu'}
               <button
@@ -179,7 +179,7 @@
         </div>
 
         <!-- Content -->
-        <div class="p-6">
+        <div class="p-5">
           {#if mode === 'menu'}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <!-- Upload Option -->

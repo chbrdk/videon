@@ -3,6 +3,7 @@
   import type { Scene } from '$lib/api/videos';
   import MsqdxVisionTags from './msqdx-vision-tags.svelte';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   export let scenes: Scene[] = [];
   export let visionData: any[] = [];
@@ -28,14 +29,16 @@
 </script>
 
 <div class="glass-card">
-  <h3 class="text-xl font-bold text-white mb-4">Erkannte Szenen ({scenes.length})</h3>
+  <h3 class="text-xl font-bold text-white mb-4">
+    {_('sceneList.title', { count: scenes.length })}
+  </h3>
 
   {#if scenes.length === 0}
     <div class="text-center py-8 text-white/60">
       <div class="w-12 h-12 mx-auto mb-4 opacity-50 flex items-center justify-center">
         <MaterialSymbol icon="schedule" fontSize={48} />
       </div>
-      <p>Noch keine Szenen analysiert</p>
+      <p>{_('sceneList.noScenes')}</p>
     </div>
   {:else}
     <div class="space-y-3">
@@ -54,7 +57,7 @@
             {#if scene.keyframePath}
               <img
                 src={scene.keyframePath}
-                alt="Scene {index + 1}"
+                alt="{_('sceneList.scene')} {index + 1}"
                 class="w-full h-full object-cover rounded"
                 loading="lazy"
               />
@@ -68,14 +71,14 @@
           <!-- Scene Info -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between">
-              <h4 class="font-medium text-white">Szene {index + 1}</h4>
+              <h4 class="font-medium text-white">{_('sceneList.scene')} {index + 1}</h4>
               <span class="text-sm text-white/70"
                 >{formatDuration(scene.startTime, scene.endTime)}</span
               >
             </div>
             <div class="flex items-center gap-4 mt-1 text-sm text-white/60">
-              <span>Start: {formatTime(scene.startTime)}</span>
-              <span>Ende: {formatTime(scene.endTime)}</span>
+              <span>{_('sceneList.start')}: {formatTime(scene.startTime)}</span>
+              <span>{_('sceneList.end')}: {formatTime(scene.endTime)}</span>
             </div>
           </div>
 
