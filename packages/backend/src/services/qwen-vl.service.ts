@@ -20,7 +20,7 @@ class QwenVLService {
     this.qwenVLServiceUrl =
       process.env.QWEN_VL_SERVICE_URL ||
       process.env.QWEN_VL_URL ||
-      'http://localhost:8081';
+      'http://host.docker.internal:8081';
 
     // Provider Configuration
     this.provider = process.env.QWEN_VL_PROVIDER || 'custom'; // 'custom' (default) or 'ollama'
