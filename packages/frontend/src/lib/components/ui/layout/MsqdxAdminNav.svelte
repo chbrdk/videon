@@ -61,8 +61,6 @@
     { label: 'Videos', path: '/videos', icon: 'video_file' },
     { label: 'Suche', path: '/search', icon: 'search' },
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
-    { label: 'Projekte', path: '/projects', icon: 'folder' },
-    { label: 'Hochladen', path: '/upload', icon: 'upload_file' },
   ];
 
   let isExpanded = $derived(mounted && isMobile ? open : mounted ? expanded : false);

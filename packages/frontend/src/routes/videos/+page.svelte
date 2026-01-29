@@ -30,6 +30,7 @@ import { onMount, tick, onDestroy } from 'svelte';
     moveVideoToFolder
   } from '$lib/stores/folders.store';
   import { videosApi } from '$lib/api/videos';
+  import { projectsApi, type Project } from '$lib/api/projects'; // Import projectsApi
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
   import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
@@ -50,6 +51,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   $: searchQueryParam = $page.url.searchParams.get('q') || '';
 
   // State
+  let projects: Project[] = []; // Projects state
   let contextMenu = { show: false, x: 0, y: 0, items: [] };
   let folderDialog = { open: false, mode: 'create' as 'create' | 'rename', folder: null };
   let unifiedDialogOpen = false;
@@ -63,14 +65,24 @@ let revealTimer: ReturnType<typeof setTimeout> | null = null;
 const REVEAL_DELAY_MS = 400;
 const MIN_SCROLL_DURATION = 4000;
 let scrollAnimationId: number | null = null;
-
+ 
   // Initialize
-  onMount(() => {
+  onMount(async () => {
     if (searchQueryParam) {
       searchQuery.set(searchQueryParam);
       searchAll(searchQueryParam);
     } else {
       loadFolders(folderId);
+      // Fetch projects only at root level to avoid cluttering subfolders
+      if (!folderId) {
+          try {
+            projects = await projectsApi.getProjects();
+          } catch(e) {
+              console.error("Failed to load projects", e);
+          }
+      } else {
+          projects = [];
+      }
     }
   });
 
@@ -79,6 +91,12 @@ let scrollAnimationId: number | null = null;
     const newFolderId = $page.url.searchParams.get('folder') || null;
     if (newFolderId !== folderId) {
       loadFolders(newFolderId);
+      // Update projects visibility based on folder
+      if (!newFolderId) {
+           projectsApi.getProjects().then(p => projects = p).catch(e => console.error(e));
+      } else {
+          projects = [];
+      }
     }
   }
 
@@ -90,6 +108,7 @@ let scrollAnimationId: number | null = null;
   // Get current folder contents
   $: currentContents = $searchQuery ? $searchResults : { folders: $folders, videos: $videosInFolder };
   $: allItems = [
+    ...projects.map(project => ({ ...project, id: project.id, type: 'project' as const })),
     ...currentContents.folders.map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
     ...currentContents.videos.map(video => ({ ...video, id: video.id, type: 'video' as const }))
   ];
@@ -614,6 +633,27 @@ let scrollAnimationId: number | null = null;
           </div>
         {/if}
         
+        <!-- Projects -->
+        {#each projects as project (project.id)}
+          <div
+             class="glass-card cursor-pointer transition-transform hover:scale-105"
+             on:click={() => goto(`${base}/projects/${project.id}`)}
+          >
+             <!-- Reusing Folder Card style but customized for Project or just a custom layout here -->
+             <!-- Ideally we should have a MsqdxProjectCard, but for now I'll inline a similar style or modify MsqdxFolderCard. 
+                  Let's use a simple glass card for now to match the updated look. -->
+             <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
+                 <div class="text-purple-400">
+                     <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,19H5V8H19M19,3H18V1H16V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M16.53,11.06L15.47,10L10.59,14.88L8.47,12.76L7.41,13.82L10.59,17L16.53,11.06Z" />
+                     </svg>
+                 </div>
+                 <h3 class="font-semibold text-gray-900 dark:text-white leading-tight">{project.name}</h3>
+                 <span class="text-xs text-white/50">{project.scenes?.length || 0} Scenes</span>
+             </div>
+          </div>
+        {/each}
+
         <!-- Folders -->
         {#each currentContents.folders as folder (folder.id)}
           <div
@@ -688,6 +728,15 @@ let scrollAnimationId: number | null = null;
                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
                     <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
                     </div>
+                {:else if item.type === 'project'}
+                   <div class="text-2xl">📽️</div>
+                   <div class="flex-1">
+                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
+                     <div class="flex items-center gap-2">
+                        <span class="text-gray-600 dark:text-white/60">Project</span>
+                        <span class="bg-purple-500/20 text-purple-300 text-xs px-2 py-0.5 rounded-full">{item.scenes?.length || 0} Scenes</span>
+                     </div>
+                   </div>
                 {:else}
                     <div class="text-2xl">🎬</div>
                     <div class="flex-1">
