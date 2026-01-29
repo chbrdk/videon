@@ -1,10 +1,11 @@
 # Multi-stage build for Node.js backend
 FROM node:18-slim AS base
 
-# Install system dependencies needed for build and runtime (openssl for Prisma)
+# Install system dependencies needed for build and runtime (openssl for Prisma, procps for signals)
 RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pnpm
@@ -29,7 +30,7 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 # Generate Prisma client before building TypeScript
-RUN pnpm exec prisma generate
+RUN npx prisma generate
 RUN pnpm run build
 
 # Production stage
@@ -43,6 +44,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     ffmpeg \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PySceneDetect
@@ -64,11 +66,11 @@ COPY --from=base /app/src/services/*.js ./dist/services/
 RUN pnpm install --frozen-lockfile || pnpm install
 
 # Generate Prisma client
-RUN pnpm exec prisma generate
+RUN npx prisma generate
 
 # Expose port
 EXPOSE 4001
 
 # Start the application
 # Start the application with auto DB push
-CMD ["sh", "-c", "pnpm exec prisma db push --accept-data-loss && node dist/app.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/app.js"]
