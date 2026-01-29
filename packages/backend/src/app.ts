@@ -196,24 +196,25 @@ if (config.nodeEnv !== 'test') {
         const prisma = new PrismaClient();
 
         const email = 'admin@udg.de';
-        const existingAdmin = await prisma.user.findUnique({ where: { email } });
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash('admin', salt);
 
-        if (!existingAdmin) {
-          logger.info('👤 Creating default admin user...');
-          const salt = await bcrypt.genSalt(10);
-          const passwordHash = await bcrypt.hash('admin', salt);
-
-          await prisma.user.create({
-            data: {
-              email,
-              passwordHash,
-              name: 'Admin',
-              role: 'ADMIN',
-              provider: 'LOCAL'
-            }
-          });
-          logger.info('✅ Admin user created successfully');
-        }
+        // Always update/create admin to ensure password is correct
+        await prisma.user.upsert({
+          where: { email },
+          update: {
+            passwordHash,
+            role: 'ADMIN' // Ensure role is ADMIN
+          },
+          create: {
+            email,
+            passwordHash,
+            name: 'Admin',
+            role: 'ADMIN',
+            provider: 'LOCAL'
+          }
+        });
+        logger.info('✅ Admin user synced (password: admin)');
       } catch (err) {
         logger.error('Failed to seed admin:', err);
       }

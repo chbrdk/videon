@@ -26,19 +26,28 @@ passport.use(
     new LocalStrategy(
         { usernameField: 'email' },
         async (email, password, done) => {
+            console.log('🔐 Login attempt for:', email);
             try {
                 const user = await prisma.user.findUnique({ where: { email } });
+                console.log('👤 User found:', user ? user.id : 'null');
+
                 if (!user || !user.passwordHash) {
+                    console.warn('❌ User not found or no password hash');
                     return done(null, false, { message: 'Incorrect email or password.' });
                 }
 
+                console.log('🔑 Verifying password...');
                 const isMatch = await bcrypt.compare(password, user.passwordHash);
+                console.log('✅ Password match result:', isMatch);
+
                 if (!isMatch) {
+                    console.warn('❌ Password incorrect');
                     return done(null, false, { message: 'Incorrect email or password.' });
                 }
 
                 return done(null, user);
             } catch (err) {
+                console.error('❌ Login critical error:', err);
                 return done(err);
             }
         }
