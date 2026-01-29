@@ -31,7 +31,44 @@ class VideoFramesAnalysisRequest(BaseModel):
     prompt: Optional[str] = "Beschreibe was in diesen Video-Frames passiert. Was ist die Story oder der Kontext?"
     max_tokens: Optional[int] = 1000
 
-# ... (HealthResponse etc)
+
+class HealthResponse(BaseModel):
+    status: str
+    model: str
+    loaded: bool
+    version: str
+
+@app.get("/health", response_model=HealthResponse)
+async def health_check():
+    """Health Check Endpoint"""
+    info = qwen_service.get_model_info()
+    return {
+        "status": "healthy" if info["loaded"] else "loading",
+        "model": info["model_name"],
+        "loaded": info["loaded"],
+        "version": "1.0.0"
+    }
+
+@app.post("/analyze/image")
+async def analyze_image(request: ImageAnalysisRequest):
+    """
+    Analysiert ein einzelnes Bild
+    """
+    try:
+        result = qwen_service.analyze_image(
+            image_path=request.image_path,
+            image_base64=request.image_base64,
+            prompt=request.prompt,
+            max_tokens=request.max_tokens
+        )
+        return result
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in analyze_image: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze/video-frames")
 async def analyze_video_frames(request: VideoFramesAnalysisRequest):
