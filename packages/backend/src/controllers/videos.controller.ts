@@ -149,6 +149,7 @@ export class VideosController {
         });
       }
 
+      const user = (req as any).user;
       const file = req.file;
       logger.info(`Uploading video: ${file.originalname} (${file.size} bytes)`);
 
@@ -178,11 +179,13 @@ export class VideosController {
       }
 
       // Create video record in database
+      const user = (req as any).user;
       const video = await videoService.createVideo({
         filename: storagePath, // Use STORION file ID or local filename
         originalName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
+        userId: user?.id
       });
 
       // Update status to analyzing
@@ -242,14 +245,17 @@ export class VideosController {
   async getAllVideos(req: Request, res: Response) {
     try {
       const { folderId } = req.query;
+      const user = (req as any).user;
+      const userId = user?.id;
+      const isAdmin = user?.role === 'ADMIN';
 
       let videos;
       if (folderId !== undefined) {
         // Convert "null" string to null, or use the folderId as is
         const actualFolderId = folderId === 'null' ? null : folderId as string;
-        videos = await videoService.getVideosByFolder(actualFolderId);
+        videos = await videoService.getVideosByFolder(actualFolderId, userId, isAdmin);
       } else {
-        videos = await videoService.getAllVideos();
+        videos = await videoService.getAllVideos(userId, isAdmin);
       }
 
       res.json(videos);
@@ -265,7 +271,8 @@ export class VideosController {
   async getVideoById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const video = await videoService.getVideoById(id);
+      const user = (req as any).user;
+      const video = await videoService.getVideoById(id, user?.id, user?.role === 'ADMIN');
 
       if (!video) {
         return res.status(404).json({
@@ -302,7 +309,8 @@ export class VideosController {
   async deleteVideo(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const result = await videoService.deleteVideo(id);
+      const user = (req as any).user;
+      const result = await videoService.deleteVideo(id, user?.id, user?.role === 'ADMIN');
 
       logger.info(`Video deleted successfully: ${id}`, result.deletedItems);
 
@@ -323,8 +331,9 @@ export class VideosController {
     try {
       const { id } = req.params;
       const { folderId } = req.body;
+      const user = (req as any).user;
 
-      await videoService.moveVideo(id, folderId);
+      await videoService.moveVideo(id, folderId, user?.id, user?.role === 'ADMIN');
 
       logger.info(`Video moved successfully: ${id} to folder ${folderId || 'root'}`);
 
