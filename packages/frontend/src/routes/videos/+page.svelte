@@ -872,20 +872,24 @@ let scrollAnimationId: number | null = null;
 /> 
 
 <!-- Folder Dialog (Keep for Rename) -->
+<!-- Folder Dialog (Generic Rename) -->
 <MsqdxFolderDialog 
-  bind:open={folderDialog.open}
-  mode={folderDialog.mode}
-  initialName={folderDialog.folder?.name || ''}
-  on:confirm={handleFolderConfirm}
-  on:cancel={() => folderDialog.open = false}
+  open={renameDialog.open} 
+  mode="rename"
+  title={renameTitles[renameDialog.type]}
+  label={_('actions.rename')}
+  initialName={renameDialog.item ? (renameDialog.item.name || renameDialog.item.originalName) : ''}
+  on:confirm={handleRenameConfirm} 
+  on:cancel={() => renameDialog = { ...renameDialog, open: false }} 
 />
 
 <!-- Delete Modal -->
 <MsqdxDeleteModal 
-  bind:open={deleteModalOpen}
-  video={videoToDelete}
-  on:close={() => { deleteModalOpen = false; videoToDelete = null; }}
-  on:confirm={handleDeleteConfirm}
+  open={deleteDialog.open} 
+  item={deleteDialog.item} 
+  type={deleteDialog.type}
+  on:confirm={handleDeleteConfirm} 
+  on:close={() => deleteDialog = { ...deleteDialog, open: false }} 
 />
 
 <style>
