@@ -10,16 +10,15 @@ RUN apt-get update && apt-get install -y \
 
 # Install pnpm
 RUN npm install -g pnpm
-RUN npm install -g prisma@5.22.0
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
 
 # Install dependencies
-# Try frozen-lockfile first, if it fails (lockfile outdated), update and install
-RUN pnpm install --frozen-lockfile || (pnpm install && pnpm store prune)
+# Ignore lockfile to ensure fresh install matching package.json
+RUN pnpm install
 
 # Copy source code (exclude node_modules and dist)
 COPY src ./src
@@ -31,7 +30,8 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 # Generate Prisma client before building TypeScript
-RUN prisma generate
+RUN ls -la prisma
+RUN npx prisma generate --schema=./prisma/schema.prisma
 RUN pnpm run build
 
 # Production stage
@@ -53,7 +53,6 @@ RUN pip3 install --no-cache-dir --break-system-packages scenedetect[opencv]
 
 # Install pnpm
 RUN npm install -g pnpm
-RUN npm install -g prisma@5.22.0
 
 # Copy built application
 COPY --from=build /app/dist ./dist
@@ -64,15 +63,14 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=base /app/src/services/*.js ./dist/services/
 
 # Install production dependencies (including prisma for generate)
-# Try frozen-lockfile first, if it fails (lockfile outdated), update and install
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN pnpm install --prod
 
 # Generate Prisma client
-RUN prisma generate
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Expose port
 EXPOSE 4001
 
 # Start the application
 # Start the application with auto DB push
-CMD ["sh", "-c", "prisma db push --accept-data-loss && node dist/app.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss --schema=./prisma/schema.prisma && node dist/app.js"]
