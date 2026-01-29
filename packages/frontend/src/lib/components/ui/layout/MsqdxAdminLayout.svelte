@@ -94,7 +94,6 @@
   let pageIcon = $derived(getPageIcon());
 </script>
 
-a
 <div
   class="msqdx-admin-layout"
   style="
