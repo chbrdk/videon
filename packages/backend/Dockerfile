@@ -1,5 +1,5 @@
 # Multi-stage build for Node.js backend
-FROM node:18-bullseye AS base
+FROM node:20-bookworm AS base
 
 # Install system dependencies needed for build and runtime
 RUN apt-get update && apt-get install -y \
@@ -24,15 +24,18 @@ COPY prisma ./prisma
 # Build stage
 FROM base AS build
 WORKDIR /app
+
+# Debug: Check prisma version
+RUN npx prisma -v
+
 # Generate Prisma client
-RUN ls -la prisma
-RUN ls -la node_modules/.bin
-RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
+RUN npx prisma generate --schema=./prisma/schema.prisma
+
 # Build TypeScript
 RUN npm run build
 
 # Production stage
-FROM node:18-bullseye AS production
+FROM node:20-bookworm AS production
 WORKDIR /app
 
 # Install system dependencies
