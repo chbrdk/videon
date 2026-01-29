@@ -266,7 +266,7 @@ export class VideosController {
       logger.error('Error fetching videos:', error);
       res.status(500).json({
         error: 'Fetch failed',
-        message: 'Failed to fetch videos',
+        message: (error as Error).message,
       });
     }
   }

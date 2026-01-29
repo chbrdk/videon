@@ -194,7 +194,7 @@ export class ProjectController {
       res.json(projects);
     } catch (error: unknown) {
       logger.error('Get projects error:', error);
-      res.status(500).json({ error: 'Failed to fetch projects' });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
