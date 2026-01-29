@@ -157,13 +157,12 @@
         <div class="grid grid-cols-2 gap-4">
           <button
             on:click={() => setLanguage('de')}
-            class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
+            class="flex items-center justify-between p-4 rounded-xl border-1 transition-all {$currentLocale ===
             'de'
               ? 'border-blue-500 bg-blue-500/10'
               : 'border-white/5 hover:border-white/20 bg-white/5'}"
           >
             <div class="flex items-center gap-3">
-              <span class="text-2xl">🇩🇪</span>
               <span class="font-medium text-white">Deutsch</span>
             </div>
             {#if $currentLocale === 'de'}
@@ -175,13 +174,12 @@
 
           <button
             on:click={() => setLanguage('en')}
-            class="flex items-center justify-between p-4 rounded-xl border-2 transition-all {$currentLocale ===
+            class="flex items-center justify-between p-4 rounded-xl border-1 transition-all {$currentLocale ===
             'en'
               ? 'border-blue-500 bg-blue-500/10'
               : 'border-white/5 hover:border-white/20 bg-white/5'}"
           >
             <div class="flex items-center gap-3">
-              <span class="text-2xl">🇺🇸</span>
               <span class="font-medium text-white">English</span>
             </div>
             {#if $currentLocale === 'en'}

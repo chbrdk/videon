@@ -771,7 +771,7 @@ let scrollAnimationId: number | null = null;
 <!-- Unified Create Dialog -->
 <MsqdxUnifiedCreateDialog
   bind:open={unifiedDialogOpen}
-  {currentFolderId}
+  currentFolderId={folderId}
   on:uploadComplete={handleUploadComplete}
   on:projectCreated={(e) => goto(`${base}/projects/${e.detail.id}`)}
   on:close={() => unifiedDialogOpen = false}
