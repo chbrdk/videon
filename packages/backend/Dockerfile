@@ -67,4 +67,4 @@ RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 EXPOSE 4001
 
 # Start the application
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss --schema=./prisma/schema.prisma && node dist/app.js"]
+CMD ["sh", "-c", "npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push --accept-data-loss --schema=./prisma/schema.prisma && node dist/app.js"]
