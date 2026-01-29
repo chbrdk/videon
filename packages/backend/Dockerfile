@@ -1,5 +1,5 @@
 # Multi-stage build for Node.js backend
-FROM node:18-slim AS base
+FROM node:18-bullseye AS base
 
 # Install system dependencies needed for build and runtime (openssl for Prisma, procps for signals)
 RUN apt-get update && apt-get install -y \
@@ -34,7 +34,7 @@ RUN npx prisma generate
 RUN pnpm run build
 
 # Production stage
-FROM node:18-slim AS production
+FROM node:18-bullseye AS production
 WORKDIR /app
 
 # Install system dependencies for Prisma, Python3, FFmpeg, and PySceneDetect
