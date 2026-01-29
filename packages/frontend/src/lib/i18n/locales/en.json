@@ -3,6 +3,20 @@
     "videos": "Videos",
     "upload": "Upload"
   },
+  "dialog": {
+    "createNew": "Create New",
+    "uploadVideoDesc": "Drag & drop files",
+    "newProjectDesc": "Create a project",
+    "newFolderDesc": "Organize files",
+    "creating": "Creating...",
+    "startUpload": "Start Upload",
+    "clear": "Clear",
+    "dropFiles": "Drop video files here",
+    "browse": "or click to browse",
+    "uploading": "Uploading {current} of {total}...",
+    "processing": "Processing and analyzing...",
+    "filesSelected": "{count} file(s) selected"
+  },
   "pages": {
     "dashboard": {
       "title": "VIDEON - Dashboard",
@@ -240,6 +254,7 @@
     "noProjects": "No projects yet",
     "createFirstProject": "Create your first project to start organizing your videos and scenes.",
     "name": "Project name:",
+    "namePlaceholder": "Enter project name...",
     "loading": "Loading projects...",
     "currentScene": "Current Scene:",
     "noScenesAdded": "No scenes added yet",

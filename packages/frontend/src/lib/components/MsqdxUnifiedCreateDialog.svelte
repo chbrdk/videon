@@ -162,10 +162,10 @@
                  font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
               "
             >
-              {#if mode === 'menu'}Create New{/if}
-              {#if mode === 'upload'}Upload Videos{/if}
-              {#if mode === 'project'}New Project{/if}
-              {#if mode === 'folder'}New Folder{/if}
+              {#if mode === 'menu'}{_('dialog.createNew')}{/if}
+              {#if mode === 'upload'}{_('pages.videoGallery.newVideo')}{/if}
+              {#if mode === 'project'}{_('projects.newProject')}{/if}
+              {#if mode === 'folder'}{_('pages.videoGallery.newFolder')}{/if}
             </h2>
           </div>
           <button
@@ -186,7 +186,7 @@
               <button
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
-                  background-color: {MSQDX_COLORS.dark.paper};
+                  background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => (mode = 'upload')}
@@ -205,12 +205,12 @@
                   <span
                     class="block font-medium mb-1"
                     style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.primary};">Upload Video</span
+                      .fontFamily.primary};">{_('pages.videoGallery.newVideo')}</span
                   >
                   <span
                     class="text-xs"
                     style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.mono};">Drag & drop files</span
+                      .fontFamily.mono};">{_('dialog.uploadVideoDesc')}</span
                   >
                 </div>
               </button>
@@ -219,7 +219,7 @@
               <button
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
-                  background-color: {MSQDX_COLORS.dark.paper};
+                  background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => {
@@ -241,12 +241,12 @@
                   <span
                     class="block font-medium mb-1"
                     style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.primary};">New Project</span
+                      .fontFamily.primary};">{_('projects.newProject')}</span
                   >
                   <span
                     class="text-xs"
                     style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.mono};">Create a project</span
+                      .fontFamily.mono};">{_('dialog.newProjectDesc')}</span
                   >
                 </div>
               </button>
@@ -255,7 +255,7 @@
               <button
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
-                  background-color: {MSQDX_COLORS.dark.paper};
+                  background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => {
@@ -277,12 +277,12 @@
                   <span
                     class="block font-medium mb-1"
                     style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.primary};">New Folder</span
+                      .fontFamily.primary};">{_('pages.videoGallery.newFolder')}</span
                   >
                   <span
                     class="text-xs"
                     style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY
-                      .fontFamily.mono};">Organize files</span
+                      .fontFamily.mono};">{_('dialog.newFolderDesc')}</span
                   >
                 </div>
               </button>
@@ -295,7 +295,10 @@
                   style="color: {MSQDX_COLORS.dark.textSecondary};"
                 >
                   <span style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
-                    >Uploading {currentFileIndex + 1} of {totalFiles}...</span
+                    >{_('dialog.uploading', {
+                      current: currentFileIndex + 1,
+                      total: totalFiles,
+                    })}</span
                   >
                   <span style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
                     >{Math.round(progress)}%</span
@@ -308,7 +311,7 @@
                   style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY
                     .fontFamily.mono};"
                 >
-                  Processing and analyzing...
+                  {_('dialog.processing')}
                 </p>
               </div>
             {:else}
@@ -318,7 +321,7 @@
                   : ''}"
                 style="
                    border-color: {dragOver ? MSQDX_COLORS.brand.blue : MSQDX_COLORS.dark.border};
-                   background-color: {MSQDX_COLORS.dark.paper};
+                   background-color: transparent;
                 "
                 on:dragover|preventDefault={() => (dragOver = true)}
                 on:dragleave|preventDefault={() => (dragOver = false)}
@@ -345,7 +348,7 @@
                 {#if files && files.length > 0}
                   <div class="space-y-2">
                     <p class="font-medium" style="color: {MSQDX_COLORS.dark.textPrimary};">
-                      {files.length} file(s) selected
+                      {_('dialog.filesSelected', { count: files.length })}
                     </p>
                     <div
                       class="max-h-32 overflow-y-auto space-y-1 text-sm"
@@ -362,7 +365,7 @@
                       class="px-4 py-2 rounded-lg text-sm"
                       style="background-color: {MSQDX_COLORS.dark.border}; color: {MSQDX_COLORS.dark
                         .textPrimary};"
-                      on:click|stopPropagation={() => (files = null)}>Clear</button
+                      on:click|stopPropagation={() => (files = null)}>{_('dialog.clear')}</button
                     >
                     <button
                       class="px-6 py-2 rounded-lg text-sm font-medium shadow-lg"
@@ -370,7 +373,7 @@
                         .white};"
                       on:click|stopPropagation={handleUpload}
                     >
-                      Start Upload
+                      {_('dialog.startUpload')}
                     </button>
                   </div>
                 {:else}
@@ -378,10 +381,10 @@
                     class="text-lg font-medium mb-1"
                     style="color: {MSQDX_COLORS.dark.textPrimary};"
                   >
-                    Drop video files here
+                    {_('dialog.dropFiles')}
                   </p>
                   <p class="text-sm" style="color: {MSQDX_COLORS.dark.textSecondary};">
-                    or click to browse
+                    {_('dialog.browse')}
                   </p>
                 {/if}
               </div>
@@ -394,8 +397,10 @@
               class="space-y-6 py-4"
             >
               <MsqdxFormField
-                label={mode === 'project' ? 'Project Name' : 'Folder Name'}
-                placeholder={mode === 'project' ? 'My Awesome Project' : 'New Folder'}
+                label={mode === 'project' ? _('projects.name') : _('folder.name')}
+                placeholder={mode === 'project'
+                  ? _('projects.namePlaceholder')
+                  : _('folder.namePlaceholder')}
                 bind:value={newItemName}
                 autofocus
                 required
@@ -409,7 +414,7 @@
                   variant="contained"
                   style="background-color: {MSQDX_COLORS.brand.orange};"
                 >
-                  Create {mode === 'project' ? 'Project' : 'Folder'}
+                  {mode === 'project' ? _('projects.createProject') : _('folder.create')}
                 </MsqdxButton>
               </div>
             </form>
