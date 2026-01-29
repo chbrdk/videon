@@ -15,6 +15,7 @@ import saliencyRoutes from './routes/saliency.routes';
 import servicesRoutes from './routes/services.routes';
 import voiceSegmentRoutes from './routes/voice-segment.routes';
 import aiCreatorRoutes from './routes/ai-creator.routes';
+import userRoutes from './routes/user.routes';
 import { globalErrorHandler, notFoundHandler } from './utils/error-handler';
 import { localeMiddleware } from './middleware/locale.middleware';
 import { PrismaClient } from '@prisma/client';
@@ -141,6 +142,7 @@ app.use(passport.session());
 
 // Auth Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 
 
