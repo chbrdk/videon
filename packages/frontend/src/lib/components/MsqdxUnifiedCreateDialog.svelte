@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol, MsqdxFormField, MsqdxButton } from '$lib/components/ui';
   import { _ } from '$lib/i18n';
   import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
   import MsqdxProgress from '$lib/components/msqdx-progress.svelte';
@@ -187,18 +187,18 @@
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
                   background-color: {MSQDX_COLORS.dark.paper};
-                  border: 1px solid {MSQDX_COLORS.dark.border};
+                  border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => (mode = 'upload')}
               >
                 <div
                   class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-                  style="background-color: {MSQDX_COLORS.tints.blue};"
+                  style="background-color: transparent;"
                 >
                   <MaterialSymbol
                     icon="cloud_upload"
                     fontSize={32}
-                    style="color: {MSQDX_COLORS.brand.blue};"
+                    style="color: {MSQDX_COLORS.brand.orange};"
                   />
                 </div>
                 <div>
@@ -220,7 +220,7 @@
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
                   background-color: {MSQDX_COLORS.dark.paper};
-                  border: 1px solid {MSQDX_COLORS.dark.border};
+                  border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => {
                   mode = 'project';
@@ -229,12 +229,12 @@
               >
                 <div
                   class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-                  style="background-color: {MSQDX_COLORS.tints.purple};"
+                  style="background-color: transparent;"
                 >
                   <MaterialSymbol
                     icon="movie_edit"
                     fontSize={32}
-                    style="color: {MSQDX_COLORS.brand.purple};"
+                    style="color: {MSQDX_COLORS.brand.orange};"
                   />
                 </div>
                 <div>
@@ -256,7 +256,7 @@
                 class="flex flex-col items-center justify-center p-6 rounded-xl transition-all duration-300 group gap-4 text-center h-48"
                 style="
                   background-color: {MSQDX_COLORS.dark.paper};
-                  border: 1px solid {MSQDX_COLORS.dark.border};
+                  border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
                 on:click={() => {
                   mode = 'folder';
@@ -265,7 +265,7 @@
               >
                 <div
                   class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-                  style="background-color: {MSQDX_COLORS.tints.orange};"
+                  style="background-color: transparent;"
                 >
                   <MaterialSymbol
                     icon="create_new_folder"
@@ -393,51 +393,24 @@
                 : handleCreateFolder}
               class="space-y-6 py-4"
             >
-              <div class="space-y-2">
-                <label
-                  for="item-name"
-                  class="block text-sm font-medium"
-                  style="color: {MSQDX_COLORS.dark.textSecondary};"
-                >
-                  {mode === 'project' ? 'Project Name' : 'Folder Name'}
-                </label>
-                <input
-                  id="item-name"
-                  type="text"
-                  bind:value={newItemName}
-                  placeholder={mode === 'project' ? 'My Awesome Project' : 'New Folder'}
-                  class="w-full px-4 py-3 rounded-xl transition-all focus:outline-none"
-                  style="
-                    background-color: {MSQDX_COLORS.dark.paper};
-                    border: 1px solid {MSQDX_COLORS.dark.border};
-                    color: {MSQDX_COLORS.dark.textPrimary};
-                    font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
-                  "
-                  autofocus
-                />
-              </div>
+              <MsqdxFormField
+                label={mode === 'project' ? 'Project Name' : 'Folder Name'}
+                placeholder={mode === 'project' ? 'My Awesome Project' : 'New Folder'}
+                bind:value={newItemName}
+                autofocus
+                required
+              />
 
               <div class="flex justify-end pt-2">
-                <button
+                <MsqdxButton
                   type="submit"
                   disabled={!newItemName.trim() || creating}
-                  class="px-6 py-3 rounded-xl font-medium shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style="
-                    background-color: {mode === 'project'
-                    ? MSQDX_COLORS.brand.purple
-                    : MSQDX_COLORS.brand.blue};
-                    color: {MSQDX_COLORS.brand.white};
-                  "
+                  loading={creating}
+                  variant="contained"
+                  style="background-color: {MSQDX_COLORS.brand.orange};"
                 >
-                  {#if creating}
-                    <div
-                      class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
-                    ></div>
-                    <span>Creating...</span>
-                  {:else}
-                    <span>Create {mode === 'project' ? 'Project' : 'Folder'}</span>
-                  {/if}
-                </button>
+                  Create {mode === 'project' ? 'Project' : 'Folder'}
+                </MsqdxButton>
               </div>
             </form>
           {/if}

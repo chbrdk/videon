@@ -1,27 +1,24 @@
 <script>
   import { viewMode } from '$lib/stores/folders.store';
+  import { MaterialSymbol } from '$lib/components/ui';
 
   export let className = '';
 </script>
 
 <div class="glass-button-group {className}">
-  <button 
+  <button
     class="glass-button rounded-full {$viewMode === 'grid' ? 'active' : ''}"
     on:click={() => viewMode.set('grid')}
     title="Grid View"
   >
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M3,11H11V3H3M3,21H11V13H3M13,21H21V13H13M13,3V11H21V3"/>
-    </svg>
+    <MaterialSymbol icon="grid_view" fontSize={20} />
   </button>
-  <button 
+  <button
     class="glass-button rounded-full {$viewMode === 'list' ? 'active' : ''}"
     on:click={() => viewMode.set('list')}
     title="List View"
   >
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M9,5V9H21V5M9,19H21V15H9M9,14H21V10H9M4,9A2,2 0 0,1 2,7A2,2 0 0,1 4,5A2,2 0 0,1 6,7A2,2 0 0,1 4,9M4,19A2,2 0 0,1 2,17A2,2 0 0,1 4,15A2,2 0 0,1 6,17A2,2 0 0,1 4,19M4,14A2,2 0 0,1 2,12A2,2 0 0,1 4,10A2,2 0 0,1 6,12A2,2 0 0,1 4,14Z"/>
-    </svg>
+    <MaterialSymbol icon="view_list" fontSize={20} />
   </button>
 </div>
 
@@ -35,9 +32,8 @@
     border-radius: var(--msqdx-radius-full);
     padding: var(--msqdx-spacing-xxs);
   }
-.rounded{
-  border-radius: 28px !important;
-}
+
+  /* Default (Dark Mode) */
   .glass-button {
     display: flex;
     align-items: center;
@@ -47,19 +43,20 @@
     background: transparent;
     border: none;
     border-radius: var(--msqdx-radius-full) !important;
-    color: var(--msqdx-color-dark-text-secondary);
+    color: #ffffff; /* Explicit White for Dark Mode */
+    opacity: 0.5; /* Dimmed when not active */
     cursor: pointer;
     transition: all var(--msqdx-transition-standard);
   }
 
   .glass-button:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: var(--msqdx-color-dark-text-primary);
+    opacity: 0.8;
   }
 
   .glass-button.active {
     background: rgba(255, 255, 255, 0.2);
-    color: var(--msqdx-color-dark-text-primary);
+    opacity: 1;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
@@ -68,28 +65,25 @@
     outline-offset: 2px;
   }
 
+  /* Light Mode Overrides */
   :global(html.light) .glass-button-group {
     background: var(--msqdx-color-light-paper);
     border: 1px solid var(--msqdx-color-light-border);
   }
 
   :global(html.light) .glass-button {
-    color: var(--msqdx-color-light-text-secondary);
+    color: #000000; /* Explicit Black for Light Mode */
+    opacity: 0.5;
   }
 
   :global(html.light) .glass-button:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: var(--msqdx-color-light-text-primary);
+    opacity: 0.8;
   }
 
   :global(html.light) .glass-button.active {
     background: rgba(0, 0, 0, 0.1);
-    color: var(--msqdx-color-light-text-primary);
+    opacity: 1;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  }
-
-  :global(html.light) .glass-button:focus {
-    outline: 2px solid var(--msqdx-color-brand-orange);
-    outline-offset: 2px;
   }
 </style>

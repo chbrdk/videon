@@ -15,9 +15,9 @@
   style="
     --blur: var(--msqdx-glass-blur);
     --opacity: 0.05;
-    --border-radius: var(--msqdx-radius-xxl);
+    --border-radius: 40px;
     --padding: 0;
-    --background-color: var(--msqdx-color-dark-paper);
+    --background-color: transparent;
     --border-color: var(--msqdx-color-brand-orange); 
     border-style: dashed !important;
     min-height: 200px;
@@ -75,7 +75,7 @@
   /* Reusing styles from other cards to ensure consistency if global styles apply */
   .msqdx-glass-card.no-padding {
     padding: 0 !important;
-    border-radius: var(--msqdx-radius-xxl) !important;
+    border-radius: 40px !important;
   }
 
   .msqdx-glass-card.hoverable:hover {

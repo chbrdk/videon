@@ -1,7 +1,7 @@
 <script lang="ts">
 import { onMount, tick, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
+  import { resolve, base } from '$app/paths';
   import { page } from '$app/stores';
   import { 
     folders, 
@@ -643,7 +643,7 @@ let scrollAnimationId: number | null = null;
                --blur: var(--msqdx-glass-blur);
                --background-color: var(--msqdx-color-dark-paper);
                --border-color: var(--msqdx-color-dark-border);
-               border-radius: var(--msqdx-radius-xl);
+               border-radius: 40px;
              "
           >
              <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
