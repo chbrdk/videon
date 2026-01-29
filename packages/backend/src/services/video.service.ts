@@ -137,6 +137,7 @@ export class VideoService {
           analysisLogs: {
             orderBy: { createdAt: 'desc' },
           },
+          videoShares: userId ? { where: { userId } } : false
         },
       });
 
@@ -258,7 +259,7 @@ export class VideoService {
       uploadedAt: video.uploadedAt.toISOString(),
       analyzedAt: video.analyzedAt?.toISOString(),
       file_path: filePath, // Add file_path for audio service
-      sharedRole: video.videoShares?.[0]?.role
+      sharedRole: video.videoShares?.[0]?.role as 'VIEWER' | 'EDITOR'
     };
   }
 

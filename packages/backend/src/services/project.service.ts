@@ -74,7 +74,7 @@ export class ProjectService {
       createdAt: project.createdAt.toISOString(),
       updatedAt: project.updatedAt.toISOString(),
       scenes: project.scenes?.map((s: any) => this.mapProjectSceneToResponse(s)) || [],
-      sharedRole: role || project.projectShares?.[0]?.role
+      sharedRole: (role || project.projectShares?.[0]?.role) as 'VIEWER' | 'EDITOR'
     };
   }
 
