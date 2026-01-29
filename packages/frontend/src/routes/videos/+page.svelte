@@ -272,20 +272,7 @@ let scrollAnimationId: number | null = null;
 
 
 
-  async function handleDeleteConfirm() {
-    if (!videoToDelete) return;
-    
-    try {
-      await videosApi.deleteVideo(videoToDelete.id);
-      await loadFolders(folderId);
-      deleteModalOpen = false;
-      videoToDelete = null;
-    } catch (error) {
-      alert(`${_('delete.deleteError')}: ${error.message}`);
-      deleteModalOpen = false;
-      videoToDelete = null;
-    }
-  }
+
 
   // Drag & Drop handlers
   let draggedVideo: VideoResponse | null = null;
