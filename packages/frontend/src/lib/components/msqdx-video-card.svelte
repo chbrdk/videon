@@ -152,7 +152,7 @@
     <div class="absolute top-3 right-3 z-10 pointer-events-auto">
       <div class="relative">
         <button
-          class="p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors backdrop-blur-sm"
+          class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] bg-black/20 hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors backdrop-blur-sm"
           on:click|stopPropagation={() => (showMenu = !showMenu)}
         >
           <MaterialSymbol icon="more_vert" fontSize={20} />
