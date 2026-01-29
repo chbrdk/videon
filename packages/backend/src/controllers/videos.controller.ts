@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 1024 * 1024 * 1024 } // 1GB
 });
@@ -42,12 +42,12 @@ export class VideosController {
   // Simple upload method without middleware
   async simpleUpload(req: Request, res: Response) {
     try {
-      logger.info('Simple upload - File received', { 
-        filename: req.file?.filename, 
+      logger.info('Simple upload - File received', {
+        filename: req.file?.filename,
         size: req.file?.size,
-        mimetype: req.file?.mimetype 
+        mimetype: req.file?.mimetype
       });
-      
+
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
@@ -55,7 +55,7 @@ export class VideosController {
       // Upload to STORION (mandatory when enabled)
       let storagePath = req.file.filename;
       let videoPath = path.join(req.file.destination, req.file.filename);
-      
+
       if (config.storage.type === 'storion') {
         const storageService = getStorageService();
         const storionFileId = await storageService.uploadFile(
@@ -69,7 +69,7 @@ export class VideosController {
           storionFileId,
           originalPath: videoPath,
         });
-        
+
         // Keep local copy for processing (analyzer services need file access)
         // The local copy is temporary and can be cleaned up after processing
       } else {
@@ -89,8 +89,8 @@ export class VideosController {
       // Update status to analyzing
       await videoService.updateVideoStatus(video.id, 'ANALYZING');
 
-      logger.info('Video created successfully', { 
-        videoId: video.id, 
+      logger.info('Video created successfully', {
+        videoId: video.id,
         filename: video.filename,
         fileSize: video.fileSize,
         storageType: config.storage.type,
@@ -102,24 +102,24 @@ export class VideosController {
         // Analyzer services need direct file access
         const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
         const localVideoPath = path.join(videosStoragePath, req.file.filename);
-        
+
         logger.info(`Queueing analyses for video ${video.id}`, { videoPath, filename: req.file.filename });
-        
+
         // 1. Standard video analysis (scenes, transcription, etc.)
         analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
           logger.error(`Standard analysis failed for video ${video.id}:`, error);
         });
-        
+
         // 2. Audio separation
         analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
           logger.error(`Audio separation failed for video ${video.id}:`, error);
         });
-        
+
         // 3. Saliency analysis
         saliencyClient.analyzeSaliency(video.id, videoPath).catch(error => {
           logger.error(`Saliency analysis failed for video ${video.id}:`, error);
         });
-        
+
         logger.info(`Video uploaded and all analyses queued: ${video.id}`);
       } catch (analysisError) {
         logger.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
@@ -155,7 +155,7 @@ export class VideosController {
       // Upload to STORION if enabled
       let storagePath = file.filename;
       const localVideoPath = path.join(file.destination, file.filename);
-      
+
       if (config.storage.type === 'storion') {
         try {
           const storageService = getStorageService();
@@ -200,31 +200,31 @@ export class VideosController {
         }
       );
 
-          // Trigger all analyses (async)
-          // Note: Analyzer services need local file access, so we keep local copy even if using STORION
-          try {
-            const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
-            const videoPath = path.join(videosStoragePath, file.filename);
-            
-            // 1. Standard video analysis (scenes, transcription, etc.)
-            analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
-              logger.error(`Standard analysis failed for video ${video.id}:`, error);
-            });
-            
-            // 2. Audio separation
-            analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
-              logger.error(`Audio separation failed for video ${video.id}:`, error);
-            });
-            
-            // 3. Saliency analysis
-            saliencyClient.analyzeSaliency(video.id, videoPath).catch(error => {
-              logger.error(`Saliency analysis failed for video ${video.id}:`, error);
-            });
-            
-            logger.info(`Video uploaded and all analyses queued: ${video.id}`);
-          } catch (analysisError) {
-            logger.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
-          }
+      // Trigger all analyses (async)
+      // Note: Analyzer services need local file access, so we keep local copy even if using STORION
+      try {
+        const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+        const videoPath = path.join(videosStoragePath, file.filename);
+
+        // 1. Standard video analysis (scenes, transcription, etc.)
+        analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
+          logger.error(`Standard analysis failed for video ${video.id}:`, error);
+        });
+
+        // 2. Audio separation
+        analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
+          logger.error(`Audio separation failed for video ${video.id}:`, error);
+        });
+
+        // 3. Saliency analysis
+        saliencyClient.analyzeSaliency(video.id, videoPath).catch(error => {
+          logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+        });
+
+        logger.info(`Video uploaded and all analyses queued: ${video.id}`);
+      } catch (analysisError) {
+        logger.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
+      }
 
       res.status(201).json({
         message: 'Video uploaded successfully',
@@ -242,7 +242,7 @@ export class VideosController {
   async getAllVideos(req: Request, res: Response) {
     try {
       const { folderId } = req.query;
-      
+
       let videos;
       if (folderId !== undefined) {
         // Convert "null" string to null, or use the folderId as is
@@ -251,7 +251,7 @@ export class VideosController {
       } else {
         videos = await videoService.getAllVideos();
       }
-      
+
       res.json(videos);
     } catch (error) {
       logger.error('Error fetching videos:', error);
@@ -303,9 +303,9 @@ export class VideosController {
     try {
       const { id } = req.params;
       const result = await videoService.deleteVideo(id);
-      
+
       logger.info(`Video deleted successfully: ${id}`, result.deletedItems);
-      
+
       res.status(200).json({
         message: 'Video deleted successfully',
         deletedItems: result.deletedItems
@@ -323,11 +323,11 @@ export class VideosController {
     try {
       const { id } = req.params;
       const { folderId } = req.body;
-      
+
       await videoService.moveVideo(id, folderId);
-      
+
       logger.info(`Video moved successfully: ${id} to folder ${folderId || 'root'}`);
-      
+
       res.status(200).json({
         message: 'Video moved successfully',
         videoId: id,
@@ -350,52 +350,52 @@ export class VideosController {
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Range');
       res.header('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
       res.header('Access-Control-Allow-Credentials', 'true');
-      
+
       // Override CSP for images to allow cross-origin loading
       res.header('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob: *;");
-      
+
       // Override CORP to allow cross-origin loading
       res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-      
+
       const { id } = req.params;
       const { t } = req.query; // Zeit in Sekunden
-      
+
       const video = await videoService.getVideoById(id);
       if (!video) {
         return res.status(404).json({ error: 'Video not found' });
       }
-      
+
       const timeSeconds = t ? parseFloat(t as string) : 0;
       // Use environment variables or default to Docker paths
       const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const thumbnailsStoragePath = process.env.THUMBNAILS_STORAGE_PATH || '/app/storage/thumbnails';
       const videoPath = path.join(videosStoragePath, video.filename);
-      
+
       // Prüfe ob Video-Datei existiert
       if (!fs.existsSync(videoPath)) {
         return res.status(404).json({ error: 'Video file not found' });
       }
-      
+
       // Generiere Thumbnail mit FFmpeg
       const thumbnailPath = path.join(thumbnailsStoragePath, `${video.id}_${Math.floor(timeSeconds)}.jpg`);
-      
+
       // Erstelle Thumbnail-Verzeichnis falls es nicht existiert
       const thumbnailDir = path.dirname(thumbnailPath);
       if (!fs.existsSync(thumbnailDir)) {
         fs.mkdirSync(thumbnailDir, { recursive: true });
       }
-      
+
       // Prüfe ob Thumbnail bereits existiert
       if (fs.existsSync(thumbnailPath)) {
         return res.sendFile(thumbnailPath);
       }
-      
+
       // Generiere Thumbnail mit FFmpeg
       const ffmpegCommand = `ffmpeg -i "${videoPath}" -ss ${timeSeconds} -vframes 1 -q:v 2 "${thumbnailPath}"`;
-      
+
       try {
         await execAsync(ffmpegCommand);
-        
+
         // Prüfe ob Thumbnail erfolgreich erstellt wurde
         if (fs.existsSync(thumbnailPath)) {
           logger.info(`✅ Generated thumbnail for video ${id} at ${timeSeconds}s`);
@@ -407,7 +407,7 @@ export class VideosController {
         logger.error(`❌ FFmpeg error for video ${id}:`, ffmpegError);
         return res.status(500).json({ error: 'Failed to generate thumbnail' });
       }
-      
+
     } catch (error: unknown) {
       logger.error(`Error generating thumbnail for video ${req.params.id}:`, error);
       res.status(500).json({
@@ -425,55 +425,55 @@ export class VideosController {
       res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Range');
       res.header('Access-Control-Expose-Headers', 'Content-Range, Accept-Ranges, Content-Length');
       res.header('Access-Control-Allow-Credentials', 'true');
-      
+
       // Override CSP for video streaming
       res.header('Content-Security-Policy', "default-src 'self'; media-src 'self' data: blob: *;");
-      
+
       // Override CORP to allow cross-origin loading
       res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-      
+
       const { id } = req.params;
       const { startTime, endTime, trimStart, trimEnd } = req.query;
-      
+
       if (!startTime || !endTime) {
         return res.status(400).json({ error: 'startTime and endTime are required' });
       }
-      
+
       // Calculate actual start and end times with trim support
       const baseStart = parseFloat(startTime as string);
       const baseEnd = parseFloat(endTime as string);
       const trimStartValue = trimStart ? parseFloat(trimStart as string) : 0;
       const trimEndValue = trimEnd ? parseFloat(trimEnd as string) : 0;
-      
+
       const actualStart = baseStart + trimStartValue;
       const actualEnd = baseEnd - trimEndValue;
       const duration = actualEnd - actualStart;
-      
+
       logger.info(`🎬 Scene timing: base=${baseStart}s-${baseEnd}s, trim=${trimStartValue}s-${trimEndValue}s, actual=${actualStart}s-${actualEnd}s`);
-      
+
       const video = await videoService.getVideoById(id);
       if (!video) {
         return res.status(404).json({ error: 'Video not found' });
       }
-      
+
       // Use environment variables or default to Docker paths
       const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const scenesStoragePath = process.env.SCENES_STORAGE_PATH || '/app/storage/scenes';
       const videoPath = path.join(videosStoragePath, video.filename);
       const sceneVideoPath = path.join(scenesStoragePath, `${video.id}_${startTime}_${endTime}_${trimStartValue}_${trimEndValue}.mp4`);
-      
+
       // Check if original video exists, if not try to find similar video
       let actualVideoPath = videoPath;
       if (!fs.existsSync(videoPath)) {
         logger.warn(`⚠️ Original video not found: ${videoPath}`);
-        
+
         // Try to find a video with similar name
         const videoDir = videosStoragePath;
         const files = fs.readdirSync(videoDir);
-        const similarVideo = files.find(file => 
+        const similarVideo = files.find(file =>
           file.includes('UDG_Elevator_Pitch_Bosch') && file.endsWith('.mp4')
         );
-        
+
         if (similarVideo) {
           actualVideoPath = `${videoDir}${similarVideo}`;
           logger.info(`🔄 Using similar video: ${actualVideoPath}`);
@@ -482,13 +482,13 @@ export class VideosController {
           return res.status(404).json({ error: 'Original video file not found' });
         }
       }
-      
+
       // Ensure scene directory exists
       const sceneDir = path.dirname(sceneVideoPath);
       if (!fs.existsSync(sceneDir)) {
         fs.mkdirSync(sceneDir, { recursive: true });
       }
-      
+
       // Generate scene video if it doesn't exist (ON-DEMAND)
       if (!fs.existsSync(sceneVideoPath)) {
         logger.info(`🎬 Generating scene video on-demand from: ${actualVideoPath}`);
@@ -496,11 +496,11 @@ export class VideosController {
         logger.info(`🎬 Output path: ${sceneVideoPath}`);
         const command = `ffmpeg -y -i "${actualVideoPath}" -ss ${actualStart} -t ${duration} -c copy "${sceneVideoPath}"`;
         logger.info(`🎬 FFmpeg command: ${command}`);
-        
+
         try {
           await execAsync(command);
           logger.info(`✅ Scene video generated on-demand: ${sceneVideoPath}`);
-          
+
           // Verify the file was created and get its size
           if (fs.existsSync(sceneVideoPath)) {
             const stats = fs.statSync(sceneVideoPath);
@@ -515,32 +515,32 @@ export class VideosController {
       } else {
         logger.info(`📁 Serving existing scene video: ${sceneVideoPath}`);
       }
-      
+
       res.sendFile(sceneVideoPath);
     } catch (error: unknown) {
       logger.error('Scene video error:', error);
       res.status(500).json({ error: 'Failed to generate scene video' });
     }
   }
-  
+
   async deleteSceneVideo(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { startTime, endTime } = req.query;
-      
+
       if (!startTime || !endTime) {
         return res.status(400).json({ error: 'startTime and endTime are required' });
       }
-      
+
       const video = await videoService.getVideoById(id);
       if (!video) {
         return res.status(404).json({ error: 'Video not found' });
       }
-      
+
       // Use environment variable or default to Docker path
       const scenesStoragePath = process.env.SCENES_STORAGE_PATH || '/app/storage/scenes';
       const sceneVideoPath = path.join(scenesStoragePath, `${video.id}_${startTime}_${endTime}.mp4`);
-      
+
       // Delete scene video if it exists
       if (fs.existsSync(sceneVideoPath)) {
         fs.unlinkSync(sceneVideoPath);
@@ -555,25 +555,42 @@ export class VideosController {
       res.status(500).json({ error: 'Failed to delete scene video' });
     }
   }
-  
+
   async updateVideoStatus(videoId: string, status: string) {
     try {
       logger.info(`Updating video ${videoId} status to ${status}`);
-      
+
       // Update video status in database
       const updatedVideo = await videoService.updateVideoStatus(videoId, status);
-      
+
       if (!updatedVideo) {
         logger.warning(`Video ${videoId} not found for status update`);
         return null;
       }
-      
+
       logger.info(`Video ${videoId} status updated to ${status}`);
       return updatedVideo;
-      
+
     } catch (error) {
       logger.error(`Error updating video ${videoId} status:`, error);
       throw error;
+    }
+  }
+
+  async updateVideo(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { originalName, description } = req.body;
+
+      const updatedVideo = await videoService.updateVideo(id, { originalName, description });
+
+      res.json(updatedVideo);
+    } catch (error) {
+      logger.error(`Error updating video ${req.params.id}:`, error);
+      res.status(500).json({
+        error: 'Update failed',
+        message: (error as Error).message
+      });
     }
   }
 }

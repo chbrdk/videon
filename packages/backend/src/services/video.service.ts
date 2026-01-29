@@ -184,7 +184,7 @@ export class VideoService {
     // Construct the full file path - use environment variable or default to /app/storage/videos (Docker path)
     const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
     const filePath = path.join(videosStoragePath, video.filename);
-    
+
     return {
       id: video.id,
       filename: video.filename,
@@ -215,13 +215,13 @@ export class VideoService {
 
   async deleteVideo(videoId: string): Promise<{ success: boolean; deletedItems: any }> {
     try {
-      const video = await prisma.video.findUnique({ 
+      const video = await prisma.video.findUnique({
         where: { id: videoId },
         include: { scenes: true, transcriptions: true, analysisLogs: true }
       });
-      
+
       if (!video) throw new Error('Video not found');
-      
+
       const deletedItems = {
         videoFile: false,
         keyframes: 0,
@@ -229,7 +229,7 @@ export class VideoService {
         transcriptions: video.transcriptions.length,
         analysisLogs: video.analysisLogs.length
       };
-      
+
       // 1. Delete video file - use VIDEOS_STORAGE_PATH environment variable
       const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const videoPath = path.join(videosStoragePath, video.filename);
@@ -241,7 +241,7 @@ export class VideoService {
       } catch (error) {
         logger.warn(`Failed to delete video file: ${(error as Error).message}`);
       }
-      
+
       // 2. Delete keyframes/thumbnails
       for (const scene of video.scenes) {
         if (scene.keyframePath) {
@@ -255,13 +255,13 @@ export class VideoService {
           }
         }
       }
-      
+
       // 3. Delete database entries (Prisma cascade deletes scenes, transcriptions, analysisLogs)
       await prisma.video.delete({ where: { id: videoId } });
-      
+
       logger.info(`Video deleted successfully: ${videoId}`, deletedItems);
       return { success: true, deletedItems };
-      
+
     } catch (error) {
       logger.error(`Error deleting video ${videoId}:`, error);
       throw new Error(`Failed to delete video: ${(error as Error).message}`);
@@ -271,19 +271,39 @@ export class VideoService {
   async updateVideoStatus(videoId: string, status: string) {
     try {
       logger.info(`Updating video ${videoId} status to ${status}`);
-      
+
       const updatedVideo = await prisma.video.update({
         where: { id: videoId },
         data: { status: status as any },
         include: { folder: true }
       });
-      
+
       logger.info(`Video ${videoId} status updated to ${status}`);
       return this.mapVideoToResponse(updatedVideo);
-      
+
     } catch (error) {
       logger.error(`Error updating video ${videoId} status:`, error);
       throw new Error(`Failed to update video status: ${(error as Error).message}`);
+    }
+  }
+
+  async updateVideo(videoId: string, data: { originalName?: string; description?: string }) {
+    try {
+      logger.info(`Updating video ${videoId}`, data);
+
+      const updatedVideo = await prisma.video.update({
+        where: { id: videoId },
+        data: {
+          originalName: data.originalName,
+          // description: data.description // Assuming description might be added later to schema if not present
+        },
+        include: { folder: true }
+      });
+
+      return this.mapVideoToResponse(updatedVideo);
+    } catch (error) {
+      logger.error(`Error updating video ${videoId}:`, error);
+      throw new Error(`Failed to update video: ${(error as Error).message}`);
     }
   }
 

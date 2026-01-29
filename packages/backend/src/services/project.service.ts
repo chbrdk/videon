@@ -7,7 +7,14 @@ export class ProjectService {
   async createProject(data: { name: string; description?: string }) {
     return await prisma.project.create({ data });
   }
-  
+
+  async updateProject(id: string, data: { name?: string; description?: string }) {
+    return await prisma.project.update({
+      where: { id },
+      data
+    });
+  }
+
   async getProjects() {
     return await prisma.project.findMany({
       include: {
@@ -19,7 +26,7 @@ export class ProjectService {
       orderBy: { updatedAt: 'desc' }
     });
   }
-  
+
   async getProjectById(id: string) {
     return await prisma.project.findUnique({
       where: { id },
@@ -31,7 +38,7 @@ export class ProjectService {
       }
     });
   }
-  
+
   async addSceneToProject(projectId: string, sceneData: {
     videoId: string;
     startTime: number;
@@ -42,7 +49,7 @@ export class ProjectService {
       where: { projectId },
       orderBy: { order: 'desc' }
     });
-    
+
     const scene = await prisma.projectScene.create({
       data: {
         projectId,
@@ -52,25 +59,25 @@ export class ProjectService {
         order: (maxOrder?.order ?? -1) + 1
       }
     });
-    
+
     // Update Project duration
     await this.updateProjectDuration(projectId);
-    
+
     return scene;
   }
-  
+
   async reorderScenes(projectId: string, newOrder: { sceneId: string; order: number }[]) {
     // Get current order BEFORE reordering for undo
     const currentScenes = await prisma.projectScene.findMany({
       where: { projectId },
       orderBy: { order: 'asc' }
     });
-    
+
     const originalOrder = currentScenes.map((scene, index) => ({
       sceneId: scene.id,
       order: index
     }));
-    
+
     // Apply new order
     await prisma.$transaction(
       newOrder.map(item =>
@@ -80,14 +87,14 @@ export class ProjectService {
         })
       )
     );
-    
+
     // Add to history for undo/redo (store original order)
     await this.addToHistory(projectId, 'reorder', {
       originalOrder,
       newOrder
     });
   }
-  
+
   async removeScene(sceneId: string) {
     const scene = await prisma.projectScene.findUnique({
       where: { id: sceneId },
@@ -111,10 +118,10 @@ export class ProjectService {
     await prisma.projectScene.delete({
       where: { id: sceneId }
     });
-    
+
     await this.updateProjectDuration(scene.projectId);
   }
-  
+
   async updateSceneTiming(sceneId: string, updates: {
     startTime?: number;
     endTime?: number;
@@ -145,36 +152,36 @@ export class ProjectService {
       where: { id: sceneId },
       data: updates
     });
-    
+
     await this.updateProjectDuration(scene.projectId);
     return scene;
   }
-  
+
   async updateProjectDuration(projectId: string) {
     const scenes = await prisma.projectScene.findMany({
       where: { projectId }
     });
-    
-    const duration = scenes.reduce((sum, scene) => 
+
+    const duration = scenes.reduce((sum, scene) =>
       sum + (scene.endTime - scene.startTime), 0
     );
-    
+
     await prisma.project.update({
       where: { id: projectId },
       data: { duration }
     });
   }
-  
+
   async deleteProject(id: string) {
     return await prisma.project.delete({ where: { id } });
   }
-  
+
   async getProjectTranscriptionSegments(projectId: string) {
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
         scenes: {
-          include: { 
+          include: {
             video: {
               include: {
                 transcriptions: true
@@ -185,25 +192,25 @@ export class ProjectService {
         }
       }
     });
-    
+
     if (!project) {
       return [];
     }
-    
+
     const allSegments: any[] = [];
     let projectTimeOffset = 0; // Track cumulative time in project timeline
-    
+
     for (const scene of project.scenes) {
       if (scene.video.transcriptions && scene.video.transcriptions.length > 0) {
         const transcription = scene.video.transcriptions[0]; // Take first transcription
         try {
           const segments = JSON.parse(transcription.segments);
-          
+
           // Filter segments that overlap with the scene
-          const sceneSegments = segments.filter((segment: any) => 
+          const sceneSegments = segments.filter((segment: any) =>
             segment.start < scene.endTime && segment.end > scene.startTime
           );
-          
+
           // Adjust segment timing to project timeline
           const adjustedSegments = sceneSegments.map((segment: any) => ({
             ...segment,
@@ -212,17 +219,17 @@ export class ProjectService {
             videoId: scene.videoId,
             sceneId: scene.id
           }));
-          
+
           allSegments.push(...adjustedSegments);
         } catch (error) {
           logger.error('Failed to parse transcription segments:', error);
         }
       }
-      
+
       // Update project time offset for next scene
       projectTimeOffset += (scene.endTime - scene.startTime);
     }
-    
+
     return allSegments;
   }
 
@@ -339,7 +346,7 @@ export class ProjectService {
   async revertSceneReorder(projectId: string, data: any) {
     // Get the original order from the history data
     const originalOrder = data.originalOrder;
-    
+
     // Apply the original order (reverse the reorder)
     await prisma.$transaction(
       originalOrder.map((item: any) =>
@@ -350,7 +357,7 @@ export class ProjectService {
       )
     );
   }
-  
+
   async addToHistory(projectId: string, action: string, data: any) {
     return await prisma.projectHistory.create({
       data: {

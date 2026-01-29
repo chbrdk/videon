@@ -21,6 +21,7 @@ router.put('/scenes/:sceneId/timing', (req, res) => projectController.updateScen
 router.delete('/scenes/:sceneId', (req, res) => projectController.removeScene(req, res));
 router.delete('/:id/scenes/:sceneId', (req, res) => projectController.removeScene(req, res));
 router.delete('/:id', (req, res) => projectController.deleteProject(req, res));
+router.patch('/:id', validateProjectId, (req: Request, res: Response) => projectController.updateProject(req, res));
 
 // New editing APIs
 router.post('/scenes/:sceneId/split', (req, res) => projectController.splitScene(req, res));
@@ -39,11 +40,11 @@ router.get('/:id/export/premiere', async (req: any, res: any) => {
 
     const xmlContent = premiereExportService.generateProjectPremiereXML(projectData);
     const zipBuffer = await premiereExportService.createPremiereZip(projectData, xmlContent);
-    
+
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="premiere_project_export_${id}.zip"`);
     res.setHeader('Content-Length', zipBuffer.length);
-    
+
     console.log('✅ Premiere project export completed');
     res.send(zipBuffer);
   } catch (error) {
@@ -64,10 +65,10 @@ router.get('/:id/export/premiere/xml', async (req: any, res: any) => {
     }
 
     const xmlContent = premiereExportService.generateProjectPremiereXML(projectData);
-    
+
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Content-Disposition', `attachment; filename="premiere_project_export_${id}.xml"`);
-    
+
     console.log('✅ XML project export completed');
     res.send(xmlContent);
   } catch (error) {
@@ -88,10 +89,10 @@ router.get('/:id/export/srt', async (req: any, res: any) => {
     }
 
     const srtContent = premiereExportService.generateSRT(projectData.transcriptions);
-    
+
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', `attachment; filename="project_subtitles_${id}.srt"`);
-    
+
     console.log('✅ SRT project export completed');
     res.send(srtContent);
   } catch (error) {
