@@ -13,6 +13,7 @@ import axios from 'axios';
 import { PremiereExportService } from '../services/premiere-export.service';
 import logger from '../utils/logger';
 import { t } from '../utils/i18n';
+import { isAuthenticated } from '../middleware/auth.middleware';
 
 const router: any = Router();
 const videosController = new VideosController();
@@ -20,6 +21,9 @@ const visionService = new VisionService();
 const premiereExportService = new PremiereExportService();
 
 console.log('✅ Loading Videos Routes...');
+
+// Protect all routes
+router.use(isAuthenticated);
 
 // Trigger Qwen VL semantic analysis for video - MOVED TO TOP
 router.post('/:id/qwenVL/analyze', async (req: any, res: any) => {

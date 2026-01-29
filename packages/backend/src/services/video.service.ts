@@ -7,9 +7,20 @@ import fs from 'fs';
 const prisma = new PrismaClient();
 
 export class VideoService {
-  async getAllVideos(): Promise<VideoResponse[]> {
+  async getAllVideos(userId?: string, isAdmin: boolean = false): Promise<VideoResponse[]> {
     try {
+      const where: any = {};
+      if (!isAdmin && userId) {
+        where.userId = userId;
+      } else if (!isAdmin && !userId) {
+        // Fallback for no user context? Return nothing or public?
+        // Returning only items with null userId?
+        // Strategy: if no user, return nothing
+        return [];
+      }
+
       const videos = await prisma.video.findMany({
+        where,
         include: { folder: true },
         orderBy: { uploadedAt: 'desc' },
       });
@@ -21,10 +32,17 @@ export class VideoService {
     }
   }
 
-  async getVideosByFolder(folderId: string | null): Promise<VideoResponse[]> {
+  async getVideosByFolder(folderId: string | null, userId?: string, isAdmin: boolean = false): Promise<VideoResponse[]> {
     try {
+      const where: any = { folderId: folderId || null };
+      if (!isAdmin && userId) {
+        where.userId = userId;
+      } else if (!isAdmin && !userId) {
+        return [];
+      }
+
       const videos = await prisma.video.findMany({
-        where: { folderId: folderId || null },
+        where,
         include: { folder: true },
         orderBy: { uploadedAt: 'desc' }
       });
@@ -36,7 +54,7 @@ export class VideoService {
     }
   }
 
-  async moveVideo(videoId: string, folderId: string | null): Promise<void> {
+  async moveVideo(videoId: string, folderId: string | null, userId?: string, isAdmin: boolean = false): Promise<void> {
     try {
       const video = await prisma.video.findUnique({
         where: { id: videoId },
@@ -46,6 +64,12 @@ export class VideoService {
       if (!video) {
         throw new Error('Video not found');
       }
+
+      // Permissions check
+      if (!isAdmin && userId && video.userId !== userId) {
+        throw new Error('Unauthorized');
+      }
+
 
       // Get target folder path - use VIDEOS_STORAGE_PATH environment variable
       const defaultVideosPath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
@@ -57,6 +81,11 @@ export class VideoService {
         if (!targetFolder) {
           throw new Error('Target folder not found');
         }
+        // Folder permission check
+        if (!isAdmin && userId && targetFolder.userId !== userId) {
+          throw new Error('Target folder Unauthorized');
+        }
+
         targetPath = targetFolder.path;
       }
 
@@ -88,7 +117,7 @@ export class VideoService {
     }
   }
 
-  async getVideoById(id: string): Promise<VideoWithScenesResponse | null> {
+  async getVideoById(id: string, userId?: string, isAdmin: boolean = false): Promise<VideoWithScenesResponse | null> {
     try {
       const video = await prisma.video.findUnique({
         where: { id },
@@ -106,6 +135,11 @@ export class VideoService {
         return null;
       }
 
+      // Check permissions
+      if (!isAdmin && userId && video.userId !== userId) {
+        return null; // Or throw error
+      }
+
       return {
         ...this.mapVideoToResponse(video),
         scenes: video.scenes.map(this.mapSceneToResponse),
@@ -117,8 +151,18 @@ export class VideoService {
     }
   }
 
-  async getVideoScenes(videoId: string): Promise<SceneResponse[]> {
+  async getVideoScenes(videoId: string, userId?: string, isAdmin: boolean = false): Promise<SceneResponse[]> {
     try {
+      // First check video access
+      // Ideally verify video existence and access first
+      const video = await prisma.video.findUnique({ where: { id: videoId } });
+      if (video) {
+        if (!isAdmin && userId && video.userId !== userId) {
+          return []; // Unauthorized
+        }
+      }
+
+
       const scenes = await prisma.scene.findMany({
         where: { videoId },
         orderBy: { startTime: 'asc' },
@@ -138,6 +182,7 @@ export class VideoService {
     mimeType: string;
     duration?: number;
     folderId?: string | null;
+    userId?: string; // Add userId
   }): Promise<VideoResponse> {
     try {
       const video = await prisma.video.create({
@@ -148,7 +193,8 @@ export class VideoService {
           mimeType: videoData.mimeType,
           duration: videoData.duration,
           status: 'UPLOADED',
-          folderId: videoData.folderId || null, // Default to root folder (null)
+          folderId: videoData.folderId || null,
+          userId: videoData.userId // Save userId
         },
       });
 
@@ -213,7 +259,7 @@ export class VideoService {
     };
   }
 
-  async deleteVideo(videoId: string): Promise<{ success: boolean; deletedItems: any }> {
+  async deleteVideo(videoId: string, userId?: string, isAdmin: boolean = false): Promise<{ success: boolean; deletedItems: any }> {
     try {
       const video = await prisma.video.findUnique({
         where: { id: videoId },
@@ -221,6 +267,10 @@ export class VideoService {
       });
 
       if (!video) throw new Error('Video not found');
+
+      if (!isAdmin && userId && video.userId !== userId) {
+        throw new Error('Unauthorized');
+      }
 
       const deletedItems = {
         videoFile: false,
@@ -287,9 +337,16 @@ export class VideoService {
     }
   }
 
-  async updateVideo(videoId: string, data: { originalName?: string; description?: string }) {
+  async updateVideo(videoId: string, data: { originalName?: string; description?: string }, userId?: string, isAdmin: boolean = false) {
     try {
       logger.info(`Updating video ${videoId}`, data);
+
+      const video = await prisma.video.findUnique({ where: { id: videoId } });
+      if (!video) throw new Error('Video not found');
+
+      if (!isAdmin && userId && video.userId !== userId) {
+        throw new Error('Unauthorized');
+      }
 
       const updatedVideo = await prisma.video.update({
         where: { id: videoId },

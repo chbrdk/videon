@@ -186,6 +186,10 @@ if (config.nodeEnv !== 'test') {
       corsOrigins: config.security.corsOrigins,
       unionSettingsEnabled: config.services.union?.enabled || false,
     });
+
+    // Seed Admin User
+    const { seedAdminUser } = require('./utils/seed-admin');
+    seedAdminUser().catch((err: any) => logger.error('Failed to seed admin:', err));
   });
 }
 
