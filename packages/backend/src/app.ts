@@ -16,6 +16,8 @@ import voiceSegmentRoutes from './routes/voice-segment.routes';
 import aiCreatorRoutes from './routes/ai-creator.routes';
 import { globalErrorHandler, notFoundHandler } from './utils/error-handler';
 import { localeMiddleware } from './middleware/locale.middleware';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import config from './config';
 import logger from './utils/logger';
 import { initializeUnionSettings } from './utils/union-init';
