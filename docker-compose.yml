@@ -54,7 +54,7 @@ services:
       - ion-network
       - echon-network
     restart: unless-stopped
-    command: sh -c "cd /app && cp prisma/schema.postgresql.prisma prisma/schema.prisma 2>/dev/null || true && node dist/app.js"
+    command: sh -c "cd /app && cp prisma/schema.postgresql.prisma prisma/schema.prisma 2>/dev/null || true && npx prisma db push --accept-data-loss && node dist/app.js"
 
   # Qwen VL Service runs LOCALLY (not in Docker)
   # MLX requires Apple Silicon and cannot run in Docker containers.
@@ -136,7 +136,7 @@ services:
         condition: service_started
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8002/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -170,7 +170,7 @@ services:
         condition: service_started
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8003/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -200,7 +200,7 @@ services:
       - echon-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5679/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5679/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -238,7 +238,7 @@ services:
 
 volumes:
   videon_storybook_sveltekit_config:
-  # NOTE: postgres_data and redis_data removed - using STORION/UNION
+    # NOTE: postgres_data and redis_data removed - using STORION/UNION
 
 networks:
   videon-network:
@@ -254,5 +254,3 @@ networks:
   echon-network:
     name: echon-network
     external: true
-
-
