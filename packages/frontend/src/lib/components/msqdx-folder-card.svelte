@@ -1,3 +1,4 @@
+<script>
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { MsqdxGlassCard, MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
@@ -22,6 +23,7 @@
       onContextMenu(e, folder);
     }
   }
+</script>
 
 <MsqdxGlassCard
   hoverable={true}
