@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   const dispatch = createEventDispatcher();
 </script>
@@ -20,17 +21,36 @@
     --border-color: var(--msqdx-color-brand-orange); 
     border-style: dashed !important;
     min-height: 200px;
+    font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
   "
 >
   <div class="flex flex-col items-center justify-center p-8 gap-4 text-center">
     <div
-      class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300"
+      class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300"
+      style="
+        background-color: {MSQDX_COLORS.tints.orange};
+        border: 1px solid {MSQDX_COLORS.brand.orange};
+      "
     >
-      <MaterialSymbol icon="add" fontSize={32} class="text-white/60 group-hover:text-white" />
+      <MaterialSymbol icon="add" fontSize={32} style="color: {MSQDX_COLORS.brand.orange};" />
     </div>
     <div>
-      <h3 class="font-medium text-lg text-white/80 group-hover:text-white mb-1">Add New</h3>
-      <p class="text-sm text-white/40 group-hover:text-white/60">
+      <h3
+        class="font-medium text-lg mb-1"
+        style="
+          color: {MSQDX_COLORS.dark.textPrimary};
+          font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+        "
+      >
+        Add New
+      </h3>
+      <p
+        class="text-sm"
+        style="
+          color: {MSQDX_COLORS.dark.textSecondary};
+          font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
+        "
+      >
         Upload video, create folder or project
       </p>
     </div>
