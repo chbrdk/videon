@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install pnpm
 RUN npm install -g pnpm
+RUN npm install -g prisma@5.22.0
 
 WORKDIR /app
 
@@ -30,7 +31,7 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 # Generate Prisma client before building TypeScript
-RUN pnpm run prisma:generate
+RUN prisma generate
 RUN pnpm run build
 
 # Production stage
@@ -52,6 +53,7 @@ RUN pip3 install --no-cache-dir --break-system-packages scenedetect[opencv]
 
 # Install pnpm
 RUN npm install -g pnpm
+RUN npm install -g prisma@5.22.0
 
 # Copy built application
 COPY --from=build /app/dist ./dist
@@ -66,11 +68,11 @@ COPY --from=base /app/src/services/*.js ./dist/services/
 RUN pnpm install --frozen-lockfile || pnpm install
 
 # Generate Prisma client
-RUN pnpm run prisma:generate
+RUN prisma generate
 
 # Expose port
 EXPOSE 4001
 
 # Start the application
 # Start the application with auto DB push
-CMD ["sh", "-c", "pnpm exec prisma db push --accept-data-loss && node dist/app.js"]
+CMD ["sh", "-c", "prisma db push --accept-data-loss && node dist/app.js"]
