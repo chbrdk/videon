@@ -6,6 +6,8 @@
   export let mode = 'create';
   export let initialName = '';
   export let className = '';
+  export let title = '';
+  export let label = '';
 
   const dispatch = createEventDispatcher();
 
@@ -49,40 +51,36 @@
       handleCancel();
     }
   }
+
+  // Derived values for display
+  $: displayTitle = title || (mode === 'create' ? _('folder.create') : _('folder.rename'));
+  $: displayLabel = label || _('folder.name');
 </script>
 
-<dialog 
-  bind:this={dialogElement}
-  class="folder-dialog {className}"
-  on:close={handleCancel}
->
+<dialog bind:this={dialogElement} class="folder-dialog {className}" on:close={handleCancel}>
   <div class="dialog-content glass-card">
     <h2 class="dialog-title">
-      {mode === 'create' ? _('folder.create') : _('folder.rename')}
+      {displayTitle}
     </h2>
-    
+
     <div class="dialog-body">
-      <label for="folder-name" class="input-label">{_('folder.name')}</label>
+      <label for="folder-name" class="input-label">{displayLabel}</label>
       <input
         id="folder-name"
         bind:this={nameInput}
         bind:value={name}
         on:keydown={handleKeydown}
-        placeholder="{_('folder.namePlaceholder')}"
+        placeholder={_('folder.namePlaceholder')}
         class="name-input"
         maxlength="100"
       />
     </div>
 
     <div class="dialog-actions">
-      <button 
-        class="glass-button secondary"
-        on:click={handleCancel}
-        type="button"
-      >
+      <button class="glass-button secondary" on:click={handleCancel} type="button">
         {_('actions.cancel')}
       </button>
-      <button 
+      <button
         class="glass-button primary"
         on:click={handleSubmit}
         type="submit"
@@ -125,7 +123,7 @@
     font-weight: 600;
     color: rgba(0, 0, 0, 0.9);
   }
-  
+
   html.dark .dialog-title {
     color: rgba(255, 255, 255, 0.9);
   }
@@ -141,7 +139,7 @@
     font-weight: 500;
     color: rgba(0, 0, 0, 0.8);
   }
-  
+
   html.dark .input-label {
     color: rgba(255, 255, 255, 0.8);
   }
@@ -159,7 +157,7 @@
     transition: all 0.2s ease;
     box-sizing: border-box;
   }
-  
+
   html.dark .name-input {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -169,7 +167,7 @@
   .name-input::placeholder {
     color: rgba(0, 0, 0, 0.5);
   }
-  
+
   html.dark .name-input::placeholder {
     color: rgba(255, 255, 255, 0.5);
   }
@@ -180,7 +178,7 @@
     border-color: rgba(0, 0, 0, 0.2);
     box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
   }
-  
+
   html.dark .name-input:focus {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.3);
@@ -206,7 +204,7 @@
     transition: all 0.2s ease;
     min-width: 100px;
   }
-  
+
   html.dark .glass-button {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -217,7 +215,7 @@
     background: rgba(0, 0, 0, 0.08);
     border-color: rgba(0, 0, 0, 0.2);
   }
-  
+
   html.dark .glass-button:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.3);
@@ -227,7 +225,7 @@
     outline: 2px solid rgba(0, 0, 0, 0.3);
     outline-offset: 2px;
   }
-  
+
   html.dark .glass-button:focus {
     outline: 2px solid rgba(255, 255, 255, 0.3);
   }
@@ -256,7 +254,7 @@
     background: rgba(0, 0, 0, 0.05);
     border-color: rgba(0, 0, 0, 0.1);
   }
-  
+
   html.dark .glass-button.secondary {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);

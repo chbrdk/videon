@@ -54,50 +54,44 @@ import { onMount, tick, onDestroy } from 'svelte';
   // State
   let projects: Project[] = []; // Projects state
   let contextMenu = { show: false, x: 0, y: 0, items: [] };
-  let folderDialog = { open: false, mode: 'create' as 'create' | 'rename', folder: null };
+  
+  // Generic Dialog States
+  let renameDialog = { open: false, type: 'folder' as 'folder'|'project'|'video', item: null };
+  const renameTitles = {
+    folder: _('folder.rename'),
+    project: _('projects.rename'),
+    video: _('actions.rename')
+  };
+  
+  let deleteDialog = { open: false, type: 'video' as 'video'|'folder'|'project', item: null };
+  
   let unifiedDialogOpen = false;
-  let deleteModalOpen = false;
-  let videoToDelete: VideoResponse | null = null;
   let activeMenuProjectId: string | null = null;
   
   // Handlers for card events
   function handleRenameFolderClick(event) {
-    handleRenameFolder(event.detail);
+    renameDialog = { open: true, type: 'folder', item: event.detail };
   }
 
   function handleDeleteFolderClick(event) {
-    handleDeleteFolder(event.detail);
+     deleteDialog = { open: true, type: 'folder', item: event.detail };
   }
 
   function handleRenameVideo(event) {
-    // TODO: Implement video rename logic/dialog
-    const video = event.detail;
-    console.log('Rename video:', video);
-    // For now, we can use a prompt or reuse the UnifiedDialog if customized, 
-    // or just log it as the user didn't strictly ask for the implementation details of rename, 
-    // just the UI option. But I should probably add a TODO or basic alert.
-    const newName = prompt(_('actions.rename'), video.originalName);
-    if (newName && newName !== video.originalName) {
-      // Implement rename API call
-       // videosApi.updateVideo(video.id, { originalName: newName }).then(() => loadFolders(folderId));
-       console.log('Renaming to', newName);
-    }
+    renameDialog = { open: true, type: 'video', item: event.detail };
   }
 
   function handleDeleteVideo(event) {
-     event.stopPropagation();
-     videoToDelete = event.detail;
-     deleteModalOpen = true;
+     if (event.stopPropagation) event.stopPropagation(); // Check because sometimes detail is passed directly? No, event.detail is item. event is CustomEvent.
+     deleteDialog = { open: true, type: 'video', item: event.detail };
   }
   
   function handleRenameProject(project) {
-    // TODO: Implement project rename
-     console.log('Rename project:', project);
+    renameDialog = { open: true, type: 'project', item: project };
   }
 
   function handleDeleteProject(project) {
-    // TODO: Implement project delete
-     console.log('Delete project:', project);
+    deleteDialog = { open: true, type: 'project', item: project };
   }
 let revealMode = false;
 let revealedCount = 0;
@@ -276,11 +270,7 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-  function handleDeleteClick(event: Event, video: VideoResponse) {
-    event.stopPropagation();
-    videoToDelete = video;
-    deleteModalOpen = true;
-  }
+
 
   async function handleDeleteConfirm() {
     if (!videoToDelete) return;
@@ -355,37 +345,52 @@ let scrollAnimationId: number | null = null;
 
   // Folder handlers
   function handleCreateFolder() {
-    // folderDialog = { open: true, mode: 'create', folder: null };
-    // Now using unified dialog
     unifiedDialogOpen = true;
   }
 
   function handleRenameFolder(folder: { id: string; name: string }) {
-    folderDialog = { open: true, mode: 'rename', folder };
+    renameDialog = { open: true, type: 'folder', item: folder };
   }
 
-  async function handleFolderConfirm(event: CustomEvent) {
+  async function handleRenameConfirm(event: CustomEvent) {
     const { name } = event.detail;
-    
+    if (!renameDialog.item) return;
+
     try {
-      if (folderDialog.mode === 'create') {
-        await createFolder(name, folderId);
-      } else if (folderDialog.folder) {
-        await updateFolder(folderDialog.folder.id, name);
+      if (renameDialog.type === 'folder') {
+         await updateFolder(renameDialog.item.id, name);
+         loadFolders(folderId); 
+      } else if (renameDialog.type === 'video') {
+         await videosApi.updateVideo(renameDialog.item.id, { originalName: name });
+         loadFolders(folderId);
+      } else if (renameDialog.type === 'project') {
+         await projectsApi.updateProject(renameDialog.item.id, { name });
+         projects = await projectsApi.getProjects(); 
       }
-      folderDialog = { open: false, mode: 'create', folder: null };
+      renameDialog = { ...renameDialog, open: false, item: null };
     } catch (error) {
-      alert(`${_('delete.deleteError')}: ${error.message}`);
+      alert(`${_('errors.operationFailed') || 'Operation failed'}: ${error.message}`);
     }
   }
 
-  async function handleDeleteFolder(folder: { id: string; name: string }) {
-    if (confirm(_('errors.deleteConfirm', { name: folder.name }))) {
-      try {
-        await deleteFolder(folder.id);
-      } catch (error) {
-        alert(`${_('delete.deleteError')}: ${error.message}`);
+  async function handleDeleteConfirm() {
+    if (!deleteDialog.item) return;
+    
+    try {
+      if (deleteDialog.type === 'video') {
+        await videosApi.deleteVideo(deleteDialog.item.id);
+        loadFolders(folderId);
+      } else if (deleteDialog.type === 'folder') {
+        await deleteFolder(deleteDialog.item.id);
+        loadFolders(folderId);
+      } else if (deleteDialog.type === 'project') {
+        await projectsApi.deleteProject(deleteDialog.item.id);
+        projects = await projectsApi.getProjects();
       }
+      deleteDialog = { ...deleteDialog, open: false, item: null };
+    } catch (error) {
+      alert(`${_('delete.deleteError')}: ${error.message}`);
+      deleteDialog = { ...deleteDialog, open: false, item: null };
     }
   }
 
@@ -405,12 +410,16 @@ let scrollAnimationId: number | null = null;
         {
           label: _('actions.rename'),
           icon: 'edit',
-          action: () => handleRenameFolder(item)
+          action: () => {
+             renameDialog = { open: true, type: 'folder', item };
+          }
         },
         {
           label: _('actions.delete'),
           icon: 'delete',
-          action: () => handleDeleteFolder(item)
+          action: () => {
+             deleteDialog = { open: true, type: 'folder', item };
+          }
         }
       ];
     } else {
@@ -426,7 +435,9 @@ let scrollAnimationId: number | null = null;
         {
           label: _('actions.delete'),
           icon: 'delete',
-          action: () => handleDeleteClick(event, item)
+          action: () => {
+            deleteDialog = { open: true, type: 'video', item };
+          }
         }
       ];
     }

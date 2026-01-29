@@ -57,7 +57,7 @@ export interface ApiError {
 class VideosApi {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ class VideosApi {
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      
+
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable && onProgress) {
           const progress = (e.loaded / e.total) * 100;
@@ -94,23 +94,23 @@ class VideosApi {
         }
       });
 
-          xhr.addEventListener('load', () => {
-            if (xhr.status === 200 || xhr.status === 201) {
-              try {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-              } catch (error) {
-                reject(new Error('Invalid response format'));
-              }
-            } else {
-              try {
-                const error = JSON.parse(xhr.responseText);
-                reject(new Error(error.message || `Upload failed with status ${xhr.status}`));
-              } catch {
-                reject(new Error(`Upload failed with status ${xhr.status}`));
-              }
-            }
-          });
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200 || xhr.status === 201) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch (error) {
+            reject(new Error('Invalid response format'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || `Upload failed with status ${xhr.status}`));
+          } catch {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        }
+      });
 
       xhr.addEventListener('error', () => {
         reject(new Error('Upload failed'));
@@ -144,6 +144,13 @@ class VideosApi {
 
   async getHealth(): Promise<any> {
     return this.request('/health');
+  }
+
+  async updateVideo(id: string, data: { originalName?: string; description?: string }): Promise<Video> {
+    return this.request<Video>(`/videos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
   }
 
   async deleteVideo(videoId: string): Promise<{ message: string; deletedItems: any }> {
@@ -200,7 +207,7 @@ class VideosApi {
   getSceneVideoUrl(videoId: string, startTime: number, endTime: number, trimStart: number = 0, trimEnd: number = 0): string {
     return `${API_BASE_URL}/videos/${videoId}/scene-video?startTime=${startTime}&endTime=${endTime}&trimStart=${trimStart}&trimEnd=${trimEnd}`;
   }
-  
+
   async deleteSceneVideo(videoId: string, startTime: number, endTime: number): Promise<void> {
     const response = await fetch(
       `${API_BASE_URL}/videos/${videoId}/scene-video?startTime=${startTime}&endTime=${endTime}`,
