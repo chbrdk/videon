@@ -51,6 +51,8 @@ export class FolderController {
 
   async createFolder(req: Request, res: Response) {
     try {
+      const { name } = req.body;
+      const { parentId } = req.query;
       const user = (req as any).user;
       const uploaderId = user?.id; // Securely get ID from session
 
