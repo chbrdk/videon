@@ -15,13 +15,8 @@ function getTranslations(locale: Locale) {
   return locale === 'en' ? en : de;
 }
 
-// Translation function - reactive version
-// This function must be used within reactive context (templates or $: blocks)
-export function _(key: string, values?: Record<string, string | number>): string {
-  const currentLocaleValue = get(currentLocale);
-  const translations = getTranslations(currentLocaleValue);
-
-  // Navigate through nested object keys
+// Internal helper to avoid code duplication
+function translate(translations: any, key: string, values?: Record<string, string | number>): string {
   const keys = key.split('.');
   let translation: any = translations;
 
@@ -29,7 +24,6 @@ export function _(key: string, values?: Record<string, string | number>): string
     if (translation && typeof translation === 'object' && k in translation) {
       translation = translation[k];
     } else {
-      // Fallback to key if translation not found
       return key;
     }
   }
@@ -38,7 +32,6 @@ export function _(key: string, values?: Record<string, string | number>): string
     return key;
   }
 
-  // Replace placeholders with values
   if (values) {
     return translation.replace(/\{(\w+)\}/g, (match, placeholder) => {
       return values[placeholder]?.toString() || match;
@@ -48,10 +41,24 @@ export function _(key: string, values?: Record<string, string | number>): string
   return translation;
 }
 
+// Translation function - imperative version (non-reactive unless called in reactive context)
+export function _(key: string, values?: Record<string, string | number>): string {
+  const currentLocaleValue = get(currentLocale);
+  const translations = getTranslations(currentLocaleValue);
+  return translate(translations, key, values);
+}
+
 // Create a derived store for translations - this is reactive!
 export const translations: Readable<typeof de> = derived(currentLocale, ($currentLocale) =>
   getTranslations($currentLocale)
 );
+
+// Translation store - reactive version
+export const t = derived(translations, ($translations) => {
+  return (key: string, values?: Record<string, string | number>): string => {
+    return translate($translations, key, values);
+  };
+});
 
 // Initialize locale from localStorage and subscribe to changes
 export function initI18n() {

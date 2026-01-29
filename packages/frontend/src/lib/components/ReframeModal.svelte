@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { _ } from '$lib/i18n';
+  import { t } from '$lib/i18n';
   import type { ReframeOptions } from '../api/saliency';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -19,10 +19,10 @@
   let smoothingFactor = 0.3;
 
   $: presets = [
-    { label: $_('reframe.presets.vertical'), value: '9:16' },
-    { label: $_('reframe.presets.horizontal'), value: '16:9' },
-    { label: $_('reframe.presets.square'), value: '1:1' },
-    { label: $_('reframe.presets.custom'), value: 'custom' },
+    { label: $t('reframe.presets.vertical'), value: '9:16' },
+    { label: $t('reframe.presets.horizontal'), value: '16:9' },
+    { label: $t('reframe.presets.square'), value: '1:1' },
+    { label: $t('reframe.presets.custom'), value: 'custom' },
   ];
 
   function handleReframe() {
@@ -33,7 +33,7 @@
 
     if (aspectRatio === 'custom') {
       if (!customWidth || !customHeight) {
-        alert($_('reframe.alertCustom'));
+        alert($t('reframe.alertCustom'));
         return;
       }
       options.customWidth = parseInt(customWidth);
@@ -48,10 +48,10 @@
   }
 
   function formatSmoothingValue(value: number): string {
-    if (value === 0) return $_('reframe.noSmoothing');
-    if (value <= 0.3) return $_('reframe.lightSmoothing');
-    if (value <= 0.6) return $_('reframe.mediumSmoothing');
-    return $_('reframe.heavySmoothing');
+    if (value === 0) return $t('reframe.noSmoothing');
+    if (value <= 0.3) return $t('reframe.lightSmoothing');
+    if (value <= 0.6) return $t('reframe.mediumSmoothing');
+    return $t('reframe.heavySmoothing');
   }
 </script>
 
@@ -59,7 +59,7 @@
   <div class="modal-overlay" on:click={handleClose}>
     <div class="modal-content glass-card" on:click|stopPropagation>
       <div class="modal-header">
-        <h2>{$_('reframe.title')}</h2>
+        <h2>{$t('reframe.title')}</h2>
         <button class="close-button" on:click={handleClose}>
           <MaterialSymbol icon="close" fontSize={24} />
         </button>
@@ -67,7 +67,7 @@
 
       <div class="modal-body">
         <div class="form-group">
-          <label for="aspect-ratio">{$_('reframe.aspectRatio')}</label>
+          <label for="aspect-ratio">{$t('reframe.aspectRatio')}</label>
           <select id="aspect-ratio" bind:value={aspectRatio}>
             {#each presets as preset}
               <option value={preset.value}>{preset.label}</option>
@@ -77,12 +77,12 @@
 
         {#if aspectRatio === 'custom'}
           <div class="form-group">
-            <label>{$_('reframe.customDimensions')}</label>
+            <label>{$t('reframe.customDimensions')}</label>
             <div class="form-row">
               <input
                 type="number"
                 bind:value={customWidth}
-                placeholder={$_('reframe.width')}
+                placeholder={$t('reframe.width')}
                 min="1"
                 class="custom-input"
               />
@@ -90,17 +90,17 @@
               <input
                 type="number"
                 bind:value={customHeight}
-                placeholder={$_('reframe.height')}
+                placeholder={$t('reframe.height')}
                 min="1"
                 class="custom-input"
               />
             </div>
-            <small class="form-help">{$_('reframe.customHelp')}</small>
+            <small class="form-help">{$t('reframe.customHelp')}</small>
           </div>
         {/if}
 
         <div class="form-group">
-          <label for="smoothing">{$_('reframe.smoothingFactor')} {smoothingFactor}</label>
+          <label for="smoothing">{$t('reframe.smoothingFactor')} {smoothingFactor}</label>
           <input
             id="smoothing"
             type="range"
@@ -118,15 +118,15 @@
             <div class="progress-bar">
               <div class="progress-fill" style="width: {progress}%"></div>
             </div>
-            <p class="progress-text">{$_('reframe.processing')} {Math.round(progress)}%</p>
+            <p class="progress-text">{$t('reframe.processing')} {Math.round(progress)}%</p>
           </div>
         {:else}
           <div class="modal-actions">
             <button on:click={handleClose} class="glass-button secondary">
-              {$_('reframe.cancel')}
+              {$t('reframe.cancel')}
             </button>
             <button on:click={handleReframe} class="glass-button primary">
-              {$_('reframe.start')}
+              {$t('reframe.start')}
             </button>
           </div>
         {/if}
