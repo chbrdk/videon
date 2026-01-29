@@ -20,7 +20,7 @@ export class ProjectService {
     if (!isAdmin && userId) {
       where.OR = [
         { userId },
-        { projectShares: { some: { userId } } }
+        { shares: { some: { userId } } }
       ];
     } else if (!isAdmin && !userId) {
       return [];
