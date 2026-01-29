@@ -64,4 +64,5 @@ RUN npx prisma generate
 EXPOSE 4001
 
 # Start the application
-CMD ["node", "dist/app.js"]
+# Start the application with auto DB push
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/app.js"]
