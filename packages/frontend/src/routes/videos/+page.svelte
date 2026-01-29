@@ -30,9 +30,10 @@ import { onMount, tick, onDestroy } from 'svelte';
     moveVideoToFolder
   } from '$lib/stores/folders.store';
   import { videosApi } from '$lib/api/videos';
-  import { projectsApi, type Project } from '$lib/api/projects'; // Import projectsApi
+  import { projectsApi, type Project } from '$lib/api/projects'; 
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
+  import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
   import MsqdxBreadcrumbs from '$lib/components/msqdx-breadcrumbs.svelte';
   import MsqdxSearchBar from '$lib/components/msqdx-search-bar.svelte';
@@ -636,20 +637,36 @@ let scrollAnimationId: number | null = null;
         <!-- Projects -->
         {#each projects as project (project.id)}
           <div
-             class="glass-card cursor-pointer transition-transform hover:scale-105"
+             class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105"
              on:click={() => goto(`${base}/projects/${project.id}`)}
+             style="
+               --blur: var(--msqdx-glass-blur);
+               --background-color: var(--msqdx-color-dark-paper);
+               --border-color: var(--msqdx-color-dark-border);
+               border-radius: var(--msqdx-radius-xl);
+             "
           >
-             <!-- Reusing Folder Card style but customized for Project or just a custom layout here -->
-             <!-- Ideally we should have a MsqdxProjectCard, but for now I'll inline a similar style or modify MsqdxFolderCard. 
-                  Let's use a simple glass card for now to match the updated look. -->
              <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
-                 <div class="text-purple-400">
-                     <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19,19H5V8H19M19,3H18V1H16V3H8V1H6V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M16.53,11.06L15.47,10L10.59,14.88L8.47,12.76L7.41,13.82L10.59,17L16.53,11.06Z" />
-                     </svg>
+                 <div
+                   class="w-12 h-12 rounded-full flex items-center justify-center"
+                   style="background-color: {MSQDX_COLORS.tints.purple};"
+                 >
+                     <MaterialSymbol icon="movie_edit" fontSize={24} style="color: {MSQDX_COLORS.brand.purple};" />
                  </div>
-                 <h3 class="font-semibold text-gray-900 dark:text-white leading-tight">{project.name}</h3>
-                 <span class="text-xs text-white/50">{project.scenes?.length || 0} Scenes</span>
+                 <h3
+                    class="font-semibold leading-tight"
+                    style="
+                      color: {MSQDX_COLORS.dark.textPrimary};
+                      font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+                    "
+                 >{project.name}</h3>
+                 <span
+                    class="text-xs"
+                    style="
+                      color: {MSQDX_COLORS.dark.textSecondary};
+                      font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
+                    "
+                 >{project.scenes?.length || 0} Scenes</span>
              </div>
           </div>
         {/each}
@@ -729,12 +746,23 @@ let scrollAnimationId: number | null = null;
                     <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
                     </div>
                 {:else if item.type === 'project'}
-                   <div class="text-2xl">📽️</div>
+                   <div class="text-2xl" style="color: {MSQDX_COLORS.brand.purple};">
+                      <MaterialSymbol icon="movie_edit" fontSize={24} />
+                   </div>
                    <div class="flex-1">
-                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
+                     <h3 class="font-semibold" style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};">{item.name}</h3>
                      <div class="flex items-center gap-2">
-                        <span class="text-gray-600 dark:text-white/60">Project</span>
-                        <span class="bg-purple-500/20 text-purple-300 text-xs px-2 py-0.5 rounded-full">{item.scenes?.length || 0} Scenes</span>
+                        <span style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};">Project</span>
+                        <span 
+                          class="text-xs px-2 py-0.5 rounded-full"
+                          style="
+                            background-color: {MSQDX_COLORS.tints.purple}; 
+                            color: {MSQDX_COLORS.brand.purple};
+                            font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
+                          "
+                        >
+                          {item.scenes?.length || 0} Scenes
+                        </span>
                      </div>
                    </div>
                 {:else}
