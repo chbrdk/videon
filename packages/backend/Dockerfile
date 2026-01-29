@@ -25,7 +25,9 @@ COPY prisma ./prisma
 FROM base AS build
 WORKDIR /app
 # Generate Prisma client
-RUN npx prisma generate --schema=./prisma/schema.prisma
+RUN ls -la prisma
+RUN ls -la node_modules/.bin
+RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 # Build TypeScript
 RUN npm run build
 
@@ -60,7 +62,7 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=base /app/src/services/*.js ./dist/services/
 
 # Generate Prisma client for production
-RUN npx prisma generate --schema=./prisma/schema.prisma
+RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 
 # Expose port
 EXPOSE 4001
