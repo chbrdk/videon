@@ -423,22 +423,6 @@ let scrollAnimationId: number | null = null;
     } else {
       contextMenu.items = [
         {
-          label: _('contextMenu.moveToFolder'),
-          icon: 'folder',
-          action: () => {
-            // TODO: Implement folder selection dialog
-            console.log('Move video to folder:', item.originalName);
-          }
-        },
-        {
-          label: _('actions.delete'),
-          icon: 'delete',
-          action: () => {
-            deleteDialog = { open: true, type: 'video', item };
-          }
-        }
-      contextMenu.items = [
-        {
           label: _('actions.share') ?? 'Share',
           icon: 'share',
           action: () => {
