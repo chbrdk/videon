@@ -38,7 +38,10 @@ router.post('/register', async (req, res) => {
 });
 
 // Login Local
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', (req, res, next) => {
+    console.log('➡️ Login route hit:', { email: req.body.email, headers: req.headers });
+    next();
+}, passport.authenticate('local'), (req, res) => {
     const user = req.user as any;
     res.json({ message: 'Logged in successfully', user: { id: user.id, email: user.email, name: user.name, role: user.role } });
 });

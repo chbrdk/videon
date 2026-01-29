@@ -108,12 +108,11 @@ export const globalErrorHandler = (
     });
 
     appError = new AppError(
-      process.env.NODE_ENV === 'production' 
-        ? 'Internal server error' 
-        : error.message,
-      500,
-      false
-    );
+      appError = new AppError(
+        error.message, // DEBUG: Temporarily exposed in prod
+        500,
+        false
+      );
   }
 
   const errorResponse = createErrorResponse(appError, req);
@@ -134,7 +133,7 @@ export const globalErrorHandler = (
 export const notFoundHandler = (req: Request, res: Response) => {
   const error = new NotFoundError('Endpoint', req.path);
   const errorResponse = createErrorResponse(error, req);
-  
+
   logger.warn('Route not found', errorResponse);
   res.status(404).json(errorResponse);
 };
@@ -142,46 +141,46 @@ export const notFoundHandler = (req: Request, res: Response) => {
 // Utility functions for common error scenarios
 export const handleDatabaseError = (error: any, operation: string): AppError => {
   logger.error('Database error', { operation, error: error.message });
-  
+
   if (error.code === 'P2002') {
     return new ConflictError('Resource already exists');
   }
-  
+
   if (error.code === 'P2025') {
     return new NotFoundError('Resource');
   }
-  
+
   return new AppError(`Database operation failed: ${operation}`, 500);
 };
 
 export const handleFileSystemError = (error: any, operation: string): AppError => {
   logger.error('File system error', { operation, error: error.message });
-  
+
   if (error.code === 'ENOENT') {
     return new NotFoundError('File');
   }
-  
+
   if (error.code === 'EACCES') {
     return new ForbiddenError('Insufficient permissions to access file');
   }
-  
+
   return new AppError(`File operation failed: ${operation}`, 500);
 };
 
 export const handleExternalServiceError = (error: any, service: string): AppError => {
   logger.error('External service error', { service, error: error.message });
-  
+
   if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
     return new ServiceUnavailableError(service);
   }
-  
+
   if (error.response?.status === 404) {
     return new NotFoundError(`${service} resource`);
   }
-  
+
   if (error.response?.status === 429) {
     return new RateLimitError(`${service} rate limit exceeded`);
   }
-  
+
   return new AppError(`${service} service error`, 502);
 };
