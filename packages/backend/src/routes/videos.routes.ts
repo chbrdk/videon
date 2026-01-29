@@ -135,7 +135,11 @@ router.post('/:id/qwenVL/analyze', async (req: any, res: any) => {
     if (!isAvailable) {
       return res.status(503).json({
         error: 'Qwen VL Service not available',
-        message: 'Qwen VL Service is not running or not reachable'
+        message: 'Qwen VL Service is not running or not reachable',
+        debug: {
+          url: qwenVLService.getServiceUrl(),
+          provider: qwenVLService.provider
+        }
       });
     }
 

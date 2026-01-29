@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 class QwenVLService {
   private qwenVLServiceUrl: string;
   private storagePath: string;
-  private provider: string;
+  public readonly provider: string;
   private modelName: string;
 
   constructor() {
