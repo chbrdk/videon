@@ -4,6 +4,7 @@
   import { theme } from '$lib/stores/theme.store';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
+  import { userStore } from '$lib/stores/user.store';
   import { api } from '$lib/config/environment';
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
@@ -57,11 +58,14 @@
     return currentPath?.startsWith(fullPath) ?? false;
   }
 
-  const navItems = [
+  let navItems = $derived([
     { label: 'Videos', path: '/videos', icon: 'video_file' },
     { label: 'Suche', path: '/search', icon: 'search' },
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
-  ];
+    ...($userStore?.role === 'ADMIN'
+      ? [{ label: 'Users', path: '/admin/users', icon: 'group' }]
+      : []),
+  ]);
 
   let isExpanded = $derived(mounted && isMobile ? open : mounted ? expanded : false);
   let sidebarWidth = $derived(

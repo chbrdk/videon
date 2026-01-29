@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import { loadVideos } from '$lib/stores/videos.store';
   import { page } from '$app/stores';
+  import { userStore } from '$lib/stores/user.store';
   import { theme } from '$lib/stores/theme.store';
   import { currentLocale, _, initI18n } from '$lib/i18n';
   import { browser } from '$app/environment';
@@ -29,6 +30,9 @@
       const res = await fetch(`${api.baseUrl}/auth/me`);
       const authData = await res.json();
       isAuthenticated = authData.isAuthenticated;
+      if (isAuthenticated && authData.user) {
+        userStore.set(authData.user);
+      }
 
       if (!isAuthenticated && !isPublicRoute) {
         window.location.href = '/login';
