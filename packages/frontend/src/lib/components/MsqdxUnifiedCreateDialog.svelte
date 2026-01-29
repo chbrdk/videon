@@ -133,7 +133,7 @@
 
 {#if open}
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-md"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
     on:click|self={close}
   >
@@ -141,9 +141,9 @@
       class="w-full max-w-2xl relative"
       transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}
     >
-      <MsqdxGlassCard variant="default" borderRadiusVariant="2xl" className="overflow-hidden">
+      <MsqdxGlassCard variant="default" borderRadiusVariant="xxl" className="overflow-hidden">
         <!-- Header -->
-        <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+        <div class="px-5 py-3 border-b border-white/5 flex items-center justify-between rounded-xl">
           <div class="flex items-center gap-3">
             {#if mode !== 'menu'}
               <button
