@@ -109,11 +109,10 @@ export const globalErrorHandler = (
     });
 
     appError = new AppError(
-      appError = new AppError(
-        error.message, // DEBUG: Temporarily exposed in prod
-        500,
-        false
-      );
+      error.message, // DEBUG: Temporarily exposed in prod
+      500,
+      false
+    );
   }
 
   const errorResponse = createErrorResponse(appError, req);
