@@ -19,7 +19,6 @@ import { localeMiddleware } from './middleware/locale.middleware';
 import config from './config';
 import logger from './utils/logger';
 import { initializeUnionSettings } from './utils/union-init';
-import { seedAdminUser } from './utils/seed-admin';
 
 // Initialize UNION Settings before anything else (non-blocking)
 initializeUnionSettings().catch((error) => {
@@ -189,7 +188,35 @@ if (config.nodeEnv !== 'test') {
     });
 
     // Seed Admin User
-    seedAdminUser().catch((err: any) => logger.error('Failed to seed admin:', err));
+    (async () => {
+      try {
+        const { PrismaClient } = require('@prisma/client');
+        const bcrypt = require('bcryptjs');
+        const prisma = new PrismaClient();
+
+        const email = 'admin@udg.de';
+        const existingAdmin = await prisma.user.findUnique({ where: { email } });
+
+        if (!existingAdmin) {
+          logger.info('👤 Creating default admin user...');
+          const salt = await bcrypt.genSalt(10);
+          const passwordHash = await bcrypt.hash('admin', salt);
+
+          await prisma.user.create({
+            data: {
+              email,
+              passwordHash,
+              name: 'Admin',
+              role: 'ADMIN',
+              provider: 'LOCAL'
+            }
+          });
+          logger.info('✅ Admin user created successfully');
+        }
+      } catch (err) {
+        logger.error('Failed to seed admin:', err);
+      }
+    })();
   });
 }
 
