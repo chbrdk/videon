@@ -64,8 +64,8 @@
   const borderColor = $derived(() => {
     if (error) return MSQDX_COLORS.status.error;
     if (success) return MSQDX_COLORS.status.success;
-    if (isFocused) return MSQDX_COLORS.brand.green;
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    // Always use brand orange as requested
+    return MSQDX_COLORS.brand.orange;
   });
 
   const backgroundColor = $derived(() => {
@@ -164,9 +164,9 @@
     font-weight: var(--msqdx-font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(var(--msqdx-color-brand-orange-rgb), 0.8);
+    color: #000000;
     margin-left: var(--msqdx-spacing-xs);
-    font-family: var(--msqdx-font-primary);
+    font-family: var(--msqdx-font-mono);
   }
 
   .msqdx-form-field-input-wrapper {

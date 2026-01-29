@@ -485,7 +485,7 @@ let scrollAnimationId: number | null = null;
 </script>
 
 <svelte:head>
-  <title>{_('pages.videoGallery.title')} - PrismVid</title>
+  <title>MSQ DX - VIDEON</title>
   <meta name="description" content={_('pages.videoGallery.description')} />
 </svelte:head>
 

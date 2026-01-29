@@ -635,7 +635,7 @@
 
 
 <svelte:head>
-  <title>Video - PrismVid</title>
+  <title>Video - MSQ DX - VIDEON</title>
 </svelte:head>
 
 {#if $selectedVideo && !videoNotFound}
