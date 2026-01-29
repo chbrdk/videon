@@ -100,7 +100,7 @@
   }
 </script>
 
-<div class="max-w-2xl mx-auto space-y-8 animate-fade-in p-4">
+<div class="max-w-2xl mx-auto space-y-8 animate-fade-in p-4 mt-12">
   <div class="glass-card p-6">
     <div class="space-y-6">
       <MsqdxFormField
