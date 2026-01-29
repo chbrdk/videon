@@ -19,6 +19,48 @@ const videosController = new VideosController();
 const visionService = new VisionService();
 const premiereExportService = new PremiereExportService();
 
+console.log('✅ Loading Videos Routes...');
+
+// Trigger Qwen VL semantic analysis for video - MOVED TO TOP
+router.post('/:id/qwenVL/analyze', async (req: any, res: any) => {
+  console.log('🎯 Qwen VL Route HIT!', req.path, req.params);
+  try {
+    const { id } = req.params;
+    const QwenVLService = require('../services/qwen-vl.service').QwenVLService;
+    const qwenVLService = new QwenVLService();
+
+    // Check availability
+    const isAvailable = await qwenVLService.isAvailable();
+    if (!isAvailable) {
+      return res.status(503).json({
+        error: 'Qwen VL Service not available',
+        message: 'Qwen VL Service is not running or not reachable',
+        debug: {
+          url: qwenVLService.getServiceUrl(),
+          provider: qwenVLService.provider
+        }
+      });
+    }
+
+    console.log(`🎯 Triggering Qwen VL analysis for video: ${id}`);
+
+    // Start background analysis
+    qwenVLService.analyzeVideo(id).catch((error: any) => {
+      console.error(`❌ Qwen VL analysis failed for video ${id}:`, error);
+    });
+
+    res.json({
+      message: 'Qwen VL analysis started',
+      videoId: id,
+      status: 'ANALYZING'
+    });
+
+  } catch (error: any) {
+    console.error('❌ Qwen VL analysis trigger error:', error);
+    res.status(500).json({ error: 'Failed to trigger Qwen VL analysis' });
+  }
+});
+
 // Simple multer configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -122,45 +164,7 @@ router.post('/upload-multiple', uploadMultipleMiddleware, async (req: any, res: 
 // Get all videos
 router.get('/', (req: any, res: any) => videosController.getAllVideos(req, res));
 
-// Trigger Qwen VL semantic analysis for video (MUST BE BEFORE ALL :id ROUTES)
-router.post('/:id/qwenVL/analyze', async (req: any, res: any) => {
-  console.log('🎯 Qwen VL Route HIT!', req.path, req.params);
-  try {
-    const { id } = req.params;
-    const QwenVLService = require('../services/qwen-vl.service').QwenVLService;
-    const qwenVLService = new QwenVLService();
 
-    // Prüfe ob Service verfügbar ist
-    const isAvailable = await qwenVLService.isAvailable();
-    if (!isAvailable) {
-      return res.status(503).json({
-        error: 'Qwen VL Service not available',
-        message: 'Qwen VL Service is not running or not reachable',
-        debug: {
-          url: qwenVLService.getServiceUrl(),
-          provider: qwenVLService.provider
-        }
-      });
-    }
-
-    console.log(`🎯 Triggering Qwen VL analysis for video: ${id}`);
-
-    // Starte Analysis im Background
-    qwenVLService.analyzeVideo(id).catch((error: any) => {
-      console.error(`❌ Qwen VL analysis failed for video ${id}:`, error);
-    });
-
-    res.json({
-      message: 'Qwen VL analysis started',
-      videoId: id,
-      status: 'ANALYZING'
-    });
-
-  } catch (error: any) {
-    console.error('❌ Qwen VL analysis trigger error:', error);
-    res.status(500).json({ error: 'Failed to trigger Qwen VL analysis' });
-  }
-});
 
 // Get Qwen VL analysis status for video
 router.get('/:id/qwenVL/status', async (req: any, res: any) => {
