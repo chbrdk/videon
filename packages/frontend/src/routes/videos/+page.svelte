@@ -46,7 +46,7 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
-  import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
+
   import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
 
   // URL params
