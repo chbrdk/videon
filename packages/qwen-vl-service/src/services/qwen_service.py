@@ -74,7 +74,7 @@ class QwenVLService:
         self,
         image_path: Optional[str] = None,
         image_base64: Optional[str] = None,
-        prompt: str = "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+        prompt: str = "Describe this scene in detail. What is happening in this image?",
         max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
         """
@@ -213,7 +213,7 @@ class QwenVLService:
         self,
         frame_paths: Optional[List[str]] = None,
         frame_base64_images: Optional[List[str]] = None,
-        prompt: str = "Beschreibe was in diesen Video-Frames passiert. Was ist die Story oder der Kontext?",
+        prompt: str = "Describe what is happening in these video frames. What is the story or context?",
         max_tokens: Optional[int] = None
     ) -> Dict[str, Any]:
         """

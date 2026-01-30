@@ -93,7 +93,7 @@ class QwenVLService {
               messages: [
                 {
                   role: 'user',
-                  content: prompt || "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+                  content: prompt || "Describe this scene in detail. What is happening in this image?",
                   images: [base64Image]
                 }
               ],
@@ -113,7 +113,7 @@ class QwenVLService {
           `${this.qwenVLServiceUrl}/analyze/image`,
           {
             image_base64: base64Image,
-            prompt: prompt || "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+            prompt: prompt || "Describe this scene in detail. What is happening in this image?",
             max_tokens: 500
           },
           { timeout: 180000 }
@@ -137,7 +137,7 @@ class QwenVLService {
         `${this.qwenVLServiceUrl}/analyze/image`,
         {
           image_path: hostPath,
-          prompt: prompt || "Beschreibe diese Szene detailliert. Was passiert in diesem Bild?",
+          prompt: prompt || "Describe this scene in detail. What is happening in this image?",
           max_tokens: 500
         },
         { timeout: 180000 } // 3 Minuten Timeout (erhöht für größere Bilder)
@@ -206,7 +206,7 @@ Be precise and factual.`;
               messages: [
                 {
                   role: 'user',
-                  content: prompt || "Analysiere diese Video-Frames. Was passiert in diesem Video? Beschreibe die Story, Personen, Aktivitäten und den Kontext.",
+                  content: prompt || "Analyze these video frames. What is happening in this video? Describe the story, people, activities, and context.",
                   images: imagesBase64
                 }
               ],
@@ -234,7 +234,7 @@ Be precise and factual.`;
           `${this.qwenVLServiceUrl}/analyze/video-frames`,
           {
             frame_base64_images: framesBase64,
-            prompt: prompt || "Analysiere diese Video-Frames. Was passiert in diesem Video? Beschreibe die Story, Personen, Aktivitäten und den Kontext.",
+            prompt: prompt || "Analyze these video frames. What is happening in this video? Describe the story, people, activities, and context.",
             max_tokens: 800
           },
           { timeout: 300000 } // Higher timeout for upload
@@ -250,7 +250,7 @@ Be precise and factual.`;
         `${this.qwenVLServiceUrl}/analyze/video-frames`,
         {
           frame_paths: framePaths,
-          prompt: prompt || "Analysiere diese Video-Frames. Was passiert in diesem Video? Beschreibe die Story, Personen, Aktivitäten und den Kontext.",
+          prompt: prompt || "Analyze these video frames. What is happening in this video? Describe the story, people, activities, and context.",
           max_tokens: 800
         },
         { timeout: 180000 } // 3 Minuten Timeout für mehrere Frames
@@ -292,7 +292,7 @@ Be precise and factual.`;
       // Analysiere Keyframe mit Qwen VL
       const description = await this.analyzeImage(
         scene.keyframePath,
-        "Beschreibe diese Szene detailliert. Was passiert hier? Nenne Objekte, Personen, Aktivitäten und den Kontext."
+        "Describe this scene in detail. What is happening here? List objects, people, activities, and context."
       );
 
       // Aktualisiere VisionAnalysis mit Qwen VL Description
@@ -395,7 +395,7 @@ Be precise and factual.`;
             const startTime = Date.now();
             sceneDescription = await this.analyzeImage(
               keyframePath,
-              `Beschreibe diese Video-Szene detailliert. Was passiert in diesem Bild? Beschreibe Personen, Aktivitäten, Objekte, die Atmosphäre und den Kontext. Die Szene dauert ${sceneDuration.toFixed(1)} Sekunden von ${scene.startTime.toFixed(1)}s bis ${scene.endTime.toFixed(1)}s.`
+              `Describe this video scene explicitly and in detail. What happens in this image? Describe people, activities, objects, atmosphere, and context. The scene lasts ${sceneDuration.toFixed(1)} seconds from ${scene.startTime.toFixed(1)}s to ${scene.endTime.toFixed(1)}s.`
             );
             const duration = ((Date.now() - startTime) / 1000).toFixed(1);
             console.log(`✅ Qwen VL analysis completed for scene ${scene.id} (${sceneDescription.length} chars, ${duration}s)`);
