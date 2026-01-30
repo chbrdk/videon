@@ -4,7 +4,8 @@
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
   import { MsqdxChip } from '$lib/components/ui';
-  import { MsqdxGlassMenu } from '$lib/components/ui';
+  import { MsqdxChip } from '$lib/components/ui';
+  import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { base } from '$app/paths';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -20,7 +21,7 @@
   }>();
 
   let thumbnailUrl = '';
-  let showMenu = false;
+  let thumbnailUrl = '';
 
   function handleClick(event?: Event) {
     const videoPath = `${base}/videos/${video.id}`;
@@ -152,41 +153,26 @@
     ></div>
 
     <!-- Top Right Actions -->
-    <div class="absolute top-3 right-3 z-10 pointer-events-auto">
-      <div class="relative">
-        <button
-          class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] bg-black/20 hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors backdrop-blur-sm"
-          on:click|stopPropagation={() => (showMenu = !showMenu)}
-        >
-          <MaterialSymbol icon="more_vert" fontSize={20} />
-        </button>
-
-        {#if showMenu}
-          <MsqdxGlassMenu
-            align="right"
-            items={[
-              {
-                label: _('actions.rename'),
-                icon: 'edit',
-                action: () => dispatch('rename', video),
-              },
-              {
-                label: _('actions.share') ?? 'Share',
-                icon: 'share',
-                action: () => dispatch('share', video),
-              },
-              {
-                label: _('actions.delete'),
-                icon: 'delete',
-                danger: true,
-                action: () => dispatch('delete', video),
-              },
-            ]}
-            on:close={() => (showMenu = false)}
-          />
-        {/if}
-      </div>
-    </div>
+    <MsqdxCardMenu
+      items={[
+        {
+          label: _('actions.rename'),
+          icon: 'edit',
+          action: () => dispatch('rename', video),
+        },
+        {
+          label: _('actions.share') ?? 'Share',
+          icon: 'share',
+          action: () => dispatch('share', video),
+        },
+        {
+          label: _('actions.delete'),
+          icon: 'delete',
+          danger: true,
+          action: () => dispatch('delete', video),
+        },
+      ]}
+    />
 
     <!-- Play Overlay -->
     <div

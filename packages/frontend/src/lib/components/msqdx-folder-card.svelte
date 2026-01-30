@@ -1,7 +1,8 @@
 <script>
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { MsqdxGlassCard, MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
+  import { MsqdxGlassCard, MaterialSymbol } from '$lib/components/ui';
+  import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { createEventDispatcher } from 'svelte';
 
   export let folder;
@@ -11,7 +12,7 @@
   export let className = '';
 
   const dispatch = createEventDispatcher();
-  let showMenu = false;
+  const dispatch = createEventDispatcher();
 
   function handleClick() {
     goto(resolve(`/videos?folder=${folder.id}`));
@@ -45,36 +46,21 @@
   "
 >
   <!-- Top Right Actions -->
-  <div class="absolute top-2 right-2 z-10 pointer-events-auto">
-    <div class="relative">
-      <button
-        class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors bg-transparent"
-        on:click|stopPropagation={() => (showMenu = !showMenu)}
-      >
-        <MaterialSymbol icon="more_vert" fontSize={20} />
-      </button>
-
-      {#if showMenu}
-        <MsqdxGlassMenu
-          align="right"
-          items={[
-            {
-              label: 'Rename',
-              icon: 'edit',
-              action: () => dispatch('rename', folder),
-            },
-            {
-              label: 'Delete',
-              icon: 'delete',
-              danger: true,
-              action: () => dispatch('delete', folder),
-            },
-          ]}
-          on:close={() => (showMenu = false)}
-        />
-      {/if}
-    </div>
-  </div>
+  <MsqdxCardMenu
+    items={[
+      {
+        label: 'Rename',
+        icon: 'edit',
+        action: () => dispatch('rename', folder),
+      },
+      {
+        label: 'Delete',
+        icon: 'delete',
+        danger: true,
+        action: () => dispatch('delete', folder),
+      },
+    ]}
+  />
 
   <div class="folder-icon">
     <MaterialSymbol icon="folder" fontSize={48} />

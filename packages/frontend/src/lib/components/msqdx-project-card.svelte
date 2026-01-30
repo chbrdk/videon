@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol } from '$lib/components/ui';
+  import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { base } from '$app/paths';
   import { goto } from '$app/navigation';
@@ -10,7 +11,7 @@
   export let project: Project;
 
   const dispatch = createEventDispatcher();
-  let showMenu = false;
+  const dispatch = createEventDispatcher();
 
   function handleClick() {
     console.log('Navigating to project:', project.id);
@@ -18,7 +19,6 @@
   }
 
   function handleMenuAction(action: string) {
-    showMenu = false;
     dispatch(action, project);
   }
 </script>
@@ -37,39 +37,22 @@
   "
 >
   <!-- Project Menu -->
-  <div
-    class="absolute top-2 right-2 z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity"
-  >
-    <div class="relative">
-      <button
-        class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
-        on:click|stopPropagation={() => (showMenu = !showMenu)}
-      >
-        <MaterialSymbol icon="more_vert" fontSize={20} />
-      </button>
-
-      {#if showMenu}
-        <MsqdxGlassMenu
-          align="right"
-          items={[
-            { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
-            {
-              label: _('actions.share') ?? 'Share',
-              icon: 'share',
-              action: () => handleMenuAction('share'),
-            },
-            {
-              label: _('actions.delete'),
-              icon: 'delete',
-              danger: true,
-              action: () => handleMenuAction('delete'),
-            },
-          ]}
-          on:close={() => (showMenu = false)}
-        />
-      {/if}
-    </div>
-  </div>
+  <MsqdxCardMenu
+    items={[
+      { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
+      {
+        label: _('actions.share') ?? 'Share',
+        icon: 'share',
+        action: () => handleMenuAction('share'),
+      },
+      {
+        label: _('actions.delete'),
+        icon: 'delete',
+        danger: true,
+        action: () => handleMenuAction('delete'),
+      },
+    ]}
+  />
 
   <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
     <div
