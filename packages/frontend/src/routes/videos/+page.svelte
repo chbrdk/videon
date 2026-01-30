@@ -254,7 +254,17 @@ let scrollAnimationId: number | null = null;
   // Video handlers
   function handleVideoClick(videoId: string) {
     console.log('Navigating to video:', videoId);
-    goto(`/videos/${videoId}`);
+    goto(`${base}/videos/${videoId}`);
+  }
+
+  function handleFolderClick(folder: any) {
+    console.log('Navigating to folder:', folder.id);
+    goto(`${base}/videos?folder=${folder.id}`);
+  }
+
+  function handleProjectClick(project: any) {
+    console.log('Navigating to project:', project.id);
+    goto(`${base}/projects/${project.id}`);
   }
 
   function toggleRevealMode() {
@@ -699,7 +709,10 @@ let scrollAnimationId: number | null = null;
         {#each displayedProjects as project (project.id)}
           <div
              class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-             on:click={() => goto(`${base}/projects/${project.id}`)}
+             on:click={() => handleProjectClick(project)}
+             on:keydown={(e) => e.key === 'Enter' && handleProjectClick(project)}
+             role="button"
+             tabindex="0"
              style="
                --blur: var(--msqdx-glass-blur);
                --background-color: var(--msqdx-color-dark-paper);
@@ -761,6 +774,10 @@ let scrollAnimationId: number | null = null;
         {#each currentContents.folders as folder (folder.id)}
           <div
             class="glass-card cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id === folder.id ? 'ring-2 ring-blue-400' : ''}"
+            on:click={() => handleFolderClick(folder)}
+            on:keydown={(e) => e.key === 'Enter' && handleFolderClick(folder)}
+            role="button"
+            tabindex="0"
             on:dragover={(e) => handleFolderDragOver(e, folder)}
             on:dragleave={handleFolderDragLeave}
             on:drop={(e) => handleFolderDrop(e, folder)}
