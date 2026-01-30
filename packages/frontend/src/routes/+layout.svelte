@@ -26,10 +26,20 @@
     r => currentPath === r || currentPath.startsWith(`${r}/`)
   );
 
+  console.log('Layout: Script initializing');
+
   onMount(async () => {
+    console.log('Layout: onMount started');
+    // Initialize theme and locale immediately to see if that works
+    theme.init();
+    initI18n();
+
     try {
+      console.log('Layout: Checking auth...', { baseUrl: api.baseUrl });
       const res = await fetch(`${api.baseUrl}/auth/me`);
+      console.log('Layout: Auth response received', res.status);
       const authData = await res.json();
+      console.log('Layout: Auth data', authData);
       isAuthenticated = authData.isAuthenticated;
       if (isAuthenticated && authData.user) {
         userStore.set(authData.user);
