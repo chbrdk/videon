@@ -784,7 +784,7 @@ let scrollAnimationId: number | null = null;
               }}
               on:rename={handleRenameVideo}
               on:delete={handleDeleteVideo}
-              on:share={(e) => handleShareVideo(video)} /* video-card dispatches detail: {id}, but we pass full video obj */
+              on:share={(e) => handleShareVideo(video)}
             />
           </div>
         {/each}
