@@ -167,4 +167,72 @@ export class SharingService {
             throw error;
         }
     }
+
+    /**
+     * Get collaborators for a project
+     */
+    async getProjectCollaborators(projectId: string) {
+        try {
+            const shares = await prisma.projectShare.findMany({
+                where: { projectId },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            avatarUrl: true
+                        }
+                    }
+                }
+            });
+
+            return shares.map(share => ({
+                id: share.id,
+                userId: share.userId,
+                name: share.user.name,
+                email: share.user.email,
+                avatarUrl: share.user.avatarUrl,
+                role: share.role,
+                createdAt: share.createdAt
+            }));
+        } catch (error) {
+            logger.error('Error fetching project collaborators:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get collaborators for a video
+     */
+    async getVideoCollaborators(videoId: string) {
+        try {
+            const shares = await prisma.videoShare.findMany({
+                where: { videoId },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            avatarUrl: true
+                        }
+                    }
+                }
+            });
+
+            return shares.map(share => ({
+                id: share.id,
+                userId: share.userId,
+                name: share.user.name,
+                email: share.user.email,
+                avatarUrl: share.user.avatarUrl,
+                role: share.role,
+                createdAt: share.createdAt
+            }));
+        } catch (error) {
+            logger.error('Error fetching video collaborators:', error);
+            throw error;
+        }
+    }
 }

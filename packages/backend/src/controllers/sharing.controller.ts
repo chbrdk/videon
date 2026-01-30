@@ -55,20 +55,53 @@ export class SharingController {
     async removeProjectShare(req: Request, res: Response) {
         try {
             const { projectId } = req.params;
-            const { userId } = req.query; // If admin/owner removes? Or self-remove?
-            // Logic for revocation should be simpler: Owner removes specific user.
-            // Need to pass userId to remove.
+            const { userId } = req.body; // Expect userId in body
 
-            // For now, assume body contains userId to remove
-            const targetUserId = req.body.userId;
-
-            if (!targetUserId) {
+            if (!userId) {
                 return res.status(400).json({ error: 'Target userId required' });
             }
 
-            await sharingService.removeProjectShare(projectId, targetUserId);
+            await sharingService.removeProjectShare(projectId, userId);
             res.json({ success: true });
         } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async removeVideoShare(req: Request, res: Response) {
+        try {
+            const { videoId } = req.params;
+            const { userId } = req.body;
+
+            if (!userId) {
+                return res.status(400).json({ error: 'Target userId required' });
+            }
+
+            await sharingService.removeVideoShare(videoId, userId);
+            res.json({ success: true });
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async getProjectCollaborators(req: Request, res: Response) {
+        try {
+            const { projectId } = req.params;
+            const collaborators = await sharingService.getProjectCollaborators(projectId);
+            res.json(collaborators);
+        } catch (error) {
+            logger.error('Error fetching project collaborators:', error);
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async getVideoCollaborators(req: Request, res: Response) {
+        try {
+            const { videoId } = req.params;
+            const collaborators = await sharingService.getVideoCollaborators(videoId);
+            res.json(collaborators);
+        } catch (error) {
+            logger.error('Error fetching video collaborators:', error);
             res.status(500).json({ error: (error as Error).message });
         }
     }

@@ -13,7 +13,10 @@
   const dispatch = createEventDispatcher<{
     select: { id: string };
     delete: { id: string };
+    select: { id: string };
+    delete: { id: string };
     rename: { id: string };
+    share: { id: string };
   }>();
 
   let thumbnailUrl = '';
@@ -166,6 +169,11 @@
                 label: _('actions.rename'),
                 icon: 'edit',
                 action: () => dispatch('rename', video),
+              },
+              {
+                label: _('actions.share') ?? 'Share',
+                icon: 'share',
+                action: () => dispatch('share', video),
               },
               {
                 label: _('actions.delete'),

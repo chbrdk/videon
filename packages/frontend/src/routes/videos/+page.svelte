@@ -46,7 +46,8 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
-  import ShareDialog from '$lib/components/sharing/ShareDialog.svelte';
+  import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
+  import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
 
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
@@ -775,7 +776,7 @@ let scrollAnimationId: number | null = null;
         <!-- Videos -->
         {#each currentContents.videos as video (video.id)}
           <div class="video-card-wrapper">
-            <MsqdxVideoCard 
+        <MsqdxVideoCard 
               video={video}
               on:select={(e) => {
                 console.log('Video card select event:', e.detail);
@@ -783,6 +784,7 @@ let scrollAnimationId: number | null = null;
               }}
               on:rename={handleRenameVideo}
               on:delete={handleDeleteVideo}
+              on:share={(e) => handleShareVideo(video)} /* video-card dispatches detail: {id}, but we pass full video obj */
             />
           </div>
         {/each}
@@ -912,14 +914,13 @@ let scrollAnimationId: number | null = null;
   on:close={() => deleteDialog = { ...deleteDialog, open: false }} 
 />
 
-  {#if shareDialog.open}
-    <ShareDialog
-      isOpen={shareDialog.open}
-      projectId={shareDialog.type === 'project' ? shareDialog.item.id : undefined}
-      videoId={shareDialog.type === 'video' ? shareDialog.item.id : undefined}
-      on:close={() => shareDialog = { ...shareDialog, open: false }}
-    />
-  {/if}
+  <MsqdxShareDialog
+    open={shareDialog.open}
+    itemType={shareDialog.type}
+    itemId={shareDialog.item?.id || ''}
+    itemName={shareDialog.item?.name || shareDialog.item?.originalName || ''}
+    on:close={() => (shareDialog = { ...shareDialog, open: false })}
+  />
 
 <style>
   .glass-button-group {
