@@ -34,6 +34,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
+  import { theme } from '$lib/stores/theme.store';
   import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
   import MsqdxBreadcrumbs from '$lib/components/msqdx-breadcrumbs.svelte';
   import MsqdxSearchBar from '$lib/components/msqdx-search-bar.svelte';
@@ -567,7 +568,7 @@ let scrollAnimationId: number | null = null;
 <div class="max-w-7xl mx-auto space-y-8">
 
   <!-- Breadcrumbs -->
-  <MsqdxBreadcrumbs class="mt8" />
+  <MsqdxBreadcrumbs />
 
   <!-- Toolbar -->
   <div class="flex items-center justify-between gap-4">
