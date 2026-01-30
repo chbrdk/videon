@@ -11,7 +11,7 @@
   import { base } from '$app/paths';
   import MsqdxAdminNav from './MsqdxAdminNav.svelte';
 
-  let { title, subtitle }: { title?: string; subtitle?: string } = $props();
+  let { title, subtitle, children }: { title?: string; subtitle?: string; children?: any } = $props();
 
   let drawerOpen = $state(false);
   let mounted = $state(false);
@@ -431,7 +431,9 @@
         </div>
       {/if}
 
-      <slot />
+      {#if children}
+        {@render children()}
+      {/if}
     </main>
   </div>
 
