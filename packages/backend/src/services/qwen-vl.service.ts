@@ -161,51 +161,28 @@ class QwenVLService {
   }
 
   /**
-   * Translates text from one language to another using the configured provider
-   */
-  async translateText(text: string, targetLang: string = 'English'): Promise<string> {
-    try {
-      const prompt = `Translate the following German text to ${targetLang}. Only output the translation, nothing else:\n\n${text}`;
-
-      if (this.provider === 'ollama') {
-        const response = await axios.post(
-          `${this.qwenVLServiceUrl}/api/chat`,
-          {
-            model: this.modelName,
-            messages: [
-              { role: 'user', content: prompt }
-            ],
-            stream: false
-          },
-          { timeout: 60000 }
-        );
-
-        if (!response.data || !response.data.message || !response.data.message.content) {
-          // Determine fallback if translation fails
-          return "";
-        }
-        return response.data.message.content.trim();
-      }
-
-      // Custom Provider logic (if supports text-only) or fallback
-      // Current custom provider implementation might be vision-specific.
-      // For now, we only support translation via Ollama or if custom provider has a text endpoint.
-      // Assuming custom provider is legacy/vision-only for now, return empty or implement similar call.
-
-      console.warn('Translation not fully implemented for custom provider, skipping.');
-      return "";
-
-    } catch (error: any) {
-      console.error(`Translation failed: ${error.message}`);
-      return ""; // Return empty string on failure so process can continue
-    }
-  }
-
-  /**
    * Analysiert Video-Frames mit Qwen VL für Video-Zusammenfassung
    */
   async analyzeVideoFrames(framePaths: string[], prompt?: string): Promise<string> {
     try {
+      console.log(`Analyzing ${framePaths.length} frames with Qwen VL...`);
+
+      const defaultPrompt = `Analyze the video frames of this scene and create a structured summary in English.
+      
+Use the following format exactly:
+
+**Video Scene:** [One sentence title of the scene]
+**Scene Summary:** [Concise summary of the action and content]
+**Detailed Description:**
+1. **Persons & Actions:** [Who is seen? What are they doing?]
+2. **Environment & Atmosphere:** [Where does it take place? Lighting, mood?]
+3. **Camera & Technical:** [Camera movement, perspective, special features]
+4. **Key Visuals:** [Prominent objects, colors, or text overlay]
+
+Be precise and factual.`;
+
+      const userPrompt = prompt || defaultPrompt;
+
       if (this.isRemoteMode()) {
         console.log(`🎬 Calling Remote Qwen VL (${this.provider}) for ${framePaths.length} frames`);
 
@@ -323,7 +300,7 @@ class QwenVLService {
         where: { sceneId },
         data: {
           qwenVLDescription: description,
-          qwenVLDescriptionEn: await this.translateText(description, 'English'), // Translate
+          // qwenVLDescriptionEn: unused in English-only mode
           qwenVLProcessed: true,
           qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
           qwenVLProcessingTime: null // Wird vom Service gemessen
@@ -439,7 +416,7 @@ class QwenVLService {
               where: { sceneId: scene.id },
               data: {
                 qwenVLDescription: sceneDescription,
-                qwenVLDescriptionEn: await this.translateText(sceneDescription, 'English'),
+                // qwenVLDescriptionEn: unused
                 qwenVLProcessed: true,
                 qwenVLModel: "Qwen3-VL-8B-Instruct-4bit"
               }
@@ -451,7 +428,7 @@ class QwenVLService {
               data: {
                 sceneId: scene.id,
                 qwenVLDescription: sceneDescription,
-                qwenVLDescriptionEn: await this.translateText(sceneDescription, 'English'),
+                // qwenVLDescriptionEn: unused
                 qwenVLProcessed: true,
                 qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
                 objectCount: 0,

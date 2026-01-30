@@ -62,20 +62,20 @@
       details: [],
     };
 
-    // Extract scene info (first line with **Video-Szene:**)
-    const sceneInfoMatch = description.match(/\*\*Video-Szene:([^*]+)\*\*/);
+    // Extract scene info (first line with **Video Scene:**)
+    const sceneInfoMatch = description.match(/\*\*Video Scene:([^*]+)\*\*/);
     if (sceneInfoMatch) {
       result.sceneInfo = sceneInfoMatch[1].trim();
     }
 
-    // Extract summary (between **Zusammenfassung der Szene:** and ---)
-    const summaryMatch = description.match(/\*\*Zusammenfassung der Szene:\*\*\s*(.+?)(?=---|$)/s);
+    // Extract summary (between **Scene Summary:** and --- or end)
+    const summaryMatch = description.match(/\*\*Scene Summary:\*\*\s*(.+?)(?=---|$)/s);
     if (summaryMatch) {
       result.summary = summaryMatch[1].trim();
     }
 
     // Extract detailed description sections (numbered items)
-    const detailsSection = description.match(/\*\*Detaillierte Beschreibung:\*\*\s*(.+)/s);
+    const detailsSection = description.match(/\*\*Detailed Description:\*\*\s*(.+)/s);
     if (detailsSection) {
       const detailsText = detailsSection[1];
 
@@ -196,20 +196,8 @@
   {#if qwenVLDescription}
     <div class="ai-description qwen-vl">
       <div class="ai-header">
-        <span class="ai-label">Qwen VL Analyse:</span>
+        <span class="ai-label">Qwen VL Analysis:</span>
       </div>
-
-      {#if qwenVLDescriptionEn}
-        <div class="qwen-translation mt-2 p-3 bg-white/5 rounded border border-white/10 mb-4">
-          <div
-            class="flex items-center gap-2 mb-1 text-xs uppercase tracking-wide text-blue-300/80 font-semibold"
-          >
-            <MaterialSymbol icon="translate" fontSize={14} />
-            English Translation
-          </div>
-          <p class="text-sm text-white/90 italic leading-relaxed">{qwenVLDescriptionEn}</p>
-        </div>
-      {/if}
 
       {#if parsedQwenVL && (parsedQwenVL.sceneInfo || parsedQwenVL.summary || parsedQwenVL.details.length > 0)}
         <!-- Scene Info -->
@@ -232,7 +220,7 @@
                 fontSize={18}
                 class="text-green-300/80"
               />
-              <span class="section-title">Zusammenfassung</span>
+              <span class="section-title">Summary</span>
             </button>
 
             {#if summaryExpanded}
