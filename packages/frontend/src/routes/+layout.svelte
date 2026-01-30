@@ -21,15 +21,38 @@
   let isAuthenticated = false;
   let searching = false; // Defensive fix for ReferenceError
 
-  $: currentPath = $page.url.pathname;
-  $: isPublicRoute = ['/login', '/register'].some(
-    r => currentPath === r || currentPath.startsWith(`${r}/`)
-  );
+  // DEBUG: Commenting out reactive statements to isolate crash
+  // $: currentPath = $page.url.pathname;
+  // $: isPublicRoute = ['/login', '/register'].some(
+  //   r => currentPath === r || currentPath.startsWith(`${r}/`)
+  // );
+
+  console.log('Layout: Passed reactive statements');
+
+  // Temporary workaround for debugging
+  let currentPath = '/';
+  try {
+    if ($page && $page.url) {
+      currentPath = $page.url.pathname;
+      console.log('Layout: derived currentPath', currentPath);
+    }
+  } catch (e) {
+    console.error('Layout: Error accessing $page', e);
+  }
+
+  let isPublicRoute = false;
 
   console.log('Layout: Script initializing');
 
   onMount(async () => {
     console.log('Layout: onMount started');
+
+    // Manual calculation for debug
+    if (['/login', '/register'].some(r => currentPath === r || currentPath.startsWith(`${r}/`))) {
+      isPublicRoute = true;
+    }
+    console.log('Layout: isPublicRoute calculated', isPublicRoute);
+
     // Initialize theme and locale immediately to see if that works
     theme.init();
     initI18n();
