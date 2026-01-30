@@ -93,4 +93,4 @@
 {/if}
 
 <!-- Global Context Menu (always handy) -->
-<GlobalContextMenu />
+<!-- <GlobalContextMenu /> -->
