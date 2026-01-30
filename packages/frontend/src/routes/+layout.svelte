@@ -5,19 +5,21 @@
   import { userStore } from '$lib/stores/user.store';
   import { theme } from '$lib/stores/theme.store';
   import { initI18n } from '$lib/i18n';
-  // import ServiceStatusPanel from '$lib/components/ServiceStatusPanel.svelte';
-  // import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
+  import ServiceStatusPanel from '$lib/components/ServiceStatusPanel.svelte';
+  import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
   import { goto } from '$app/navigation';
   import { api } from '$lib/config/environment';
 
+  // Svelte 5 Props
   let { children } = $props();
 
+  // Svelte 5 State
   let isCheckingAuth = $state(true);
   let isAuthenticated = $state(false);
-  
   let isPublicRoute = $state(false); 
 
+  // Reactive Route Check
   $effect(() => {
     if ($page.url) {
       const path = $page.url.pathname;
@@ -25,11 +27,16 @@
     }
   });
 
+  // Initialization & Auth
   $effect(() => {
-    console.log('Layout: Initializing via $effect (Stage 2)');
+    // Initialize services
     theme.init();
     initI18n();
+    
+    // Auth Check
     checkAuth();
+
+    // Data Loading
     if ($page.params && !$page.params.id) {
        loadVideos();
     }
@@ -37,7 +44,6 @@
 
   async function checkAuth() { 
     try {
-      console.log('Layout: checking auth');
       const baseUrl = api.baseUrl || '/api'; 
       const res = await fetch(`${baseUrl}/auth/me`);
       const authData = await res.json();
@@ -50,6 +56,7 @@
       isAuthenticated = false;
     } finally {
       isCheckingAuth = false;
+      // Redirect Logic
       if (!isAuthenticated && !isPublicRoute) {
         window.location.href = '/login';
       } else if (isAuthenticated && isPublicRoute) {
@@ -59,22 +66,23 @@
   }
 </script>
 
-  {#if isPublicRoute}
-  <div class="debug-public">
-      {@render children?.()}
-  </div>
+{#if isPublicRoute}
+  <!-- Public Layout -->
+  {@render children?.()}
 {:else if isAuthenticated && !isCheckingAuth}
+  <!-- Protected Layout -->
   <MsqdxAdminLayout>
     {@render children?.()}
   </MsqdxAdminLayout>
 
-  <!-- <ServiceStatusPanel /> -->
-
+  <!-- Service Status Panel -->
+  <ServiceStatusPanel />
 {:else}
+  <!-- Loading State -->
   <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-    <span class="ml-4">Checking Auth...</span>
   </div>
 {/if}
 
-<!-- <GlobalContextMenu /> -->
+<!-- Global Components -->
+<GlobalContextMenu />
