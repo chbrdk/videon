@@ -4,8 +4,8 @@ import { SearchController } from '../controllers/search.controller';
 const router: Router = Router();
 const searchController = new SearchController();
 
-router.get('/', searchController.search);
-router.get('/entities', searchController.searchEntities);
-router.post('/videos/:videoId/index', searchController.indexVideo);
+router.get('/', (req, res) => searchController.search(req, res));
+router.get('/entities', (req, res) => searchController.searchEntities(req, res));
+router.post('/videos/:videoId/index', (req, res) => searchController.indexVideo(req, res));
 
 export default router;
