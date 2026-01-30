@@ -232,7 +232,7 @@ export class VideoService {
           videoId,
           level,
           message,
-          metadata,
+          metadata: metadata ? JSON.stringify(metadata) : null,
         },
       });
     } catch (error) {
