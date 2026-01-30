@@ -113,7 +113,8 @@ let revealTimer: ReturnType<typeof setTimeout> | null = null;
 const REVEAL_DELAY_MS = 400;
 const MIN_SCROLL_DURATION = 4000;
 let scrollAnimationId: number | null = null;
- 
+  let searching = false; // Defensive fix for ReferenceError
+  
   // Initialize
   onMount(async () => {
     if (searchQueryParam) {
