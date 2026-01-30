@@ -26,7 +26,7 @@ FROM base AS build
 WORKDIR /app
 
 # Generate Prisma client
-RUN npx prisma generate --schema=./prisma/schema.prisma
+RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
 # Build TypeScript
 RUN npm run build
 
