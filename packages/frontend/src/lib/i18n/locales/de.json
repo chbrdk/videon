@@ -113,7 +113,8 @@
     "upload": "Hochladen",
     "retry": "Erneut versuchen",
     "cancel": "Abbrechen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "share": "Teilen"
   },
   "selection": {
     "selected": "ausgewählt",

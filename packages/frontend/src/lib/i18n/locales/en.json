@@ -113,7 +113,8 @@
     "upload": "Upload",
     "retry": "Retry",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "share": "Share"
   },
   "selection": {
     "selected": "selected",
