@@ -567,8 +567,29 @@ let scrollAnimationId: number | null = null;
 
 <div class="max-w-7xl mx-auto space-y-8">
 
+  <!-- Local Page Header (matching Settings style) -->
+  <div style="
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: -1rem;
+    margin-top: 1rem;
+  ">
+    <h1 style="
+      font-size: 2.5rem;
+      text-transform: lowercase;
+      letter-spacing: -2px;
+      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
+      display: block;
+      font-weight: 800;
+      margin: 0px;
+    ">Videos</h1>
+  </div>
+
   <!-- Breadcrumbs -->
-  <MsqdxBreadcrumbs />
+  <MsqdxBreadcrumbs class="mt8" />
 
   <!-- Toolbar -->
   <div class="flex items-center justify-between gap-4">
