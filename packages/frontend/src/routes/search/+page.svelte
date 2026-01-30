@@ -9,6 +9,10 @@
   import { MaterialSymbol } from '$lib/components/ui';
 
   let searchQuery = '';
+  let searching = false;
+  let hasSearched = false;
+  let results: SearchResult[] = [];
+  let playingVideoId: string | null = null;
   // ... (keep existing imports and logic, replace SVGs with Symbols)
 
   // Project modal state
