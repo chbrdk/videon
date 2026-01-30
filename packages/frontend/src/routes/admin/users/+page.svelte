@@ -5,6 +5,7 @@
   import { MaterialSymbol, MsqdxButton, MsqdxFormField } from '$lib/components/ui';
   import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
+  import { theme } from '$lib/stores/theme.store';
   import MsqdxSpinner from '$lib/components/ui/MsqdxSpinner.svelte';
 
   let users: any[] = [];
@@ -90,23 +91,32 @@
 
 <div class="space-y-6">
   <!-- Header -->
-  <div class="flex justify-between items-center">
-    <div>
-      <h2
-        style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary}; font-weight: {MSQDX_TYPOGRAPHY
-          .fontWeight.bold}; font-size: {MSQDX_TYPOGRAPHY.fontSize['xl']}; color: {MSQDX_COLORS.dark
-          .textPrimary};"
-      >
-        User Management
-      </h2>
-      <p style="color: {MSQDX_COLORS.dark.textSecondary};">Manage user access and roles</p>
-    </div>
+  <div class="flex justify-between items-center" style="margin-top: 1rem; margin-bottom: 2rem;">
     <MsqdxButton variant="primary" on:click={() => (showCreateDialog = true)}>
       <div class="flex items-center gap-2">
         <MaterialSymbol icon="person_add" fontSize={20} />
         Add User
       </div>
     </MsqdxButton>
+    <div>
+      <h1
+        style="
+        font-size: 2.5rem;
+        text-transform: lowercase;
+        letter-spacing: -2px;
+        color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
+        display: block;
+        font-weight: 800;
+        margin: 0px;
+        text-align: right;
+      "
+      >
+        User Management
+      </h1>
+      <p style="color: {MSQDX_COLORS.dark.textSecondary}; text-align: right;">
+        Manage user access and roles
+      </p>
+    </div>
   </div>
 
   <!-- User List -->

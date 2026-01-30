@@ -1,7 +1,8 @@
-<script lang="ts">
   import { goto } from '$app/navigation';
   import { aiCreatorApi, type VideoSuggestion, type SelectedScene } from '$lib/api/ai-creator';
   import { currentLocale, _ } from '$lib/i18n';
+  import { MSQDX_COLORS } from '$lib/design-tokens';
+  import { theme } from '$lib/stores/theme.store';
   import { onMount } from 'svelte';
 
   // State
@@ -144,6 +145,32 @@
 </script>
 
 <div class="max-w-6xl mx-auto">
+  <!-- Local Page Header (matching Settings style) -->
+  <div
+    style="
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+  "
+  >
+    <h1
+      style="
+      font-size: 2.5rem;
+      text-transform: lowercase;
+      letter-spacing: -2px;
+      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
+      display: block;
+      font-weight: 800;
+      margin: 0px;
+    "
+    >
+      AI Creator
+    </h1>
+  </div>
   <!-- Header -->
   <div class="mb-8">
     <p class="text-gray-600 dark:text-gray-400">

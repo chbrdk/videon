@@ -2,6 +2,8 @@
   import { searchApi, type SearchResult } from '$lib/api/search';
   import { projectsApi } from '$lib/api/projects';
   import { currentLocale, _ } from '$lib/i18n';
+  import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
+  import { theme } from '$lib/stores/theme.store';
   import { base } from '$app/paths';
   import { getVideoUrl, getCoverImageUrl } from '$lib/config/environment';
 
@@ -107,6 +109,36 @@
 </svelte:head>
 
 <div class="space-y-8 pb-12">
+  <!-- Local Page Header (matching Settings style) -->
+  <div
+    style="
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: -1rem;
+    margin-top: 1rem;
+    max-width: 42rem; /* Matches max-w-2xl of search input */
+    margin-left: auto;
+    margin-right: auto;
+  "
+  >
+    <h1
+      style="
+      font-size: 2.5rem;
+      text-transform: lowercase;
+      letter-spacing: -2px;
+      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
+      display: block;
+      font-weight: 800;
+      margin: 0px;
+    "
+    >
+      Search
+    </h1>
+  </div>
+
   <!-- Search Input Area -->
   <div class="max-w-2xl mx-auto">
     <div class="relative group">
