@@ -34,21 +34,17 @@
       if (isAuthenticated && authData.user) {
         userStore.set(authData.user);
       }
+    } catch (e) {
+      console.error('Auth Check Failed', e);
+      isAuthenticated = false;
+    } finally {
+      isCheckingAuth = false;
 
       if (!isAuthenticated && !isPublicRoute) {
         window.location.href = '/login';
-        return;
-      }
-
-      if (isAuthenticated && isPublicRoute) {
+      } else if (isAuthenticated && isPublicRoute) {
         goto('/');
-        return;
       }
-    } catch (e) {
-      console.error('Auth Check Failed', e);
-      // If check fails, maybe allow user to see page but it might break api calls
-    } finally {
-      isCheckingAuth = false;
     }
 
     if (!$page.params.id) {
