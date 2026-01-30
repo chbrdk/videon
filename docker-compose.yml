@@ -54,7 +54,7 @@ services:
       - ion-network
       - echon-network
     restart: unless-stopped
-    command: sh -c "cd /app && cp prisma/schema.postgresql.prisma prisma/schema.prisma 2>/dev/null || true && npx prisma db push --accept-data-loss && node dist/app.js"
+    command: npm start
 
   # Qwen VL Service runs LOCALLY (not in Docker)
   # MLX requires Apple Silicon and cannot run in Docker containers.
