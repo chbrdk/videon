@@ -11,23 +11,29 @@
   import { goto } from '$app/navigation';
   import { api } from '$lib/config/environment';
 
+  // Props (Svelte 5 Runes)
+  let { children } = $props();
+
   // State using Runes
   let isCheckingAuth = $state(true);
   let isAuthenticated = $state(false);
+  let isPublicRoute = $state(false); // Manual update to be safe
 
-  // Derived state for public route check
-  // We use a reactive statement that updates based on $page store
-  let isPublicRoute = $derived(
-    $page.url &&
-      ['/login', '/register'].some(
-        r => $page.url.pathname === r || $page.url.pathname.startsWith(`${r}/`)
-      )
-  );
-
-  // Initialization Effect
+  // Update Route Check Reactively via Effect
+  // This avoids complex mixed store/$derived syntax for now
   $effect(() => {
-    // This runs once when component mounts in the browser
+    if ($page.url) {
+      const path = $page.url.pathname;
+      isPublicRoute = ['/login', '/register'].some(r => path === r || path.startsWith(`${r}/`));
+    }
+  });
+
+  // Initialization & Auth Check
+  $effect(() => {
+    // This runs once when component mounts
     console.log('Layout: Initializing via $effect');
+    
+    // Initialize services
     theme.init();
     initI18n();
 
@@ -36,22 +42,19 @@
 
     // Load videos if valid
     if ($page.params && !$page.params.id) {
-      loadVideos();
+       loadVideos();
     }
   });
 
-  async function checkAuth() {
+  async function checkAuth() { 
     try {
-      if (isPublicRoute) {
-        // Optimization: minimal check or skip if purely public
-        // validation happens below
-      }
-
       console.log('Layout: checking auth');
-      const res = await fetch(`${api.baseUrl}/auth/me`);
+      // Use fallback if api.baseUrl is somehow broken (defensive)
+      const baseUrl = api.baseUrl || '/api'; 
+      const res = await fetch(`${baseUrl}/auth/me`);
       const authData = await res.json();
       isAuthenticated = authData.isAuthenticated;
-
+      
       if (isAuthenticated && authData.user) {
         userStore.set(authData.user);
       }
@@ -73,11 +76,11 @@
 
 {#if isPublicRoute}
   <!-- Public Layout (Full Page, no sidebar) -->
-  <slot />
+  {@render children?.()}
 {:else if isAuthenticated && !isCheckingAuth}
   <!-- Protected Layout (Sidebar, etc.) -->
   <MsqdxAdminLayout>
-    <slot />
+    {@render children?.()}
   </MsqdxAdminLayout>
 
   <!-- Service Status Panel only for authenticated users -->
