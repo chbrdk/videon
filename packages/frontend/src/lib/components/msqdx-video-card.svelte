@@ -182,8 +182,8 @@
       </div>
     </div>
 
-    <!-- Info Chips Overlay (Bottom Right) -->
-    <div class="absolute bottom-4 right-4 pointer-events-none">
+    <!-- Info Chips Overlay (Top Right) -->
+    <div class="absolute top-2 right-2 pointer-events-none">
       <div class="flex flex-col items-end gap-2 pointer-events-none">
         <!-- Status Chip -->
         <MsqdxChip variant="glass" color={getStatusColor(video.status)}>

@@ -11,7 +11,7 @@
   let showMenu = false;
 </script>
 
-<div class="absolute top-2 right-2 z-10 pointer-events-auto">
+<div class="absolute bottom-4 right-2 z-10 pointer-events-auto">
   <div class="relative">
     <button
       class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] bg-black/20 hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors backdrop-blur-sm"
