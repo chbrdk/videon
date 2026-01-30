@@ -214,18 +214,18 @@
   }
 
   .glass-card {
-    @apply glass-effect rounded-md p-6;
+    @apply backdrop-blur-lg rounded-md p-6;
   }
 
   /* Note: .rounded-full modifier is handled by Tailwind utility class */
 
   .glass-button {
-    @apply glass-effect rounded-full px-6 py-2 transition-all duration-200 hover:scale-105 active:scale-95 text-sm;
+    @apply backdrop-blur-lg rounded-full px-6 py-2 transition-all duration-200 hover:scale-105 active:scale-95 text-sm;
     font-weight: 600;
   }
 
   .glass-input {
-    @apply glass-effect rounded-md px-4 py-2 focus:outline-none focus:ring-2;
+    @apply backdrop-blur-lg rounded-md px-4 py-2 focus:outline-none focus:ring-2;
   }
 
   /* MSQDX Chip/Badge System */
