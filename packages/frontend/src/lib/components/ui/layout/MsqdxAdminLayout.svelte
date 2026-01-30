@@ -312,7 +312,7 @@
       <!-- Hamburger button -->
       {#if isMobile}
         <button
-          on:click={handleDrawerToggle}
+          onclick={handleDrawerToggle}
           aria-label="Toggle navigation"
           style="
             position: absolute;
