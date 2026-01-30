@@ -109,9 +109,17 @@ export class VideosController {
         logger.info(`Queueing analyses for video ${video.id}`, { videoPath, filename: req.file.filename });
 
         // 1. Standard video analysis (scenes, transcription, etc.)
-        analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
-          logger.error(`Standard analysis failed for video ${video.id}:`, error);
-        });
+        analyzerClient.analyzeVideo(video.id, videoPath)
+          .then(() => {
+            logger.info(`Analysis completed for ${video.id}, triggering search indexing...`);
+            return searchIndexService.indexVideo(video.id);
+          })
+          .then(() => {
+            logger.info(`Search indexing completed for ${video.id}`);
+          })
+          .catch(error => {
+            logger.error(`Standard analysis failed for video ${video.id}:`, error);
+          });
 
         // 2. Audio separation
         analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
@@ -213,9 +221,17 @@ export class VideosController {
         const videoPath = path.join(videosStoragePath, file.filename);
 
         // 1. Standard video analysis (scenes, transcription, etc.)
-        analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
-          logger.error(`Standard analysis failed for video ${video.id}:`, error);
-        });
+        analyzerClient.analyzeVideo(video.id, videoPath)
+          .then(() => {
+            logger.info(`Analysis completed for ${video.id}, triggering search indexing...`);
+            return searchIndexService.indexVideo(video.id);
+          })
+          .then(() => {
+            logger.info(`Search indexing completed for ${video.id}`);
+          })
+          .catch(error => {
+            logger.error(`Standard analysis failed for video ${video.id}:`, error);
+          });
 
         // 2. Audio separation
         analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
