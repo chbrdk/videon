@@ -328,6 +328,7 @@
 </div>
 
 <style>
+  @reference "tailwindcss/theme";
   .reframed-card {
     @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden transition-all duration-200;
   }
