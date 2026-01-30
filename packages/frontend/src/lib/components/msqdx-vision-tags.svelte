@@ -21,29 +21,195 @@
     qwenVLDescriptionEn = null,
   }: Props = $props();
 
-  // ... existing state ...
+  // Svelte 5 state for collapsible sections
+  let summaryExpanded = $state(true);
+  let detailsExpanded = $state(false);
+
+  // Svelte 5 derived state
+  let topObjects = $derived(objects.sort((a, b) => b.confidence - a.confidence).slice(0, 5));
+
+  let topSceneClassification = $derived(
+    sceneClassification.sort((a, b) => b.confidence - a.confidence).slice(0, 3)
+  );
+
+  let topCustomObjects = $derived(
+    customObjects.sort((a, b) => b.confidence - a.confidence).slice(0, 3)
+  );
 
   // Parse Qwen VL structured output
-  // ... existing parsing logic ...
+  interface ParsedQwenVL {
+    sceneInfo: string | null;
+    summary: string | null;
+    detailsTitle: string;
+    details: Array<{ title: string; content: string }>;
+  }
 
-  // ... render ...
+  let parsedQwenVL = $derived(parseQwenVLDescription(qwenVLDescription));
 
-  // ... inside qwen-vl block ...
+  function parseQwenVLDescription(description: string | null): ParsedQwenVL {
+    if (!description)
+      return {
+        sceneInfo: null,
+        summary: null,
+        detailsTitle: 'Detaillierte Beschreibung',
+        details: [],
+      };
+
+    const result: ParsedQwenVL = {
+      sceneInfo: null,
+      summary: null,
+      detailsTitle: 'Detaillierte Beschreibung',
+      details: [],
+    };
+
+    // Extract scene info (first line with **Video-Szene:**)
+    const sceneInfoMatch = description.match(/\*\*Video-Szene:([^*]+)\*\*/);
+    if (sceneInfoMatch) {
+      result.sceneInfo = sceneInfoMatch[1].trim();
+    }
+
+    // Extract summary (between **Zusammenfassung der Szene:** and ---)
+    const summaryMatch = description.match(/\*\*Zusammenfassung der Szene:\*\*\s*(.+?)(?=---|$)/s);
+    if (summaryMatch) {
+      result.summary = summaryMatch[1].trim();
+    }
+
+    // Extract detailed description sections (numbered items)
+    const detailsSection = description.match(/\*\*Detaillierte Beschreibung:\*\*\s*(.+)/s);
+    if (detailsSection) {
+      const detailsText = detailsSection[1];
+
+      // Find all numbered sections (**1. Title:** content)
+      const sectionRegex = /\*\*(\d+)\.\s*([^:*]+):\*\*\s*([^*]+?)(?=\*\*\d+\.|$)/g;
+      let match;
+
+      while ((match = sectionRegex.exec(detailsText)) !== null) {
+        const [, number, title, content] = match;
+        result.details.push({
+          title: `${number}. ${title.trim()}`,
+          content: content.trim(),
+        });
+      }
+    }
+
+    // Generic fallback: capture any bold headline sections
+    const genericSections: Array<{ heading: string; content: string }> = [];
+    const headingRegex = /\*\*(.+?)\*\*\s*([\s\S]*?)(?=\n\s*\*\*|$)/g;
+    let headingMatch;
+
+    while ((headingMatch = headingRegex.exec(description)) !== null) {
+      const rawHeading = headingMatch[1].trim();
+      const content = headingMatch[2].trim();
+      if (!content) continue;
+
+      const normalizedHeading = rawHeading.replace(/[:：\s]+$/, '').trim();
+      const slug = normalizedHeading.toLowerCase();
+
+      if (slug.includes('video-szene') || slug.includes('video scene')) {
+        if (!result.sceneInfo) {
+          result.sceneInfo = content.replace(/\*\*/g, '').trim();
+        }
+        continue;
+      }
+
+      if (slug.includes('zusammenfassung')) {
+        if (!result.summary) {
+          result.summary = content.replace(/\*\*/g, '').trim();
+        }
+        continue;
+      }
+
+      if (slug.includes('detaillierte beschreibung') || slug.includes('detailed description')) {
+        // Already handled above via numbered sections; skip generic capture
+        continue;
+      }
+
+      genericSections.push({
+        heading: normalizedHeading,
+        content: content.replace(/\*\*/g, '').trim(),
+      });
+    }
+
+    if (result.details.length === 0 && genericSections.length > 0) {
+      result.detailsTitle = 'Analyseabschnitte';
+      result.details = genericSections.map(section => ({
+        title: section.heading,
+        content: section.content,
+      }));
+    }
+
+    return result;
+  }
+</script>
+
+<div class="vision-tags glass-card">
+  <h3>Vision Analysis</h3>
+
+  {#if faces.length > 0}
+    <div class="tag-group">
+      <span class="tag face-tag">
+        <span class="w-4 h-4 flex items-center justify-center"
+          ><MaterialSymbol icon="face" fontSize={16} /></span
+        >
+        {faces.length}
+        {faces.length === 1 ? 'Person' : 'Persons'}
+      </span>
+    </div>
+  {/if}
+
+  {#if topObjects.length > 0}
+    <div class="tag-group">
+      <span class="tag-label">Objects:</span>
+      {#each topObjects as object}
+        <span class="tag object-tag">
+          {object.label}
+          <span class="opacity-60 text-xs">{(object.confidence * 100).toFixed(0)}%</span>
+        </span>
+      {/each}
+    </div>
+  {/if}
+
+  {#if topSceneClassification.length > 0}
+    <div class="tag-group">
+      <span class="tag-label">Scene:</span>
+      {#each topSceneClassification as scene}
+        <span class="tag scene-tag">
+          {scene.label}
+          <span class="opacity-60 text-xs">{(scene.confidence * 100).toFixed(0)}%</span>
+        </span>
+      {/each}
+    </div>
+  {/if}
+
+  {#if topCustomObjects.length > 0}
+    <div class="tag-group">
+      <span class="tag-label">Custom:</span>
+      {#each topCustomObjects as object}
+        <span class="tag custom-tag">
+          {object.label}
+          <span class="opacity-60 text-xs">{(object.confidence * 100).toFixed(0)}%</span>
+        </span>
+      {/each}
+    </div>
+  {/if}
+
+  {#if qwenVLDescription}
+    <div class="ai-description qwen-vl">
       <div class="ai-header">
         <span class="ai-label">Qwen VL Analyse:</span>
       </div>
 
       {#if qwenVLDescriptionEn}
         <div class="qwen-translation mt-2 p-3 bg-white/5 rounded border border-white/10 mb-4">
-            <div class="flex items-center gap-2 mb-1 text-xs uppercase tracking-wide text-blue-300/80 font-semibold">
-                <MaterialSymbol icon="translate" fontSize={14} />
-                English Translation
-            </div>
-            <p class="text-sm text-white/90 italic leading-relaxed">{qwenVLDescriptionEn}</p>
+          <div
+            class="flex items-center gap-2 mb-1 text-xs uppercase tracking-wide text-blue-300/80 font-semibold"
+          >
+            <MaterialSymbol icon="translate" fontSize={14} />
+            English Translation
+          </div>
+          <p class="text-sm text-white/90 italic leading-relaxed">{qwenVLDescriptionEn}</p>
         </div>
       {/if}
-
-
 
       {#if parsedQwenVL && (parsedQwenVL.sceneInfo || parsedQwenVL.summary || parsedQwenVL.details.length > 0)}
         <!-- Scene Info -->
@@ -130,7 +296,7 @@
     </div>
   {/if}
 
-  {#if faces.length === 0 && topObjects.length === 0 && topSceneClassification.length === 0 && topCustomObjects.length === 0 && !aiDescription}
+  {#if faces.length === 0 && topObjects.length === 0 && topSceneClassification.length === 0 && topCustomObjects.length === 0 && !aiDescription && !qwenVLDescription}
     <div class="no-results">
       <p>No objects or faces detected</p>
     </div>
