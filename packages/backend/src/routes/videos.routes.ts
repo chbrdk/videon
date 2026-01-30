@@ -99,7 +99,7 @@ router.get('/folders', async (req: any, res: any) => {
 
 // Simple upload video (single file)
 router.post('/', upload.single('video'), validateVideoUpload, (req: any, res: any) =>
-  videosController.simpleUpload(req, res)
+  videosController.uploadVideo(req, res)
 );
 
 // Multiple video upload (up to 10 files)
