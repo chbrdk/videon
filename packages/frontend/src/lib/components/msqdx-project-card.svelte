@@ -11,7 +11,6 @@
   export let project: Project;
 
   const dispatch = createEventDispatcher();
-  const dispatch = createEventDispatcher();
 
   function handleClick() {
     console.log('Navigating to project:', project.id);

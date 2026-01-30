@@ -13,7 +13,6 @@
   export let className = '';
 
   const dispatch = createEventDispatcher();
-  const dispatch = createEventDispatcher();
 
   function handleClick() {
     goto(resolve(`/videos?folder=${folder.id}`));

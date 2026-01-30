@@ -1,9 +1,7 @@
-<script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import type { Video } from '$lib/api/videos';
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
-  import { MsqdxChip } from '$lib/components/ui';
   import { MsqdxChip } from '$lib/components/ui';
   import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { base } from '$app/paths';
@@ -14,13 +12,10 @@
   const dispatch = createEventDispatcher<{
     select: { id: string };
     delete: { id: string };
-    select: { id: string };
-    delete: { id: string };
     rename: { id: string };
     share: { id: string };
   }>();
 
-  let thumbnailUrl = '';
   let thumbnailUrl = '';
 
   function handleClick(event?: Event) {
