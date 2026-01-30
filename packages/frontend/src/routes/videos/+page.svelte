@@ -135,17 +135,15 @@ let scrollAnimationId: number | null = null;
     }
   });
 
-  // React to URL changes
-  $: if ($page.url.searchParams.get('folder') !== folderId) {
-    const newFolderId = $page.url.searchParams.get('folder') || null;
-    if (newFolderId !== folderId) {
-      loadFolders(newFolderId);
-      // Update projects visibility based on folder
-      if (!newFolderId) {
-           projectsApi.getProjects().then(p => projects = p).catch(e => console.error(e));
-      } else {
-          projects = [];
-      }
+  // React to folderId changes
+  $: {
+    console.log('Folder ID changed:', folderId);
+    loadFolders(folderId);
+    // Update projects visibility based on folder
+    if (!folderId) {
+         projectsApi.getProjects().then(p => projects = p).catch(e => console.error(e));
+    } else {
+        projects = [];
     }
   }
 
