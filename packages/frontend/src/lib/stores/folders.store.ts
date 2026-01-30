@@ -15,7 +15,7 @@ export const videosInFolder = writable<VideoResponse[]>([]);
 export const viewMode = writable<'grid' | 'list'>('grid');
 export const selectedItems = writable<Set<string>>(new Set());
 export const searchQuery = writable<string>('');
-export const searchResults = writable<SearchResults>({ folders: [], videos: [] });
+export const searchResults = writable<SearchResults>({ folders: [], videos: [], projects: [] });
 export const isLoading = writable<boolean>(false);
 export const error = writable<string | null>(null);
 
@@ -27,10 +27,10 @@ export async function loadFolders(parentId?: string) {
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     const targetId = parentId ?? null;
     const folderId = targetId ? targetId : 'root';
-    
+
     const [folderData, breadcrumbData] = await Promise.all([
       foldersApi.getFolderById(folderId),
       foldersApi.getBreadcrumbs(targetId)
@@ -41,7 +41,7 @@ export async function loadFolders(parentId?: string) {
       currentFolder.set(isRoot ? null : folderData);
       folders.set(folderData.folders ?? []);
       videosInFolder.set(folderData.videos ?? []);
-      searchResults.set({ folders: [], videos: [] });
+      searchResults.set({ folders: [], videos: [], projects: [] });
       breadcrumbs.set(breadcrumbData ?? []);
     }
   } catch (err) {
@@ -57,14 +57,14 @@ export async function createFolder(name: string, parentId?: string) {
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     const newFolder = await foldersApi.createFolder({
       name: name.trim()
     }, parentId);
-    
+
     // Refresh current folder contents
     await loadFolders(parentId);
-    
+
     return newFolder;
   } catch (err) {
     error.set(err.message || 'Failed to create folder');
@@ -79,14 +79,14 @@ export async function updateFolder(id: string, name: string) {
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     const updatedFolder = await foldersApi.updateFolder(id, {
       name: name.trim()
     });
-    
+
     // Refresh current folder contents
     await loadFolders($currentFolder?.id || null);
-    
+
     return updatedFolder;
   } catch (err) {
     error.set(err.message || 'Failed to update folder');
@@ -101,12 +101,12 @@ export async function deleteFolder(id: string) {
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     const result = await foldersApi.deleteFolder(id);
-    
+
     // Refresh current folder contents
     await loadFolders($currentFolder?.id || null);
-    
+
     return result;
   } catch (err) {
     error.set(err.message || 'Failed to delete folder');
@@ -121,12 +121,12 @@ export async function moveVideos(videoIds: string[], folderId: string | null) {
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     await foldersApi.moveVideos(videoIds, folderId);
-    
+
     // Clear selection
     selectedItems.set(new Set());
-    
+
     // Refresh current folder contents
     await loadFolders($currentFolder?.id || null);
   } catch (err) {
@@ -151,19 +151,19 @@ export async function loadBreadcrumbs(folderId: string | null) {
 export async function searchAll(query: string) {
   try {
     if (!query.trim()) {
-      searchResults.set({ folders: [], videos: [] });
+      searchResults.set({ folders: [], videos: [], projects: [] });
       return;
     }
-    
+
     isLoading.set(true);
     error.set(null);
-    
+
     const results = await foldersApi.search(query.trim());
     searchResults.set(results);
   } catch (err) {
     error.set(err.message || 'Failed to search');
     console.error('Error searching:', err);
-    searchResults.set({ folders: [], videos: [] });
+    searchResults.set({ folders: [], videos: [], projects: [] });
   } finally {
     isLoading.set(false);
   }
@@ -259,12 +259,12 @@ export async function moveVideoToFolder(videoId: string, folderId: string | null
   try {
     isLoading.set(true);
     error.set(null);
-    
+
     await videosApi.moveVideo(videoId, folderId);
-    
+
     // Refresh current folder contents
     await loadFolders($currentFolder?.id || null);
-    
+
     console.log(`Video ${videoId} moved to folder ${folderId || 'root'}`);
   } catch (err) {
     error.set(err.message || 'Failed to move video');

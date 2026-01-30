@@ -56,6 +56,7 @@ export interface BreadcrumbItem {
 export interface SearchResults {
   folders: Folder[];
   videos: VideoResponse[];
+  projects: Project[];
 }
 
 export interface CreateFolderDto {

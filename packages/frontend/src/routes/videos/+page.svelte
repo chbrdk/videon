@@ -156,8 +156,10 @@ let scrollAnimationId: number | null = null;
 
   // Get current folder contents
   $: currentContents = $searchQuery ? $searchResults : { folders: $folders, videos: $videosInFolder };
+  $: displayedProjects = $searchQuery ? ($searchResults.projects || []) : projects;
+  
   $: allItems = [
-    ...(projects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
+    ...(displayedProjects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
     ...(currentContents.folders || []).map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
     ...(currentContents.videos || []).map(video => ({ ...video, id: video.id, type: 'video' as const }))
   ];
@@ -694,7 +696,7 @@ let scrollAnimationId: number | null = null;
         {/if}
         
         <!-- Projects -->
-        {#each projects as project (project.id)}
+        {#each displayedProjects as project (project.id)}
           <div
              class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
              on:click={() => goto(`${base}/projects/${project.id}`)}

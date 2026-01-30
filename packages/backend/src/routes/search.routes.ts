@@ -5,6 +5,7 @@ const router: Router = Router();
 const searchController = new SearchController();
 
 router.get('/', searchController.search);
+router.get('/entities', searchController.searchEntities);
 router.post('/videos/:videoId/index', searchController.indexVideo);
 
 export default router;

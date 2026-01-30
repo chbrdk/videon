@@ -26,7 +26,7 @@ export class FoldersApi {
   async getFolderById(id: string): Promise<FolderWithContents> {
     const folderId = id === 'root' ? 'root' : id;
     const response = await fetch(`${this.baseUrl}/folders/${folderId}`);
-    
+
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Folder not found');
@@ -117,7 +117,7 @@ export class FoldersApi {
   }
 
   async search(query: string): Promise<SearchResults> {
-    const url = new URL(`${this.baseUrl}/search`);
+    const url = new URL(`${this.baseUrl}/search/entities`);
     url.searchParams.set('q', query);
 
     const response = await fetch(url.toString());
