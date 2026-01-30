@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { OpenAIService } from './openai.service';
 import logger from '../utils/logger';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -48,7 +49,6 @@ export class SearchService {
     logger.info(`Found ${matches.length} matches for "${query}"`);
 
     return matches.map((index: any) => {
-      const path = require('path');
       // Use environment variable or default to Docker path
       const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const videoPath = path.join(videosStoragePath, index.video.filename);
