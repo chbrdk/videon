@@ -259,7 +259,7 @@
             : MSQDX_COLORS.light.textPrimary};
             display: {isMobile ? 'none' : 'block'};
           "
-        />
+        ></div>
 
         <span
           style="

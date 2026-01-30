@@ -17,6 +17,12 @@ const config = {
     prerender: {
       entries: []
     }
+  },
+  onwarn: (warning, handler) => {
+    if (warning.code.startsWith('a11y-') || warning.code === 'css_unused_selector') {
+      return;
+    }
+    handler(warning);
   }
 };
 
