@@ -14,46 +14,21 @@ const qwenVLService = new QwenVLService();
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // Check analyzer health (optional)
-    let analyzerHealth = false;
-    try {
-      analyzerHealth = await analyzerClient.getHealth();
-    } catch (error) {
-      console.log('Analyzer service not available:', (error as Error).message);
-    }
-    
-    // Check saliency service health (optional)
-    let saliencyHealth = false;
-    try {
-      saliencyHealth = await saliencyClient.getHealth();
-    } catch (error) {
-      console.log('Saliency service not available:', (error as Error).message);
-    }
-    
-    // Check audio separation service health (optional)
-    let audioSeparationHealth = false;
-    try {
-      audioSeparationHealth = await audioSeparationClient.getHealth();
-    } catch (error) {
-      console.log('Audio separation service not available:', (error as Error).message);
-    }
-    
-    // Check vision service health (optional - native macOS service)
-    let visionHealth = false;
-    try {
-      visionHealth = await visionClient.getHealth();
-    } catch (error) {
-      console.log('Vision service not available:', (error as Error).message);
-    }
-    
-    // Check Qwen VL service health (optional - local MLX service)
-    let qwenVLHealth = false;
-    try {
-      qwenVLHealth = await qwenVLService.isAvailable();
-    } catch (error) {
-      console.log('Qwen VL service not available:', (error as Error).message);
-    }
-    
+    // Run checks in parallel to avoid accumulating timeouts
+    const [analyzerResult, saliencyResult, audioSeparationResult, visionResult, qwenVLResult] = await Promise.allSettled([
+      analyzerClient.getHealth().catch(err => { console.log('Analyzer unavailable:', err.message); return false; }),
+      saliencyClient.getHealth().catch(err => { console.log('Saliency unavailable:', err.message); return false; }),
+      audioSeparationClient.getHealth().catch(err => { console.log('Audio Separation unavailable:', err.message); return false; }),
+      visionClient.getHealth().catch(err => { console.log('Vision unavailable:', err.message); return false; }),
+      qwenVLService.isAvailable().catch(err => { console.log('QwenVL unavailable:', err.message); return false; })
+    ]);
+
+    const analyzerHealth = analyzerResult.status === 'fulfilled' ? analyzerResult.value : false;
+    const saliencyHealth = saliencyResult.status === 'fulfilled' ? saliencyResult.value : false;
+    const audioSeparationHealth = audioSeparationResult.status === 'fulfilled' ? audioSeparationResult.value : false;
+    const visionHealth = visionResult.status === 'fulfilled' ? visionResult.value : false;
+    const qwenVLHealth = qwenVLResult.status === 'fulfilled' ? qwenVLResult.value : false;
+
     const health = {
       status: 'ok',
       timestamp: new Date().toISOString(),

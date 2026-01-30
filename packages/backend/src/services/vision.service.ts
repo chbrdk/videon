@@ -95,7 +95,7 @@ export class VisionService {
       logger.info(`Vision analysis completed for scene ${sceneId}: ${visionResult.objects.length} objects, ${visionResult.faces.length} faces, ${textRecognitions.length} text regions`);
     } catch (error) {
       logger.error(`Vision analysis failed for scene ${sceneId}:`, error);
-      
+
       // Get scene info for error logging
       const sceneInfo = await this.prisma.scene.findUnique({
         where: { id: sceneId },
@@ -152,7 +152,7 @@ export class VisionService {
   async isVisionServiceAvailable(): Promise<boolean> {
     try {
       const response = await axios.get(`${this.visionServiceUrl}/health`, {
-        timeout: 5000
+        timeout: 1000 // 1 second timeout only for health check
       });
       return response.status === 200;
     } catch (error) {
@@ -164,7 +164,7 @@ export class VisionService {
   async triggerVisionAnalysisForVideo(videoId: string): Promise<void> {
     try {
       const scenes = await this.prisma.scene.findMany({
-        where: { 
+        where: {
           videoId,
           visionAnalysis: null // Only scenes without vision analysis
         },
