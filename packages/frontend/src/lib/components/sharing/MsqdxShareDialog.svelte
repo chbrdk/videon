@@ -11,7 +11,7 @@
 
   export let open = false;
   export let itemId: string;
-  export let itemType: 'project' | 'video';
+  export let itemType: 'project' | 'video' | 'folder';
   export let itemName: string = '';
 
   const dispatch = createEventDispatcher();
@@ -49,6 +49,9 @@
       if (itemType === 'project') {
         const res = await sharingApi.getProjectCollaborators(itemId);
         collaborators = res || [];
+      } else if (itemType === 'folder') {
+        const res = await sharingApi.getFolderCollaborators(itemId);
+        collaborators = res || [];
       } else {
         const res = await sharingApi.getVideoCollaborators(itemId);
         collaborators = res || [];
@@ -70,6 +73,8 @@
     try {
       if (itemType === 'project') {
         await sharingApi.shareProject(itemId, email, role);
+      } else if (itemType === 'folder') {
+        await sharingApi.shareFolder(itemId, email, role);
       } else {
         await sharingApi.shareVideo(itemId, email, role);
       }
@@ -89,6 +94,8 @@
     try {
       if (itemType === 'project') {
         await sharingApi.removeProjectShare(itemId, userId);
+      } else if (itemType === 'folder') {
+        await sharingApi.removeFolderShare(itemId, userId);
       } else {
         await sharingApi.removeVideoShare(itemId, userId);
       }

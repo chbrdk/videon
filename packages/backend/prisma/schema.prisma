@@ -148,6 +148,7 @@ model Folder {
 
   // Relations
   videos Video[]
+  folderShares FolderShare[]
 
   @@index([parentId])
   @@map("folders")
@@ -444,6 +445,7 @@ model User {
   
   projectShares ProjectShare[]
   videoShares   VideoShare[]
+  folderShares  FolderShare[]
   
   @@map("users")
 }
@@ -472,4 +474,17 @@ model VideoShare {
 
   @@unique([videoId, userId])
   @@map("video_shares")
+}
+
+model FolderShare {
+  id        String   @id @default(cuid())
+  folderId  String
+  folder    Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("VIEWER") // VIEWER, EDITOR
+  createdAt DateTime @default(now())
+
+  @@unique([folderId, userId])
+  @@map("folder_shares")
 }

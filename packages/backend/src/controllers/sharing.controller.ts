@@ -41,6 +41,24 @@ export class SharingController {
         }
     }
 
+    async shareFolder(req: Request, res: Response) {
+        try {
+            const { folderId } = req.params;
+            const { email, role } = req.body;
+            const user = (req as any).user;
+
+            if (!email || !role) {
+                return res.status(400).json({ error: 'Email and role are required' });
+            }
+
+            await sharingService.shareFolder(folderId, email, role, user.id);
+            res.json({ success: true, message: 'Folder shared successfully' });
+        } catch (error) {
+            logger.error('Error sharing folder:', error);
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
     async getSharedWithMe(req: Request, res: Response) {
         try {
             const user = (req as any).user;
@@ -84,6 +102,22 @@ export class SharingController {
         }
     }
 
+    async removeFolderShare(req: Request, res: Response) {
+        try {
+            const { folderId } = req.params;
+            const { userId } = req.body;
+
+            if (!userId) {
+                return res.status(400).json({ error: 'Target userId required' });
+            }
+
+            await sharingService.removeFolderShare(folderId, userId);
+            res.json({ success: true });
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
     async getProjectCollaborators(req: Request, res: Response) {
         try {
             const { projectId } = req.params;
@@ -102,6 +136,17 @@ export class SharingController {
             res.json(collaborators);
         } catch (error) {
             logger.error('Error fetching video collaborators:', error);
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async getFolderCollaborators(req: Request, res: Response) {
+        try {
+            const { folderId } = req.params;
+            const collaborators = await sharingService.getFolderCollaborators(folderId);
+            res.json(collaborators);
+        } catch (error) {
+            logger.error('Error fetching folder collaborators:', error);
             res.status(500).json({ error: (error as Error).message });
         }
     }

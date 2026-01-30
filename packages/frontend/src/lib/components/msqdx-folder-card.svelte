@@ -1,6 +1,7 @@
 <script>
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
+  import { _ } from '$lib/i18n';
   import { MsqdxGlassCard, MaterialSymbol } from '$lib/components/ui';
   import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { createEventDispatcher } from 'svelte';
@@ -52,6 +53,11 @@
         label: 'Rename',
         icon: 'edit',
         action: () => dispatch('rename', folder),
+      },
+      {
+        label: _('actions.share') ?? 'Share',
+        icon: 'share',
+        action: () => dispatch('share', folder),
       },
       {
         label: 'Delete',

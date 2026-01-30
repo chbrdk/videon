@@ -68,7 +68,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   
   
   let deleteDialog = { open: false, type: 'video' as 'video'|'folder'|'project', item: null };
-  let shareDialog = { open: false, type: 'video' as 'video'|'project', item: null as any };
+  let shareDialog = { open: false, type: 'video' as 'video'|'project'|'folder', item: null as any };
   
   let unifiedDialogOpen = false;
   let activeMenuProjectId: string | null = null;
@@ -105,6 +105,10 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   function handleShareVideo(video) {
     shareDialog = { open: true, type: 'video', item: video };
+  }
+
+  function handleShareFolder(folder) {
+    shareDialog = { open: true, type: 'folder', item: folder };
   }
 let revealMode = false;
 let revealedCount = 0;
@@ -734,6 +738,7 @@ let scrollAnimationId: number | null = null;
               onContextMenu={(e) => handleContextMenu(e, { ...folder, type: 'folder' })}
               on:rename={handleRenameFolderClick}
               on:delete={handleDeleteFolderClick}
+              on:share={(e) => handleShareFolder(folder)}
             />
           </div>
         {/each}

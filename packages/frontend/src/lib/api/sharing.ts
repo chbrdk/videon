@@ -16,6 +16,7 @@ export interface SharedItem {
     id: string;
     name: string; // Video filename or Project name
     sharedRole: 'VIEWER' | 'EDITOR';
+    type?: 'project' | 'video' | 'folder';
     owner?: {
         name: string | null;
         email: string;
@@ -25,6 +26,7 @@ export interface SharedItem {
 export interface SharedItemsResponse {
     projects: any[]; // Typed loosely to avoid circular deps with Project types for now
     videos: any[];
+    folders: any[];
 }
 
 class SharingApi {
@@ -68,12 +70,23 @@ class SharingApi {
         });
     }
 
+    async shareFolder(folderId: string, email: string, role: 'VIEWER' | 'EDITOR'): Promise<{ success: true, message: string }> {
+        return this.request(`/sharing/folders/${folderId}/share`, {
+            method: 'POST',
+            body: JSON.stringify({ email, role })
+        });
+    }
+
     async getProjectCollaborators(projectId: string): Promise<Collaborator[]> {
         return this.request<Collaborator[]>(`/sharing/projects/${projectId}/collaborators`);
     }
 
     async getVideoCollaborators(videoId: string): Promise<Collaborator[]> {
         return this.request<Collaborator[]>(`/sharing/videos/${videoId}/collaborators`);
+    }
+
+    async getFolderCollaborators(folderId: string): Promise<Collaborator[]> {
+        return this.request<Collaborator[]>(`/sharing/folders/${folderId}/collaborators`);
     }
 
     async removeProjectShare(projectId: string, userId: string): Promise<void> {
@@ -85,6 +98,13 @@ class SharingApi {
 
     async removeVideoShare(videoId: string, userId: string): Promise<void> {
         return this.request(`/sharing/videos/${videoId}/share`, {
+            method: 'DELETE',
+            body: JSON.stringify({ userId })
+        });
+    }
+
+    async removeFolderShare(folderId: string, userId: string): Promise<void> {
+        return this.request(`/sharing/folders/${folderId}/share`, {
             method: 'DELETE',
             body: JSON.stringify({ userId })
         });
