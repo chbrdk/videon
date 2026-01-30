@@ -147,9 +147,10 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-  // Handle search query changes
-  $: if ($searchQuery && $searchQuery !== searchQueryParam) {
-    searchAll($searchQuery);
+  // Handle search query changes from URL
+  $: if (searchQueryParam && searchQueryParam !== $searchQuery) {
+    searchQuery.set(searchQueryParam);
+    searchAll(searchQueryParam);
   }
 
   // Get current folder contents
