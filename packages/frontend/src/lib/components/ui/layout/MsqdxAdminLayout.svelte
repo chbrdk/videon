@@ -342,7 +342,7 @@
       <!-- Panel toggle button - mobile only -->
       {#if isMobile && !drawerOpen}
         <button
-          on:click={() => {}}
+          onclick={() => {}}
           aria-label="Toggle panel"
           style="
             position: absolute;
@@ -438,14 +438,14 @@
   <!-- Mobile Overlay for Navigation -->
   {#if drawerOpen && isMobile}
     <div
-      on:click={handleDrawerClose}
+      onclick={handleDrawerClose}
       style="
         position: fixed;
         inset: 0;
         background-color: rgba(0, 0, 0, 0.5);
         z-index: 1099;
       "
-    />
+    ></div>
   {/if}
 </div>
 

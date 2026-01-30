@@ -216,7 +216,7 @@
       <div class="flex flex-wrap gap-2">
         {#each examples as example}
           <button
-            on:click={() => useExample(example)}
+            onclick={() => useExample(example)}
             disabled={loading || !isAvailable}
             class="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -234,7 +234,7 @@
       <div class="flex gap-2">
         {#each [1, 2, 3] as count}
           <button
-            on:click={() => (variantCount = count)}
+            onclick={() => (variantCount = count)}
             disabled={loading || !isAvailable}
             class="px-4 py-2 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed {variantCount ===
             count
@@ -250,7 +250,7 @@
     <!-- Actions -->
     <div class="flex gap-3">
       <button
-        on:click={handleAnalyze}
+        onclick={handleAnalyze}
         disabled={loading || !isAvailable || !query.trim()}
         class="flex-1 glass-button px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
@@ -301,7 +301,7 @@
         <div class="flex gap-3 overflow-x-auto pb-2">
           {#each suggestions as suggestion, i}
             <button
-              on:click={() => (selectedSuggestionIndex = i)}
+              onclick={() => (selectedSuggestionIndex = i)}
               class="flex-shrink-0 glass-card p-4 rounded-lg transition-all {selectedSuggestionIndex ===
               i
                 ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -389,13 +389,13 @@
           <!-- Actions -->
           <div class="flex gap-3">
             <button
-              on:click={handleCreateProject}
+              onclick={handleCreateProject}
               class="flex-1 glass-button px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
             >
               {$currentLocale === 'en' ? '✓ Create Project' : '✓ Projekt erstellen'}
             </button>
             <button
-              on:click={handleRegenerate}
+              onclick={handleRegenerate}
               class="glass-button px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {$currentLocale === 'en' ? '↻ Regenerate' : '↻ Neu generieren'}

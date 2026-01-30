@@ -21,8 +21,9 @@
     type = 'button' as const,
     href,
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: import('svelte').Snippet } = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
@@ -86,7 +87,7 @@
     {#if loading}
       <span class="spinner"></span>
     {/if}
-    <slot />
+    {@render children?.()}
   </a>
 {:else}
   <button
@@ -97,13 +98,12 @@
     {type}
     disabled={disabled || loading}
     style={getButtonStyles()}
-    on:click
     {...rest}
   >
     {#if loading}
       <span class="spinner"></span>
     {/if}
-    <slot />
+    {@render children?.()}
   </button>
 {/if}
 
