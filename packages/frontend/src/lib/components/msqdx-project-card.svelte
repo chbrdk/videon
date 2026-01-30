@@ -52,14 +52,14 @@
         <MsqdxGlassMenu
           align="right"
           items={[
-            { label: 'Rename', icon: 'edit', action: () => handleMenuAction('rename') },
+            { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
             {
               label: _('actions.share') ?? 'Share',
               icon: 'share',
               action: () => handleMenuAction('share'),
             },
             {
-              label: 'Delete',
+              label: _('actions.delete'),
               icon: 'delete',
               danger: true,
               action: () => handleMenuAction('delete'),
