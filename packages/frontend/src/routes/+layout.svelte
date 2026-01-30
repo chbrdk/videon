@@ -19,6 +19,7 @@
   // Load videos on mount only if not on a video detail page
   let isCheckingAuth = true;
   let isAuthenticated = false;
+  let searching = false; // Defensive fix for ReferenceError
 
   $: currentPath = $page.url.pathname;
   $: isPublicRoute = ['/login', '/register'].some(
