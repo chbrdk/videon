@@ -100,6 +100,7 @@
     -webkit-backdrop-filter: blur(var(--blur));
     background-color: var(--background-color);
     border: 1px solid var(--border-color);
+    border-radius: var(--msqdx-radius-xxl, 40px) !important;
     min-height: 200px; /* Match project card height approximate */
   }
 

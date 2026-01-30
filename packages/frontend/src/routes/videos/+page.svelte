@@ -567,7 +567,7 @@ let scrollAnimationId: number | null = null;
 <div class="max-w-7xl mx-auto space-y-8">
 
   <!-- Breadcrumbs -->
-  <MsqdxBreadcrumbs />
+  <MsqdxBreadcrumbs class="mt8" />
 
   <!-- Toolbar -->
   <div class="flex items-center justify-between gap-4">
