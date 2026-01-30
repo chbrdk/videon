@@ -7,6 +7,7 @@
   import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { base } from '$app/paths';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   export let video: Video;
 
@@ -200,14 +201,22 @@
 
     <!-- Info Chips -->
     <div class="flex flex-wrap gap-2 pb-4 pointer-events-none">
-      <MsqdxChip variant="glass" color="info">
+      <MsqdxChip
+        variant="glass"
+        color="info"
+        style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
+      >
         <span class="w-3 h-3 chip-icon flex items-center justify-center"
           ><MaterialSymbol icon="schedule" fontSize={12} /></span
         >
         <span>{formatDuration(video.duration)}</span>
       </MsqdxChip>
 
-      <MsqdxChip variant="glass" color="info">
+      <MsqdxChip
+        variant="glass"
+        color="info"
+        style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
+      >
         <span class="w-3 h-3 chip-icon flex items-center justify-center"
           ><MaterialSymbol icon="storage" fontSize={12} /></span
         >
@@ -256,7 +265,6 @@
   }
 
   .msqdx-glass-card.hoverable:hover {
-    background-color: var(--msqdx-color-dark-paper);
     border-color: var(--msqdx-color-brand-orange);
   }
 
