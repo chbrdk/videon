@@ -1,192 +1,125 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { _ } from '$lib/i18n';
-  import { MsqdxGlassCard, MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol } from '$lib/components/ui';
   import MsqdxCardMenu from '$lib/components/msqdx-card-menu.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  export let folder;
+  export let folder: any; // Using any to avoid strict type issues for now, similar to before
   export let selected = false;
-  export let onSelect = undefined;
-  export let onContextMenu = undefined;
+  export let onSelect: ((folder: any) => void) | undefined = undefined;
+  export let onContextMenu: ((e: MouseEvent, folder: any) => void) | undefined = undefined;
   export let className = '';
 
   const dispatch = createEventDispatcher();
 
   function handleClick() {
-    goto(resolve(`/videos?folder=${folder.id}`));
+    if (onSelect) {
+      onSelect(folder);
+    } else {
+      goto(resolve(`/videos?folder=${folder.id}`));
+    }
   }
 
-  function handleContextMenu(e) {
-    e.preventDefault();
+  function handleContextMenu(e: MouseEvent) {
     if (onContextMenu) {
+      e.preventDefault();
       onContextMenu(e, folder);
     }
   }
+
+  function handleMenuAction(action: string) {
+    dispatch(action, folder);
+  }
 </script>
 
-<MsqdxGlassCard
-  hoverable={true}
-  borderRadiusVariant="xxl"
-  noPadding={true}
-  class="folder-card {className} {selected ? 'selected' : ''}"
+<div
+  class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group {className} {selected
+    ? 'selected'
+    : ''}"
   on:click={handleClick}
   on:contextmenu={handleContextMenu}
   role="button"
   tabindex="0"
   style="
     --blur: var(--msqdx-glass-blur);
-    --opacity: 0.05;
-    --border-radius: var(--msqdx-radius-xxl);
-    --padding: 0;
     --background-color: var(--msqdx-color-dark-paper);
-    --border-color: var(--msqdx-color-brand-orange);
-    --border-top-color: var(--msqdx-color-dark-border);
+    --border-color: {selected ? MSQDX_COLORS.brand.blue : 'var(--msqdx-color-dark-border)'};
+    border-radius: 40px;
   "
 >
-  <!-- Top Right Actions -->
+  <!-- Folder Menu -->
   <MsqdxCardMenu
     items={[
-      {
-        label: 'Rename',
-        icon: 'edit',
-        action: () => dispatch('rename', folder),
-      },
+      { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
       {
         label: _('actions.share') ?? 'Share',
         icon: 'share',
-        action: () => dispatch('share', folder),
+        action: () => handleMenuAction('share'),
       },
       {
-        label: 'Delete',
+        label: _('actions.delete'),
         icon: 'delete',
         danger: true,
-        action: () => dispatch('delete', folder),
+        action: () => handleMenuAction('delete'),
       },
     ]}
   />
 
-  <div class="folder-icon">
-    <MaterialSymbol icon="folder" fontSize={48} />
-  </div>
-
-  <div class="folder-content">
-    <h3 class="folder-name">{folder.name}</h3>
-    <div class="folder-meta">
+  <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
+    <div
+      class="w-12 h-12 rounded-full flex items-center justify-center"
+      style="background-color: {MSQDX_COLORS.tints.blue};"
+    >
+      <MaterialSymbol icon="folder" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
+    </div>
+    <h3
+      class="font-semibold leading-tight line-clamp-2"
+      style="
+        color: {MSQDX_COLORS.dark.textPrimary};
+        font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+      "
+    >
+      {folder.name}
+    </h3>
+    <span
+      class="text-xs"
+      style="
+        color: {MSQDX_COLORS.dark.textSecondary};
+        font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
+      "
+    >
       {folder.videoCount}
       {folder.videoCount === 1 ? 'Video' : 'Videos'}
-    </div>
+    </span>
   </div>
 
-  <div class="selection-indicator">
-    {#if selected}
-      <MaterialSymbol icon="check_circle" fontSize={24} />
-    {/if}
-  </div>
-</MsqdxGlassCard>
+  <!-- Selection Indicator -->
+  {#if selected}
+    <div class="absolute top-2 left-2 z-10 selection-indicator">
+      <MaterialSymbol icon="check_circle" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
+    </div>
+  {/if}
+</div>
 
 <style>
-  .folder-card {
+  .msqdx-glass-card {
     position: relative;
-    min-height: 140px;
-  }
-
-  .folder-card :global(.msqdx-glass-card) {
-    border-radius: 40px !important;
-  }
-
-  @media (min-width: 768px) {
-    .folder-card :global(.msqdx-glass-card) {
-      border-radius: 40px !important;
-    }
-  }
-
-  .folder-card-draggable {
-    position: relative;
+    overflow: hidden;
+    transition: all var(--msqdx-transition-slow);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    user-select: none;
+    /* Glass Effect properties */
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    min-height: 200px; /* Match project card height approximate */
   }
 
-  .folder-card:hover {
-    transform: translateY(-2px);
-  }
-
-  .folder-card:focus {
-    outline: 2px solid var(--msqdx-color-brand-orange);
-    outline-offset: 2px;
-  }
-
-  .folder-card.selected {
-    box-shadow: 0 0 0 2px var(--msqdx-color-brand-orange);
-  }
-
-  .folder-icon {
-    color: var(--msqdx-color-dark-text-secondary);
-    margin-bottom: var(--msqdx-spacing-sm);
-    transition: color var(--msqdx-transition-standard);
-  }
-
-  .folder-card:hover .folder-icon {
-    color: var(--msqdx-color-dark-text-primary);
-  }
-
-  .folder-content {
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .folder-name {
-    font-size: var(--msqdx-font-size-base);
-    font-weight: var(--msqdx-font-weight-semibold);
-    color: var(--msqdx-color-dark-text-primary);
-    margin: 0 0 var(--msqdx-spacing-xs) 0;
-    word-break: break-word;
-    font-family: var(--msqdx-font-primary);
-  }
-
-  .folder-meta {
-    font-size: var(--msqdx-font-size-sm);
-    color: var(--msqdx-color-dark-text-secondary);
-    font-weight: var(--msqdx-font-weight-medium);
-    font-family: var(--msqdx-font-primary);
-  }
-
-  .selection-indicator {
-    position: absolute;
-    top: var(--msqdx-spacing-sm);
-    right: var(--msqdx-spacing-sm);
-    width: 24px;
-    height: 24px;
-    background: var(--msqdx-color-status-success);
-    border-radius: var(--msqdx-radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--msqdx-color-brand-white);
-    opacity: 0;
-    transform: scale(0);
-    transition: all var(--msqdx-transition-standard);
-  }
-
-  .folder-card.selected .selection-indicator {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  /* Drag and drop styles */
-  .folder-card[draggable='true']:hover {
-    cursor: grab;
-  }
-
-  .folder-card[draggable='true']:active {
-    cursor: grabbing;
+  .msqdx-glass-card.selected {
+    box-shadow: 0 0 0 2px var(--msqdx-color-brand-blue, #3b82f6);
   }
 </style>
