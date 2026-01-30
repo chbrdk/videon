@@ -7,7 +7,7 @@
   import { initI18n } from '$lib/i18n';
   // import ServiceStatusPanel from '$lib/components/ServiceStatusPanel.svelte';
   // import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
-  // import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
+  import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
   import { goto } from '$app/navigation';
   import { api } from '$lib/config/environment';
 
@@ -59,18 +59,16 @@
   }
 </script>
 
-{#if isPublicRoute}
+  {#if isPublicRoute}
   <div class="debug-public">
       {@render children?.()}
   </div>
 {:else if isAuthenticated && !isCheckingAuth}
-  <div class="debug-protected">
-      <!-- <MsqdxAdminLayout> -->
-        <h1 style="color: red; padding: 20px;">Protected Layout (Components Disabled)</h1>
-        {@render children?.()}
-      <!-- </MsqdxAdminLayout> -->
+  <MsqdxAdminLayout>
+    {@render children?.()}
+  </MsqdxAdminLayout>
 
-      <!-- <ServiceStatusPanel /> -->
+  <!-- <ServiceStatusPanel /> -->
   </div>
 {:else}
   <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
