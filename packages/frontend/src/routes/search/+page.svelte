@@ -109,87 +109,108 @@
 </svelte:head>
 
 <div class="space-y-8 pb-12">
-  <!-- Local Page Header (matching Settings style) -->
+  <!-- Search Container (Centered when no results) -->
   <div
-    style="
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    width: 100%;
-    margin-bottom: -1rem;
-    margin-top: 1rem;
-    max-width: 42rem; /* Matches max-w-2xl of search input */
-    margin-left: auto;
-    margin-right: auto;
-  "
+    class="flex flex-col items-center justify-center transition-all duration-500"
+    style="min-height: {hasSearched ? '0' : '60vh'}; padding-top: {hasSearched ? '2rem' : '0'};"
   >
-    <h1
-      style="
-      font-size: 2.5rem;
-      text-transform: lowercase;
-      letter-spacing: -2px;
-      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
-      display: block;
-      font-weight: 800;
-      margin: 0px;
-    "
-    >
-      Search
-    </h1>
-  </div>
+    <!-- Search Title (Only visible when not searched, for context) -->
+    {#if !hasSearched}
+      <h1
+        class="mb-8 font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600 animate-fade-in"
+        style="
+          font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+          font-size: 3rem;
+          letter-spacing: -0.05em;
+        "
+      >
+        {_('search.title')}
+      </h1>
+    {/if}
 
-  <!-- Search Input Area -->
-  <div class="max-w-2xl mx-auto">
-    <div class="relative group">
+    <!-- Search Input Area -->
+    <div class="w-full max-w-2xl px-4 relative z-10">
       <div
-        class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-50"
-      ></div>
-
-      <div class="relative flex gap-2">
-        <div class="relative flex-1">
-          <input
-            type="text"
-            bind:value={searchQuery}
-            on:keydown={e => e.key === 'Enter' && handleSearch()}
-            placeholder={_('search.placeholder')}
-            class="
-              w-full pl-12 pr-4 py-4
-              bg-gray-900/60 backdrop-blur-xl
-              border border-white/10 focus:border-indigo-500/50
-              rounded-xl
-              text-white placeholder-white/30
-              outline-none
-              shadow-lg shadow-black/20
-              transition-all duration-300
-            "
+        class="group relative flex items-center w-full transition-all duration-300"
+        style="
+          background: {$theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.6)'};
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid {$theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};
+          border-radius: 9999px;
+          padding: 8px 8px 8px 24px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        "
+      >
+        <!-- Icon -->
+        <div class="text-white/50 mr-4 flex-shrink-0">
+          <MaterialSymbol
+            icon="search"
+            fontSize={28}
+            style="color: {$theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'}"
           />
-          <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/30">
-            <MaterialSymbol icon="search" fontSize={24} />
-          </div>
         </div>
 
-        <button
-          on:click={handleSearch}
-          disabled={searching || !searchQuery.trim()}
-          class="
-            px-6 rounded-xl
-            bg-white/10 hover:bg-white/20 disabled:bg-white/5
-            border border-white/10 disabled:border-transparent
-            text-white disabled:text-white/20
-            transition-all duration-200
-            flex items-center justify-center
+        <!-- Input -->
+        <input
+          type="text"
+          bind:value={searchQuery}
+          on:keydown={e => e.key === 'Enter' && handleSearch()}
+          placeholder={_('search.placeholder')}
+          class="flex-1 bg-transparent border-none outline-none w-full"
+          style="
+            font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+            font-size: 1.125rem;
+            color: {$theme === 'dark' ? '#fff' : '#1e293b'};
           "
-        >
-          {#if searching}
-            <div
-              class="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full"
-            ></div>
-          {:else}
-            <MaterialSymbol icon="arrow_forward" fontSize={24} />
+        />
+
+        <!-- Clear / Search Button -->
+        <div class="flex items-center gap-2">
+          {#if searchQuery}
+            <button
+              on:click={() => {
+                searchQuery = '';
+              }}
+              class="p-2 rounded-full hover:bg-white/10 transition-colors"
+              style="color: {$theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'}"
+            >
+              <MaterialSymbol icon="close" fontSize={20} />
+            </button>
           {/if}
-        </button>
+
+          <button
+            on:click={handleSearch}
+            disabled={searching || !searchQuery.trim()}
+            class="
+                p-3 rounded-full
+                transition-all duration-300
+                flex items-center justify-center
+                shadow-lg
+            "
+            style="
+                background-color: {MSQDX_COLORS.brand.blue};
+                color: white;
+                opacity: {searching || !searchQuery.trim() ? '0.5' : '1'};
+                transform: {searching || !searchQuery.trim() ? 'scale(0.95)' : 'scale(1)'};
+            "
+          >
+            {#if searching}
+              <div
+                class="animate-spin h-6 w-6 border-2 border-white/30 border-t-white rounded-full"
+              ></div>
+            {:else}
+              <MaterialSymbol icon="arrow_forward" fontSize={24} />
+            {/if}
+          </button>
+        </div>
       </div>
+
+      <!-- Glow Effect -->
+      <div
+        class="absolute inset-0 -z-10 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-2xl transition-opacity duration-500"
+        style="opacity: {searchQuery ? '1' : '0'};"
+      ></div>
     </div>
   </div>
 
