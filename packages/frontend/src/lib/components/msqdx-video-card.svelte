@@ -1,3 +1,4 @@
+<script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import type { Video } from '$lib/api/videos';
   import { _ } from '$lib/i18n';
