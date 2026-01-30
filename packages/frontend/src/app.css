@@ -2,111 +2,113 @@
 @import './lib/styles/design-tokens.css';
 
 @import "tailwindcss";
+@config "../tailwind.config.mjs";
 
 @layer base {
   * {
     @apply border-gray-200 dark:border-gray-700;
   }
-  
+
   html {
     @apply transition-colors duration-300;
   }
-  
+
   html.light {
     background: var(--msqdx-light-background, #f8f6f0);
     background-image: linear-gradient(135deg, #f8f6f0 0%, #e9ecef 50%, #f8f6f0 100%);
   }
-  
+
   html.dark {
     background: var(--msqdx-dark-background, #0f0f0f);
     background-image: linear-gradient(135deg, #0f0f0f 0%, #1a1f2e 50%, #0f0f0f 100%);
   }
-  
+
   body {
     @apply text-gray-900 dark:text-white;
-    font-weight: 300; /* Light font weight */
+    font-weight: 300;
+    /* Light font weight */
   }
-  
+
   /* Light Theme - Force all text to black */
   html.light {
     color: black !important;
   }
-  
+
   html.light * {
     color: inherit;
   }
-  
-  html.light h1, 
-  html.light h2, 
-  html.light h3, 
-  html.light h4, 
-  html.light h5, 
+
+  html.light h1,
+  html.light h2,
+  html.light h3,
+  html.light h4,
+  html.light h5,
   html.light h6 {
     color: black !important;
   }
-  
-  html.light p, 
-  html.light span, 
-  html.light div, 
+
+  html.light p,
+  html.light span,
+  html.light div,
   html.light a {
     color: black !important;
   }
-  
+
   html.light .text-white {
     color: black !important;
   }
-  
+
   html.light .text-white\/70 {
     color: rgba(0, 0, 0, 0.7) !important;
   }
-  
+
   html.light .text-white\/60 {
     color: rgba(0, 0, 0, 0.6) !important;
   }
-  
+
   /* Timeline Light Theme */
   html.light .unified-timeline {
     background: white !important;
     border-color: rgba(0, 0, 0, 0.1) !important;
   }
-  
+
   html.light .timeline-ruler {
     background: rgba(0, 0, 0, 0.05) !important;
     border-color: rgba(0, 0, 0, 0.1) !important;
   }
-  
+
   html.light .time-marker {
     color: black !important;
   }
-  
+
   html.light .tracks-scroll-container {
     background: rgba(0, 0, 0, 0.02) !important;
   }
-  
+
   html.light .track {
     background: rgba(0, 0, 0, 0.02) !important;
     border-color: rgba(0, 0, 0, 0.05) !important;
   }
-  
+
   /* Clip Labels Light Theme */
   html.light .clip-label {
     background: rgba(0, 0, 0, 0.05) !important;
   }
-  
+
   /* Time Marker Sub-Marker Light Theme */
   html.light .time-marker.sub-marker::before {
     background: rgba(0, 0, 0, 0.4) !important;
   }
-  
+
   html.light .time-marker.sub-marker:hover::before {
     background: rgba(0, 0, 0, 0.8) !important;
   }
-  
+
   /* Control Buttons Light Theme */
   html.light .control-btn {
     color: black !important;
   }
-  
+
   /* Logo Inversion Light Theme */
   html.light img[src="/logo.png"] {
     filter: invert(1);
@@ -114,6 +116,7 @@
 }
 
 @layer components {
+
   /* MSQDX Glass Effects - Light Theme */
   html.light .msqdx-glass-panel,
   html.light .glass-effect {
@@ -155,14 +158,14 @@
     @apply bg-white backdrop-blur-lg border border-light-border rounded-md px-4 py-2 placeholder-light-textSecondary text-black focus:outline-none focus:ring-2 focus:ring-brand-blue;
     backdrop-filter: blur(12px) saturate(150%);
   }
-  
+
   /* MSQDX Glass Effects - Dark Theme */
   html.dark .msqdx-glass-panel,
   html.dark .glass-effect {
     @apply bg-white/10 backdrop-blur-lg border border-dark-border;
     backdrop-filter: blur(12px) saturate(150%);
   }
-  
+
   html.dark .msqdx-glass-card,
   html.dark .glass-card {
     @apply bg-white/10 backdrop-blur-lg border border-dark-border p-6;
@@ -173,23 +176,23 @@
   html.dark .folder-card .msqdx-glass-card {
     border-radius: 40px !important;
   }
-  
+
   /* Note: .rounded-full modifier is handled by Tailwind utility class */
-  
+
   html.dark .msqdx-glass-button,
   html.dark .glass-button {
     @apply bg-white/10 backdrop-blur-lg border border-dark-border rounded-full px-6 py-2 transition-all duration-200 hover:bg-white/20 hover:scale-105 active:scale-95 text-white text-sm;
     font-weight: 600;
     text-transform: none;
   }
-  
+
   html.dark .msqdx-glass-field input,
   html.dark .msqdx-glass-field textarea,
   html.dark .glass-input {
     @apply bg-white/10 backdrop-blur-lg border border-dark-border rounded-md px-4 py-2 placeholder-dark-textSecondary text-white focus:outline-none focus:ring-2 focus:ring-brand-purple;
     backdrop-filter: blur(12px) saturate(150%);
   }
-  
+
   /* MSQDX Glass Chip */
   .msqdx-glass-chip {
     @apply inline-flex items-center px-3 py-1 rounded-sm text-xs font-medium transition-all duration-200;
@@ -204,27 +207,27 @@
   html.dark .msqdx-glass-chip {
     @apply bg-white/10 backdrop-blur-lg border border-dark-border text-dark-textPrimary;
   }
-  
+
   /* Universal Glass Effects (fallback - backward compatibility) */
   .glass-effect {
     @apply backdrop-blur-lg;
   }
-  
+
   .glass-card {
     @apply glass-effect rounded-md p-6;
   }
-  
+
   /* Note: .rounded-full modifier is handled by Tailwind utility class */
-  
+
   .glass-button {
     @apply glass-effect rounded-full px-6 py-2 transition-all duration-200 hover:scale-105 active:scale-95 text-sm;
     font-weight: 600;
   }
-  
+
   .glass-input {
     @apply glass-effect rounded-md px-4 py-2 focus:outline-none focus:ring-2;
   }
-  
+
   /* MSQDX Chip/Badge System */
   .chip,
   .msqdx-glass-chip {
@@ -232,7 +235,7 @@
     height: 24px;
     gap: 6px;
   }
-  
+
   .chip .icon-18px,
   .msqdx-glass-chip .icon-18px {
     display: inline-block;
@@ -240,78 +243,78 @@
     height: 18px;
     flex-shrink: 0;
   }
-  
+
   /* MSQDX Chip Variants using brand colors */
   .chip-default {
     @apply bg-tint-purple/20 text-dark-textSecondary border border-dark-border;
   }
-  
+
   html.light .chip-default {
     @apply bg-tint-purple/10 text-light-textSecondary border border-light-border;
   }
-  
+
   .chip-primary {
     @apply bg-tint-blue/20 text-brand-blue border border-dark-border;
   }
-  
+
   html.light .chip-primary {
     @apply bg-tint-blue/10 text-brand-blue border border-light-border;
   }
-  
+
   .chip-success {
     @apply bg-tint-green/20 text-status-success border border-dark-border;
   }
-  
+
   html.light .chip-success {
     @apply bg-tint-green/10 text-status-success border border-light-border;
   }
-  
+
   .chip-warning {
     @apply bg-tint-orange/20 text-status-warning border border-dark-border;
   }
-  
+
   html.light .chip-warning {
     @apply bg-tint-orange/10 text-status-warning border border-light-border;
   }
-  
+
   .chip-error {
     @apply bg-tint-pink/20 text-status-error border border-dark-border;
   }
-  
+
   html.light .chip-error {
     @apply bg-tint-pink/10 text-status-error border border-light-border;
   }
-  
+
   .chip-info {
     @apply bg-tint-purple/20 text-brand-purple border border-dark-border;
   }
-  
+
   html.light .chip-info {
     @apply bg-tint-purple/10 text-brand-purple border border-light-border;
   }
-  
-/* SVG Icon Styling */
-.msqdx-glass-button svg,
-.glass-button svg,
-.msqdx-glass-button div svg,
-.glass-button div svg,
-div svg,
-.text-current svg {
-  fill: currentColor;
-  width: 18px;
-  height: 18px;
-}
 
-.icon-16px svg {
-  width: 16px !important;
-  height: 16px !important;
-}
+  /* SVG Icon Styling */
+  .msqdx-glass-button svg,
+  .glass-button svg,
+  .msqdx-glass-button div svg,
+  .glass-button div svg,
+  div svg,
+  .text-current svg {
+    fill: currentColor;
+    width: 18px;
+    height: 18px;
+  }
 
-/* Specific icon size overrides */
-.icon-18px svg {
-  width: 18px !important;
-  height: 18px !important;
-}
+  .icon-16px svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Specific icon size overrides */
+  .icon-18px svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
 
   /* Breadcrumbs */
   .breadcrumbs {
@@ -376,12 +379,12 @@ div svg,
   .upload-area {
     cursor: pointer;
   }
-  
+
   .upload-area:hover {
     border-color: rgba(0, 0, 0, 0.3);
     background-color: rgba(0, 0, 0, 0.02);
   }
-  
+
   html.dark .upload-area:hover {
     border-color: rgba(255, 255, 255, 0.3);
     background-color: rgba(255, 255, 255, 0.02);
@@ -401,11 +404,11 @@ div svg,
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
-  
+
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
-  
+
   .animate-slide-up {
     animation: slideUp 0.3s ease-out;
   }
@@ -434,6 +437,7 @@ div svg,
 
 /* Touch-optimierte Buttons */
 @media (hover: none) and (pointer: coarse) {
+
   .glass-button,
   button,
   a.glass-button {
@@ -444,6 +448,7 @@ div svg,
 
 /* Verhindere Text-Zoom auf iOS */
 @media (max-width: 640px) {
+
   input[type="text"],
   input[type="number"],
   input[type="email"],
