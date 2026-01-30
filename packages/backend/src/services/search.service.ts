@@ -86,7 +86,7 @@ export class SearchService {
       prisma.video.findMany({
         where: { originalName: { contains: query, mode: 'insensitive' } },
         take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { uploadedAt: 'desc' }
       })
     ]);
 
