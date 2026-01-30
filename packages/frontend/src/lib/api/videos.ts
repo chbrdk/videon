@@ -80,9 +80,12 @@ class VideosApi {
     return response.json();
   }
 
-  async uploadVideo(file: File, onProgress?: (progress: number) => void): Promise<UploadResponse> {
+  async uploadVideo(file: File, onProgress?: (progress: number) => void, folderId?: string): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append('video', file);
+    if (folderId) {
+      formData.append('folderId', folderId);
+    }
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();

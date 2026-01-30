@@ -196,7 +196,8 @@ export class VideosController {
         originalName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
-        userId: user?.id
+        userId: user?.id,
+        folderId: req.body.folderId || null
       });
 
       // Update status to analyzing
