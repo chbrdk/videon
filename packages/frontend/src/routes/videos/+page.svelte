@@ -684,7 +684,7 @@ let scrollAnimationId: number | null = null;
     <!-- Content -->
     {#if $viewMode === 'grid'}
       <div 
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
         on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
         on:drop={handleRootDrop}
       >
