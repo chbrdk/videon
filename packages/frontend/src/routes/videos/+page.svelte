@@ -694,17 +694,31 @@ let scrollAnimationId: number | null = null;
         <!-- Parent folder (if not root) -->
         {#if $currentFolder}
           <div 
-            class="folder-card glass-card cursor-pointer"
+            class="folder-card glass-card cursor-pointer flex flex-col items-center justify-center p-6 h-full text-center gap-3"
             on:click={() => navigateToParent()}
+            style="min-height: 200px; border-radius: 40px !important;"
           >
-            <div class="folder-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6M20,18H4V8H20V18Z"/>
-              </svg>
+            <div
+              class="w-12 h-12 rounded-full flex items-center justify-center"
+              style="background-color: {MSQDX_COLORS.tints.blue};"
+            >
+              <MaterialSymbol icon="arrow_upward" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
             </div>
             <div class="folder-content">
-              <h3 class="folder-name">..</h3>
-              <div class="folder-meta">{_('folder.parentFolder')}</div>
+              <h3 
+                class="folder-name font-semibold"
+                style="
+                  color: {MSQDX_COLORS.dark.textPrimary};
+                  font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+                "
+              >..</h3>
+              <div 
+                class="folder-meta text-xs"
+                style="
+                  color: {MSQDX_COLORS.dark.textSecondary};
+                  font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
+                "
+              >{_('folder.parentFolder')}</div>
             </div>
           </div>
         {/if}
@@ -798,7 +812,9 @@ let scrollAnimationId: number | null = null;
                 />
                 
                 {#if item.type === 'folder'}
-                    <div class="text-2xl">📁</div>
+                    <div class="text-2xl" style="color: {MSQDX_COLORS.brand.blue};">
+                      <MaterialSymbol icon="folder" fontSize={24} />
+                    </div>
                     <div class="flex-1">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
                     <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
@@ -824,7 +840,9 @@ let scrollAnimationId: number | null = null;
                      </div>
                    </div>
                 {:else}
-                    <div class="text-2xl">🎬</div>
+                    <div class="text-2xl" style="color: {MSQDX_COLORS.brand.orange};">
+                      <MaterialSymbol icon="movie" fontSize={24} />
+                    </div>
                     <div class="flex-1">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.originalName}</h3>
                     <div class="flex items-center gap-2">
