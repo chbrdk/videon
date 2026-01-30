@@ -18,7 +18,10 @@ const SERVICE_CONTAINERS = {
 // Helper to check if Docker is available
 async function isDockerAvailable(): Promise<boolean> {
   try {
-    await execAsync('docker --version');
+    await Promise.race([
+      execAsync('docker --version'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+    ]);
     return true;
   } catch {
     return false;
@@ -33,11 +36,11 @@ async function findContainerName(serviceName: string): Promise<string | null> {
     if (!dockerAvailable) {
       return null;
     }
-    
+
     // Try to find container by name pattern with timeout
     const { stdout } = await Promise.race([
       execAsync(`docker ps -a --filter "name=${SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS]}" --format "{{.Names}}"`),
-      new Promise<{ stdout: string }>((_, reject) => 
+      new Promise<{ stdout: string }>((_, reject) =>
         setTimeout(() => reject(new Error('Timeout')), 2000)
       )
     ]);
@@ -54,7 +57,7 @@ router.get('/status', async (req: Request, res: Response) => {
   try {
     const statuses: Record<string, any> = {};
     const dockerAvailable = await isDockerAvailable();
-    
+
     for (const serviceName of Object.keys(SERVICE_CONTAINERS)) {
       try {
         if (!dockerAvailable) {
@@ -66,15 +69,15 @@ router.get('/status', async (req: Request, res: Response) => {
           };
           continue;
         }
-        
+
         const containerName = await findContainerName(serviceName);
-        
+
         if (containerName) {
           try {
             // Add timeout for docker ps command
             const { stdout } = await Promise.race([
               execAsync(`docker ps --filter "name=${containerName}" --format "{{.Status}}"`),
-              new Promise<{ stdout: string }>((_, reject) => 
+              new Promise<{ stdout: string }>((_, reject) =>
                 setTimeout(() => reject(new Error('Timeout')), 2000)
               )
             ]);
@@ -106,7 +109,7 @@ router.get('/status', async (req: Request, res: Response) => {
         };
       }
     }
-    
+
     res.json(statuses);
   } catch (error) {
     logger.error('Error getting service status:', error);
@@ -117,38 +120,38 @@ router.get('/status', async (req: Request, res: Response) => {
 // Start service
 router.post('/:serviceName/start', async (req: Request, res: Response) => {
   const { serviceName } = req.params;
-  
+
   // Map service names to actual Docker container names
   const containerName = SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS];
-  
+
   if (!containerName) {
     return res.status(400).json({ error: 'Unknown service' });
   }
-  
+
   try {
     // Try to find the container by searching for containers with the service name
     const { stdout } = await execAsync(`docker ps -a --filter "name=${containerName}" --format "{{.Names}}"`);
     const actualContainerName = stdout.trim().split('\n')[0];
-    
+
     if (!actualContainerName) {
       return res.status(404).json({ error: 'Container not found' });
     }
-    
+
     logger.info(`Starting service: ${serviceName} (container: ${actualContainerName})`);
-    
+
     // Start the container
     await execAsync(`docker start ${actualContainerName}`);
-    
+
     logger.info(`Service started successfully: ${serviceName}`);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: `Service ${serviceName} started successfully`,
       service: serviceName,
       container: actualContainerName
     });
   } catch (error) {
     logger.error(`Error starting service ${serviceName}:`, error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to start service',
       message: (error as Error).message
     });
@@ -158,33 +161,33 @@ router.post('/:serviceName/start', async (req: Request, res: Response) => {
 // Stop service
 router.post('/:serviceName/stop', async (req: Request, res: Response) => {
   const { serviceName } = req.params;
-  
+
   if (!SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS]) {
     return res.status(400).json({ error: 'Unknown service' });
   }
-  
+
   try {
     const containerName = await findContainerName(serviceName);
-    
+
     if (!containerName) {
       return res.status(404).json({ error: 'Container not found' });
     }
-    
+
     logger.info(`Stopping service: ${serviceName} (container: ${containerName})`);
-    
+
     // Stop the container
     await execAsync(`docker stop ${containerName}`);
-    
+
     logger.info(`Service stopped successfully: ${serviceName}`);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: `Service ${serviceName} stopped successfully`,
       service: serviceName,
       container: containerName
     });
   } catch (error) {
     logger.error(`Error stopping service ${serviceName}:`, error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to stop service',
       message: (error as Error).message
     });
@@ -194,33 +197,33 @@ router.post('/:serviceName/stop', async (req: Request, res: Response) => {
 // Restart service
 router.post('/:serviceName/restart', async (req: Request, res: Response) => {
   const { serviceName } = req.params;
-  
+
   if (!SERVICE_CONTAINERS[serviceName as keyof typeof SERVICE_CONTAINERS]) {
     return res.status(400).json({ error: 'Unknown service' });
   }
-  
+
   try {
     const containerName = await findContainerName(serviceName);
-    
+
     if (!containerName) {
       return res.status(404).json({ error: 'Container not found' });
     }
-    
+
     logger.info(`Restarting service: ${serviceName} (container: ${containerName})`);
-    
+
     // Restart the container
     await execAsync(`docker restart ${containerName}`);
-    
+
     logger.info(`Service restarted successfully: ${serviceName}`);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: `Service ${serviceName} restarted successfully`,
       service: serviceName,
       container: containerName
     });
   } catch (error) {
     logger.error(`Error restarting service ${serviceName}:`, error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to restart service',
       message: (error as Error).message
     });
