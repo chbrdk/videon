@@ -627,7 +627,7 @@ let scrollAnimationId: number | null = null;
       <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">⏳</div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{_('loading.loading')}</h3>
     </div>
-  {:else if currentContents.folders.length === 0 && currentContents.videos.length === 0}
+  {:else if (currentContents.folders || []).length === 0 && (currentContents.videos || []).length === 0}
     <div class="glass-card text-center py-16">
       <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">📁</div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
