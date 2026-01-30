@@ -156,11 +156,11 @@ let scrollAnimationId: number | null = null;
   // Get current folder contents
   $: currentContents = $searchQuery ? $searchResults : { folders: $folders, videos: $videosInFolder };
   $: allItems = [
-    ...projects.map(project => ({ ...project, id: project.id, type: 'project' as const })),
-    ...currentContents.folders.map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
-    ...currentContents.videos.map(video => ({ ...video, id: video.id, type: 'video' as const }))
+    ...(projects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
+    ...(currentContents.folders || []).map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
+    ...(currentContents.videos || []).map(video => ({ ...video, id: video.id, type: 'video' as const }))
   ];
-  $: totalVideos = currentContents.videos.length;
+  $: totalVideos = (currentContents.videos || []).length;
 
   $: {
     if (!revealMode) {
@@ -172,7 +172,7 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-  $: revealedVideoIds = new Set(currentContents.videos.slice(0, revealedCount).map((video) => video.id));
+  $: revealedVideoIds = new Set((currentContents.videos || []).slice(0, revealedCount).map((video) => video.id));
 
   $: if (revealMode && totalVideos > 0 && revealedCount < totalVideos && !revealTimer) {
     startAutoReveal();
@@ -774,7 +774,7 @@ let scrollAnimationId: number | null = null;
         {/each}
         
         <!-- Videos -->
-        {#each currentContents.videos as video (video.id)}
+        {#each (currentContents.videos || []) as video (video.id)}
           <div class="video-card-wrapper">
         <MsqdxVideoCard 
               video={video}

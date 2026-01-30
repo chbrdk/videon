@@ -47,9 +47,11 @@
     loading = true;
     try {
       if (itemType === 'project') {
-        collaborators = await sharingApi.getProjectCollaborators(itemId);
+        const res = await sharingApi.getProjectCollaborators(itemId);
+        collaborators = res || [];
       } else {
-        collaborators = await sharingApi.getVideoCollaborators(itemId);
+        const res = await sharingApi.getVideoCollaborators(itemId);
+        collaborators = res || [];
       }
     } catch (err: any) {
       error = 'Failed to load collaborators';
