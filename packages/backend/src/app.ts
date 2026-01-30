@@ -1,5 +1,5 @@
-// @ts-nocheck
-import express from 'express';
+
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -108,7 +108,7 @@ import passport from './config/auth';
 import authRoutes from './routes/auth.routes';
 
 // Request logging
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.url}`, {
     ip: req.ip,
     userAgent: req.get('User-Agent'),
@@ -162,7 +162,7 @@ app.use('/api', saliencyRoutes);
 app.use('/api', voiceSegmentRoutes);
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({
     name: 'VIDEON API',
     version: '1.0.0',

@@ -8,15 +8,15 @@
   import { onMount } from 'svelte';
 
   // State
-  let query = '';
-  let variantCount = 1;
-  let loading = false;
-  let loadingStep = '';
-  let suggestions: VideoSuggestion[] = [];
-  let selectedSuggestionIndex = 0;
-  let error = '';
-  let isAvailable = false;
-  let checkingHealth = true;
+  let query = $state('');
+  let variantCount = $state(1);
+  let loading = $state(false);
+  let loadingStep = $state('');
+  let suggestions = $state<VideoSuggestion[]>([]);
+  let selectedSuggestionIndex = $state(0);
+  let error = $state('');
+  let isAvailable = $state(false);
+  let checkingHealth = $state(true);
 
   // Example queries
   const exampleQueries = {
@@ -142,8 +142,8 @@
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  $: selectedSuggestion = suggestions[selectedSuggestionIndex];
-  $: examples = $currentLocale === 'en' ? exampleQueries.en : exampleQueries.de;
+  let selectedSuggestion = $derived(suggestions[selectedSuggestionIndex]);
+  let examples = $derived($currentLocale === 'en' ? exampleQueries.en : exampleQueries.de);
 </script>
 
 <div class="max-w-6xl mx-auto">

@@ -7,7 +7,8 @@ COPY frontend/package.json ./
 COPY frontend/package-lock.json ./
 
 # Delete package-lock.json to avoid conflicts and force fresh install
-RUN rm -f package-lock.json
+# Delete package-lock.json and potential node_modules to avoid conflicts and force fresh install
+RUN rm -rf package-lock.json node_modules
 
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
 # Reduce memory limit to 2GB to prevent OOM kills on smaller servers

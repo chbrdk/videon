@@ -14,7 +14,8 @@ WORKDIR /app
 COPY package.json ./
 
 # Install dependencies using npm (fresh install, no lockfile)
-RUN npm install
+# Install dependencies using npm (fresh install, no lockfile)
+RUN rm -rf package-lock.json node_modules && npm install
 
 # Copy source code
 COPY src ./src
