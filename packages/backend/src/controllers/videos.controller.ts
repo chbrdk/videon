@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { VideoService } from '../services/video.service';
 import { AnalyzerClient } from '../services/analyzer.client';
 import { SaliencyClient } from '../services/saliency.client';
+import { SearchIndexService } from '../services/search-index.service';
 import { getStorageService } from '../services/storage';
 import config from '../config';
 import logger from '../utils/logger';
@@ -15,6 +16,7 @@ import { promisify } from 'util';
 const videoService = new VideoService();
 const analyzerClient = new AnalyzerClient();
 const saliencyClient = new SaliencyClient();
+const searchIndexService = new SearchIndexService();
 const execAsync = promisify(exec);
 
 // Simple multer configuration directly in controller
