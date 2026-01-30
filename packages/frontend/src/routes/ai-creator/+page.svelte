@@ -158,21 +158,7 @@
     margin-bottom: 2rem;
     margin-top: 1rem;
   "
-  >
-    <h1
-      style="
-      font-size: 2.5rem;
-      text-transform: lowercase;
-      letter-spacing: -2px;
-      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
-      display: block;
-      font-weight: 800;
-      margin: 0px;
-    "
-    >
-      AI Creator
-    </h1>
-  </div>
+  ></div>
   <!-- Header -->
   <div class="mb-8">
     <p class="text-gray-600 dark:text-gray-400">
