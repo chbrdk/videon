@@ -103,6 +103,7 @@
             customObjects={visionData[index].customObjects || []}
             aiDescription={visionData[index].aiDescription || null}
             qwenVLDescription={visionData[index].qwenVLDescription || null}
+            qwenVLDescriptionEn={visionData[index].qwenVLDescriptionEn || null}
           />
         {/if}
       {/each}

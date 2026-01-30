@@ -118,6 +118,7 @@ model VisionAnalysis {
 
   // Qwen VL Semantic Analysis (optional)
   qwenVLDescription    String? // Semantic video description from Qwen 3VL
+  qwenVLDescriptionEn  String? // English translation of the description
   qwenVLProcessed      Boolean @default(false)
   qwenVLModel          String? // e.g., "Qwen3-VL-8B-Instruct-3bit"
   qwenVLProcessingTime Float? // Processing time in seconds

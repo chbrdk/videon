@@ -161,6 +161,47 @@ class QwenVLService {
   }
 
   /**
+   * Translates text from one language to another using the configured provider
+   */
+  async translateText(text: string, targetLang: string = 'English'): Promise<string> {
+    try {
+      const prompt = `Translate the following German text to ${targetLang}. Only output the translation, nothing else:\n\n${text}`;
+
+      if (this.provider === 'ollama') {
+        const response = await axios.post(
+          `${this.qwenVLServiceUrl}/api/chat`,
+          {
+            model: this.modelName,
+            messages: [
+              { role: 'user', content: prompt }
+            ],
+            stream: false
+          },
+          { timeout: 60000 }
+        );
+
+        if (!response.data || !response.data.message || !response.data.message.content) {
+          // Determine fallback if translation fails
+          return "";
+        }
+        return response.data.message.content.trim();
+      }
+
+      // Custom Provider logic (if supports text-only) or fallback
+      // Current custom provider implementation might be vision-specific.
+      // For now, we only support translation via Ollama or if custom provider has a text endpoint.
+      // Assuming custom provider is legacy/vision-only for now, return empty or implement similar call.
+
+      console.warn('Translation not fully implemented for custom provider, skipping.');
+      return "";
+
+    } catch (error: any) {
+      console.error(`Translation failed: ${error.message}`);
+      return ""; // Return empty string on failure so process can continue
+    }
+  }
+
+  /**
    * Analysiert Video-Frames mit Qwen VL für Video-Zusammenfassung
    */
   async analyzeVideoFrames(framePaths: string[], prompt?: string): Promise<string> {
@@ -282,6 +323,7 @@ class QwenVLService {
         where: { sceneId },
         data: {
           qwenVLDescription: description,
+          qwenVLDescriptionEn: await this.translateText(description, 'English'), // Translate
           qwenVLProcessed: true,
           qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
           qwenVLProcessingTime: null // Wird vom Service gemessen
@@ -397,6 +439,7 @@ class QwenVLService {
               where: { sceneId: scene.id },
               data: {
                 qwenVLDescription: sceneDescription,
+                qwenVLDescriptionEn: await this.translateText(sceneDescription, 'English'),
                 qwenVLProcessed: true,
                 qwenVLModel: "Qwen3-VL-8B-Instruct-4bit"
               }
@@ -408,6 +451,7 @@ class QwenVLService {
               data: {
                 sceneId: scene.id,
                 qwenVLDescription: sceneDescription,
+                qwenVLDescriptionEn: await this.translateText(sceneDescription, 'English'),
                 qwenVLProcessed: true,
                 qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
                 objectCount: 0,
