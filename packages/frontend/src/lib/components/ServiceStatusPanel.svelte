@@ -1,17 +1,15 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-
   import { api } from '$lib/config/environment';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let isExpanded = false;
-  let services = {
+  let isExpanded = $state(false);
+  let services = $state({
     backend: { status: 'unknown', lastCheck: null as Date | null, running: false },
     analyzer: { status: 'unknown', lastCheck: null as Date | null, running: false },
     saliency: { status: 'unknown', lastCheck: null as Date | null, running: false },
     audioSeparation: { status: 'unknown', lastCheck: null as Date | null, running: false },
     frontend: { status: 'healthy', lastCheck: new Date() as Date | null, running: true },
-  };
+  });
 
   let checkInterval: NodeJS.Timeout;
   let operating: Set<string> = new Set();
@@ -137,17 +135,17 @@
     return lastCheck.toLocaleTimeString();
   }
 
-  onMount(() => {
+  $effect(() => {
     checkServiceHealth();
     getServiceRunningStatus();
     checkInterval = setInterval(() => {
       checkServiceHealth();
       getServiceRunningStatus();
     }, 10000); // Check every 10 seconds
-  });
 
-  onDestroy(() => {
-    if (checkInterval) clearInterval(checkInterval);
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+    };
   });
 
   function toggleExpanded() {
