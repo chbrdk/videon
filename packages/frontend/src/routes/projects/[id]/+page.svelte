@@ -35,6 +35,10 @@
   // Icons
   import { MaterialSymbol } from '$lib/components/ui';
 
+  // SvelteKit page data (unused but required to suppress warnings)
+  export let data = {};
+  export let params = {};
+
   let project: Project | null = null;
   let showSearchModal = false;
   let searchQuery = '';
