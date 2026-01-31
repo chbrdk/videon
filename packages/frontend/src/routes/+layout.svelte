@@ -84,4 +84,4 @@
 {/if}
 
 <!-- Global Components -->
-<!-- <GlobalContextMenu /> -->
+<GlobalContextMenu />
