@@ -47,7 +47,7 @@
   }
 
   // Helper to get display name
-  $: displayName = item ? item.name || item.originalName || item.filename || 'Item' : '';
+  let displayName = $derived(item ? item.name || item.originalName || item.filename || 'Item' : '');
 </script>
 
 {#if open}
