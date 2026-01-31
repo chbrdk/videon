@@ -14,6 +14,8 @@
   <div
     class="context-menu glass-card"
     style="top: {$contextMenuStore.y}px; left: {$contextMenuStore.x}px;"
+    role="dialog" 
+    tabindex="-1"
     on:click|stopPropagation
   >
     <button on:click={() => handleAction('play', $contextMenuStore!.segment)}>
@@ -31,7 +33,7 @@
     </button>
   </div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="context-menu-overlay" on:click={() => contextMenuStore.set(null)}></div>
+  <button class="context-menu-overlay" on:click={() => contextMenuStore.set(null)} aria-label="Close menu"></button>
 {/if}
 
 <style>

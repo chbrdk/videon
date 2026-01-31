@@ -24,8 +24,9 @@
     color,
     glow = false,
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: any } = $props();
 
   let currentTheme = $derived($theme);
 
@@ -122,7 +123,7 @@
   style={getChipStyles()}
   {...rest}
 >
-  <slot />
+  {@render children?.()}
 </span>
 
 <style>

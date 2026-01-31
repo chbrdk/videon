@@ -42,8 +42,9 @@
     weight,
     eyebrow = false,
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: any } = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
@@ -129,7 +130,7 @@
 </script>
 
 {#if true}
-  {@const Tag = elementTag}
+  {@const Tag = elementTag()}
   {@const styles = {
     fontFamily: MSQDX_TYPOGRAPHY.fontFamily.primary,
     fontWeight: eyebrow ? MSQDX_TYPOGRAPHY.fontWeight.bold : computedWeight(),
@@ -157,7 +158,7 @@
     "
     {...rest}
   >
-      <slot />
+      {@render children?.()}
     </Tag>
 {/if}
 

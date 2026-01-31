@@ -46,6 +46,7 @@
     dashboard = false,
     onClick,
     class: className = '',
+    children, // Already in props destructuring but needs correct handling in render
     ...rest
   }: Props = $props();
 
@@ -133,12 +134,12 @@
     font-size: {fontSize};
     --chip-color: {chipColor};
   "
-  on:click={onClick}
+  onclick={onClick}
   role={onClick ? 'button' : undefined}
   tabindex={onClick ? 0 : undefined}
   {...rest}
 >
-  <slot />
+  {@render children?.()}
 </span>
 
 <style>

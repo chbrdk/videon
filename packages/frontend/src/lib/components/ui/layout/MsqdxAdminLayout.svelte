@@ -440,7 +440,10 @@
   <!-- Mobile Overlay for Navigation -->
   {#if drawerOpen && isMobile}
     <div
+      role="button"
+      tabindex="0"
       onclick={handleDrawerClose}
+      onkeydown={(e) => e.key === 'Enter' && handleDrawerClose()}
       style="
         position: fixed;
         inset: 0;

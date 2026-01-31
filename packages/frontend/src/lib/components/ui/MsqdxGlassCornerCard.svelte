@@ -20,8 +20,9 @@
     bottomRightSize = { width: "70%", height: 55 },
     borderRadiusVariant,
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: any } = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
@@ -109,7 +110,7 @@
       {rest.style || ''}
     "
   >
-    <slot />
+    {@render children?.()}
   </MsqdxGlassCard>
 
   {#if bottomRightBadge}

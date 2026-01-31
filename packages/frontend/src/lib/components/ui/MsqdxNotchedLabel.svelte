@@ -15,8 +15,9 @@
     borderRadius = 20,
     notchPosition = 'top-right',
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: any } = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
@@ -61,7 +62,7 @@
   "
   {...rest}
 >
-  <slot />
+  {@render children?.()}
 </div>
 
 <style>

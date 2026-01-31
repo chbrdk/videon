@@ -22,8 +22,9 @@
     accent = 'none' as const,
     borderRadiusVariant = undefined,
     class: className = '',
+    children,
     ...rest
-  }: Props = $props();
+  }: Props & { children?: any } = $props();
 
   let currentTheme: 'light' | 'dark' = 'dark';
   let isHovered = $state(false);
@@ -108,7 +109,7 @@
   {#if accent !== 'none'}
     <div class="accent-border" style="background: {getAccentColor()};"></div>
   {/if}
-  <slot />
+  {@render children?.()}
 </div>
 
 <style>

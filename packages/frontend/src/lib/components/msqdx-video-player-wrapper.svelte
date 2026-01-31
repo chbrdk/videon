@@ -223,6 +223,7 @@
 <!-- Video Container -->
 <div class="video-container glass-effect rounded-t-375 overflow-hidden aspect-video">
   <video bind:this={videoPlayer} class="w-full h-full" src={videoSrc} poster={posterSrc}>
+    <track kind="captions" src="" label="English" default />
     {$currentLocale === 'en'
       ? 'Your browser does not support the video element.'
       : 'Ihr Browser unterstützt das Video-Element nicht.'}
