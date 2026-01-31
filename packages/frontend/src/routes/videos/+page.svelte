@@ -183,7 +183,7 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-  $: revealedVideoIds = new Set((currentContents.videos || []).slice(0, revealedCount).map((video) => video.id));
+  $: revealedVideoIds = new Set((currentContents?.videos || []).slice(0, revealedCount).map((video) => video?.id).filter(Boolean));
 
   $: if (revealMode && totalVideos > 0 && revealedCount < totalVideos && !revealTimer) {
     startAutoReveal();
