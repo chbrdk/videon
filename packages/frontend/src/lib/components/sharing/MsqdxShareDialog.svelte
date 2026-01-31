@@ -9,10 +9,12 @@
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { sharingApi, type Collaborator } from '$lib/api/sharing';
 
-  export let open = false;
-  export let itemId: string;
-  export let itemType: 'project' | 'video' | 'folder';
-  export let itemName: string = '';
+  let {
+    open = false,
+    itemId = '',
+    itemType = 'video' as 'project' | 'video' | 'folder',
+    itemName = '',
+  } = $props();
 
   const dispatch = createEventDispatcher();
 

@@ -5,15 +5,17 @@
   import { _ } from '$lib/i18n';
 
   // Generic item type
-  export let item: {
-    id: string;
-    name?: string;
-    originalName?: string;
-    filename?: string;
-    fileSize?: number;
-  } | null;
-  export let type: 'video' | 'folder' | 'project' = 'video';
-  export let open = false;
+  let {
+    item = null as {
+      id: string;
+      name?: string;
+      originalName?: string;
+      filename?: string;
+      fileSize?: number;
+    } | null,
+    type = 'video' as 'video' | 'folder' | 'project',
+    open = false,
+  } = $props();
 
   const dispatch = createEventDispatcher();
   let deleting = false;

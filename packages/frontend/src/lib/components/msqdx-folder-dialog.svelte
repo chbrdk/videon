@@ -2,12 +2,14 @@
   import { createEventDispatcher } from 'svelte';
   import { _ } from '$lib/i18n';
 
-  export let open = false;
-  export let mode = 'create';
-  export let initialName = '';
-  export let className = '';
-  export let title = '';
-  export let label = '';
+  let {
+    open = false,
+    mode = 'create',
+    initialName = '',
+    className = '',
+    title = '',
+    label = '',
+  } = $props();
 
   const dispatch = createEventDispatcher();
 

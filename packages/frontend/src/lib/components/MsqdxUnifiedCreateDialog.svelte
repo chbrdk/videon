@@ -11,9 +11,11 @@
   import { createFolder } from '$lib/stores/folders.store';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  export let open = false;
-  export let currentFolderId: string | null = null;
-  export let onUploadComplete: () => void = () => {};
+  let {
+    open = $bindable(false),
+    currentFolderId = null as string | null,
+    onUploadComplete = () => {},
+  } = $props();
 
   const dispatch = createEventDispatcher();
 
