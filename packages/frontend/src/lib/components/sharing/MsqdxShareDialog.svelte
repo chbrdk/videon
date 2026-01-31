@@ -119,7 +119,7 @@
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
-    on:click|self={close}
+    onclick={e => e.target === e.currentTarget && close()}
   >
     <div
       class="w-full max-w-lg relative"

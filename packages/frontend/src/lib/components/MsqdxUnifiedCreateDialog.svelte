@@ -378,13 +378,19 @@
                       class="px-4 py-2 rounded-lg text-sm"
                       style="background-color: {MSQDX_COLORS.dark.border}; color: {MSQDX_COLORS.dark
                         .textPrimary};"
-                      on:click|stopPropagation={() => (files = null)}>{_('dialog.clear')}</button
+                      onclick={e => {
+                        e.stopPropagation();
+                        files = null;
+                      }}>{_('dialog.clear')}</button
                     >
                     <button
                       class="px-6 py-2 rounded-lg text-sm font-medium shadow-lg"
                       style="background-color: {MSQDX_COLORS.brand.blue}; color: {MSQDX_COLORS.brand
                         .white};"
-                      on:click|stopPropagation={handleUpload}
+                      onclick={e => {
+                        e.stopPropagation();
+                        handleUpload();
+                      }}
                     >
                       {_('dialog.startUpload')}
                     </button>
@@ -404,9 +410,10 @@
             {/if}
           {:else if mode === 'project' || mode === 'folder'}
             <form
-              on:submit|preventDefault={mode === 'project'
-                ? handleCreateProject
-                : handleCreateFolder}
+              onsubmit={e => {
+                e.preventDefault();
+                mode === 'project' ? handleCreateProject() : handleCreateFolder();
+              }}
               class="space-y-6 py-4"
             >
               <MsqdxFormField
