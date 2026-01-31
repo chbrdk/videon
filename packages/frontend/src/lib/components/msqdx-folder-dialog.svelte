@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { _ } from '$lib/i18n';
 
@@ -14,8 +14,8 @@
   const dispatch = createEventDispatcher();
 
   let name = $state(initialName);
-  let dialogElement = $state<HTMLDialogElement | undefined>();
-  let nameInput = $state<HTMLInputElement | undefined>();
+  let dialogElement: HTMLDialogElement | undefined = $state();
+  let nameInput: HTMLInputElement | undefined = $state();
 
   // Handle dialog open/close
   $effect(() => {
