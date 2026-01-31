@@ -17,8 +17,8 @@
   let { children } = $props();
 
   // Svelte 5 State - Mit ssr=false läuft alles clientseitig, window ist verfügbar
-  // Dev-Bypass: localhost ODER VITE_DEV_BYPASS_AUTH=true
-  const devBypass = (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location?.hostname ?? '')) || (import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true');
+  // Bypass: localhost | VITE_DEV_BYPASS_AUTH | VITE_PUBLIC_BYPASS_AUTH (für Coolify/Staging)
+  const devBypass = (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location?.hostname ?? '')) || (import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true') || (import.meta.env.VITE_PUBLIC_BYPASS_AUTH === 'true');
   let isCheckingAuth = $state(devBypass ? false : true);
   let isAuthenticated = $state(devBypass ? true : false);
   let isPublicRoute = $state(false);
@@ -43,8 +43,18 @@
   onMount(() => {
     theme.init();
     initI18n();
+    // Timeout-Fallback: Bei hängendem Auth-Check nach 5s zu Login
+    let authDone = false;
+    const timeoutId = setTimeout(() => {
+      if (!devBypass && !authDone) {
+        window.location.href = `${base ?? ''}/login`;
+      }
+    }, 5000);
     if (!devBypass) {
-      checkAuth();
+      checkAuth().finally(() => {
+        authDone = true;
+        clearTimeout(timeoutId);
+      });
     } else {
       // Dev-Bypass: zusätzlicher Fallback falls initialer State nicht griff
       isAuthenticated = true;
@@ -63,7 +73,7 @@
   });
 
   async function checkAuth() { 
-    const devBypass = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+    const devBypass = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true' || import.meta.env.VITE_PUBLIC_BYPASS_AUTH === 'true';
     if (devBypass) {
       isAuthenticated = true;
       isCheckingAuth = false;

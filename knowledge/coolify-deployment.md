@@ -23,6 +23,14 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 
 **Coolify:** `PUBLIC_BACKEND_URL` leer lassen oder auf öffentliche URL setzen (z.B. `https://videon.projects-a.plygrnd.tech`).
 
+### Schnell-Fix: Auth-Bypass für Staging
+
+Wenn der Spinner weiterhin hängt, in Coolify **Build-Args** setzen:
+
+- `VITE_PUBLIC_BYPASS_AUTH=true`
+
+→ App lädt ohne Session (Demo-Modus). **Nur für Staging/Test**, nicht für Produktion mit echten Nutzern.
+
 ### Checkliste bei "nichts zurück" / Spinner
 
 1. **Coolify Build-Logs prüfen** – schlägt der Frontend-Build fehl?
