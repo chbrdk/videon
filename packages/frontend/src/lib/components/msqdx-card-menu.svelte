@@ -1,14 +1,18 @@
 <script lang="ts">
   import { MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
 
-  export let items: Array<{
-    label: string;
-    icon: string;
-    action: () => void;
-    danger?: boolean;
-  }> = [];
+  let {
+    items = [],
+  }: {
+    items: Array<{
+      label: string;
+      icon: string;
+      action: () => void;
+      danger?: boolean;
+    }>;
+  } = $props();
 
-  let showMenu = false;
+  let showMenu = $state(false);
 </script>
 
 <div class="absolute bottom-4 right-2 z-10 pointer-events-auto">
