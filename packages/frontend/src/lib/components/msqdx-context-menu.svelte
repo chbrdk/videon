@@ -49,7 +49,7 @@
     <button
       class="context-menu-item"
       class:disabled={item.disabled}
-      on:click={() => handleItemClick(item)}
+      onclick={() => handleItemClick(item)}
       role="menuitem"
       disabled={item.disabled}
     >

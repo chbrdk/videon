@@ -24,8 +24,8 @@
 
 <div
   class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-  on:click={handleClick}
-  on:keydown={e => e.key === 'Enter' && handleClick()}
+  onclick={handleClick}
+  onkeydown={e => e.key === 'Enter' && handleClick()}
   role="button"
   tabindex="0"
   style="

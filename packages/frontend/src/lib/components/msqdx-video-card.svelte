@@ -124,8 +124,11 @@
   class="msqdx-glass-card group overflow-hidden transition-transform duration-200 hover:scale-105 cursor-pointer hoverable no-padding"
   role="button"
   tabindex="0"
-  on:click|stopPropagation={handleClick}
-  on:keydown={e => {
+  onclick={e => {
+    e.stopPropagation();
+    handleClick(e);
+  }}
+  onkeydown={e => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleClick();

@@ -1,3 +1,4 @@
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
