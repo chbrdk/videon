@@ -36,58 +36,77 @@
 </script>
 
 {#if folder && folder.id}
-  <!-- Folder Menu -->
-  <MsqdxCardMenu
-    items={[
-      { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
-      {
-        label: _('actions.share') ?? 'Share',
-        icon: 'share',
-        action: () => handleMenuAction('share'),
-      },
-      {
-        label: _('actions.delete'),
-        icon: 'delete',
-        danger: true,
-        action: () => handleMenuAction('delete'),
-      },
-    ]}
-  />
+  <div
+    class="msqdx-glass-card {className} cursor-pointer transition-transform hover:scale-105 relative group"
+    on:click={handleClick}
+    on:keydown={e => e.key === 'Enter' && handleClick()}
+    on:contextmenu={handleContextMenu}
+    role="button"
+    tabindex="0"
+    style="
+    --blur: var(--msqdx-glass-blur);
+    --background-color: var(--msqdx-color-dark-paper);
+    --border-color: var(--msqdx-color-dark-border);
+    border-radius: 40px;
+  "
+  >
+    <!-- Folder Menu -->
+    <MsqdxCardMenu
+      items={[
+        { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
+        {
+          label: _('actions.share') ?? 'Share',
+          icon: 'share',
+          action: () => handleMenuAction('share'),
+        },
+        {
+          label: _('actions.delete'),
+          icon: 'delete',
+          danger: true,
+          action: () => handleMenuAction('delete'),
+        },
+      ]}
+    />
 
-  <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
-    <div
-      class="w-12 h-12 rounded-full flex items-center justify-center"
-      style="background-color: {MSQDX_COLORS.tints.blue};"
-    >
-      <MaterialSymbol icon="folder" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
-    </div>
-    <h3
-      class="font-semibold leading-tight line-clamp-2"
-      style="
+    <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
+      <div
+        class="w-12 h-12 rounded-full flex items-center justify-center"
+        style="background-color: {MSQDX_COLORS.tints.blue};"
+      >
+        <MaterialSymbol icon="folder" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
+      </div>
+      <h3
+        class="font-semibold leading-tight line-clamp-2"
+        style="
         color: {MSQDX_COLORS.dark.textPrimary};
         font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
       "
-    >
-      {folder.name}
-    </h3>
-    <span
-      class="text-xs"
-      style="
+      >
+        {folder.name}
+      </h3>
+      <span
+        class="text-xs"
+        style="
         color: {MSQDX_COLORS.dark.textSecondary};
         font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
       "
-    >
-      {folder.videoCount}
-      {folder.videoCount === 1 ? 'Video' : 'Videos'}
-    </span>
-  </div>
-
-  <!-- Selection Indicator -->
-  {#if selected}
-    <div class="absolute top-2 left-2 z-10 selection-indicator">
-      <MaterialSymbol icon="check_circle" fontSize={24} style="color: {MSQDX_COLORS.brand.blue};" />
+      >
+        {folder.videoCount}
+        {folder.videoCount === 1 ? 'Video' : 'Videos'}
+      </span>
     </div>
-  {/if}
+
+    <!-- Selection Indicator -->
+    {#if selected}
+      <div class="absolute top-2 left-2 z-10 selection-indicator">
+        <MaterialSymbol
+          icon="check_circle"
+          fontSize={24}
+          style="color: {MSQDX_COLORS.brand.blue};"
+        />
+      </div>
+    {/if}
+  </div>
 {/if}
 
 <style>

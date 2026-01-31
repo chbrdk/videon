@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { MsqdxGlassCard } from '$lib/components/ui';
 
   export let x: number;
@@ -12,14 +12,14 @@
 
   let menuElement: HTMLElement;
 
-  $effect(() => {
-    function handleClickOutside(event) {
-      if (menuElement && !menuElement.contains(event.target)) {
+  onMount(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuElement && !menuElement.contains(event.target as Node)) {
         onClose();
       }
     }
 
-    function handleEscape(event) {
+    function handleEscape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         onClose();
       }
@@ -34,7 +34,7 @@
     };
   });
 
-  function handleItemClick(item) {
+  function handleItemClick(item: any) {
     if (!item.disabled) {
       item.action();
       onClose();

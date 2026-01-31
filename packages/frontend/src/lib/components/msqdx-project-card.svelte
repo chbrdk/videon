@@ -9,6 +9,7 @@
   import { _ } from '$lib/i18n';
 
   export let project: Project = {} as Project;
+  export let className = '';
 
   const dispatch = createEventDispatcher();
 
@@ -24,7 +25,7 @@
 
 {#if project && project.id}
   <div
-    class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
+    class="msqdx-glass-card {className} cursor-pointer transition-transform hover:scale-105 relative group"
     on:click={handleClick}
     on:keydown={e => e.key === 'Enter' && handleClick()}
     role="button"
