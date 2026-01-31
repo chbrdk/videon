@@ -4,10 +4,7 @@ WORKDIR /app
 
 # Copy package files
 COPY frontend/package.json ./
-COPY frontend/package-lock.json ./
 
-# Delete package-lock.json to avoid conflicts and force fresh install
-RUN rm -f package-lock.json
 
 # Force development environment to ensure devDependencies (vite, tailwind) are installed
 # Reduce memory limit to 2GB to prevent OOM kills on smaller servers

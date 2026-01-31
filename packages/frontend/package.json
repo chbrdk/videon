@@ -22,7 +22,7 @@
     "@material-icons/svg": "^1.0.33",
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.0.0",
-    "svelte": "^5.0.0",
+    "svelte": "^4.2.7",
     "wavesurfer.js": "^7.7.0"
   },
   "devDependencies": {
