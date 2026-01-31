@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 import { api } from '../config/environment';
 
 const API_BASE = api.baseUrl;
@@ -49,7 +50,7 @@ export interface ElevenLabsVoice {
 
 export const voiceSegmentApi = {
   async createSegments(audioStemId: string, videoId: string): Promise<VoiceSegment[]> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE}/audio-stems/${audioStemId}/create-segments`,
       {
         method: 'POST',
@@ -68,7 +69,7 @@ export const voiceSegmentApi = {
   },
 
   async getSegments(audioStemId: string): Promise<VoiceSegment[]> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE}/audio-stems/${audioStemId}/segments`
     );
 
@@ -88,7 +89,7 @@ export const voiceSegmentApi = {
   },
 
   async updateSegmentText(segmentId: string, text: string): Promise<VoiceSegment> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE}/voice-segments/${segmentId}/text`,
       {
         method: 'PATCH',
@@ -118,7 +119,7 @@ export const voiceSegmentApi = {
       };
     }
   ): Promise<VoiceSegment> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE}/voice-segments/${segmentId}/revoice`,
       {
         method: 'POST',
@@ -140,7 +141,7 @@ export const voiceSegmentApi = {
     voiceId: string;
     voiceSettings: any;
   }): Promise<string> {
-    const response = await fetch(`${API_BASE}/voice-segments/preview`, {
+    const response = await apiRequest(`${API_BASE}/voice-segments/preview`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(options)
@@ -156,7 +157,7 @@ export const voiceSegmentApi = {
   },
 
   async getVoices(): Promise<ElevenLabsVoice[]> {
-    const response = await fetch(`${API_BASE}/voices`);
+    const response = await apiRequest(`${API_BASE}/voices`);
 
     if (!response.ok) {
       // Return empty array on error
@@ -171,7 +172,7 @@ export const voiceSegmentApi = {
     audioFilePath: string;
     description?: string;
   }): Promise<VoiceClone> {
-    const response = await fetch(`${API_BASE}/voices/clone`, {
+    const response = await apiRequest(`${API_BASE}/voices/clone`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(options)
@@ -186,7 +187,7 @@ export const voiceSegmentApi = {
   },
 
   async getVoiceClones(): Promise<VoiceClone[]> {
-    const response = await fetch(`${API_BASE}/voices/clones`);
+    const response = await apiRequest(`${API_BASE}/voices/clones`);
 
     if (!response.ok) {
       const error = await response.json();

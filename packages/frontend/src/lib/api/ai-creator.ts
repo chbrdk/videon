@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 import { api } from '../config/environment';
 
 const API_BASE_URL = api.baseUrl;
@@ -60,7 +61,7 @@ export const aiCreatorApi = {
     query: string,
     variantCount: number = 1
   ): Promise<VideoSuggestion[]> {
-    const response = await fetch(`${API_BASE_URL}/ai-creator/analyze`, {
+    const response = await apiRequest(`${API_BASE_URL}/ai-creator/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variantCount })
@@ -85,7 +86,7 @@ export const aiCreatorApi = {
     suggestionId: string,
     adjustments?: Partial<VideoSuggestion>
   ): Promise<string> {
-    const response = await fetch(`${API_BASE_URL}/ai-creator/create-project`, {
+    const response = await apiRequest(`${API_BASE_URL}/ai-creator/create-project`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ suggestionId, adjustments })
@@ -106,7 +107,7 @@ export const aiCreatorApi = {
    * @returns Video suggestion
    */
   async getSuggestion(id: string): Promise<VideoSuggestion> {
-    const response = await fetch(`${API_BASE_URL}/ai-creator/suggestions/${id}`);
+    const response = await apiRequest(`${API_BASE_URL}/ai-creator/suggestions/${id}`);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Unknown error' }));
@@ -122,7 +123,7 @@ export const aiCreatorApi = {
    * @returns Health status
    */
   async health(): Promise<HealthResponse> {
-    const response = await fetch(`${API_BASE_URL}/ai-creator/health`);
+    const response = await apiRequest(`${API_BASE_URL}/ai-creator/health`);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: Health check failed`);

@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 import { api } from '../config/environment';
 
 const API_BASE_URL = api.baseUrl;
@@ -29,19 +30,19 @@ export interface ProjectScene {
 
 export const projectsApi = {
   async getProjects(): Promise<Project[]> {
-    const response = await fetch(`${API_BASE_URL}/projects`);
+    const response = await apiRequest(`${API_BASE_URL}/projects`);
     if (!response.ok) throw new Error('Failed to fetch projects');
     return response.json();
   },
 
   async getProjectById(id: string): Promise<Project> {
-    const response = await fetch(`${API_BASE_URL}/projects/${id}`);
+    const response = await apiRequest(`${API_BASE_URL}/projects/${id}`);
     if (!response.ok) throw new Error('Failed to fetch project');
     return response.json();
   },
 
   async createProject(data: { name: string; description?: string }): Promise<Project> {
-    const response = await fetch(`${API_BASE_URL}/projects`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -51,7 +52,7 @@ export const projectsApi = {
   },
 
   async updateProject(id: string, data: { name?: string; description?: string }): Promise<Project> {
-    const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -67,7 +68,7 @@ export const projectsApi = {
   }): Promise<ProjectScene> {
     console.log('API: Adding scene to project:', projectId, sceneData);
 
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/scenes`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/scenes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sceneData)
@@ -85,7 +86,7 @@ export const projectsApi = {
   async reorderScenes(projectId: string, scenes: { sceneId: string; order: number }[]): Promise<void> {
     console.log('API: Reordering scenes:', projectId, scenes);
 
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/scenes/reorder`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/scenes/reorder`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ scenes })
@@ -99,7 +100,7 @@ export const projectsApi = {
   },
 
   async deleteProject(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${id}`, {
       method: 'DELETE'
     });
     if (!response.ok) throw new Error('Failed to delete project');
@@ -111,7 +112,7 @@ export const projectsApi = {
     trimStart?: number;
     trimEnd?: number;
   }): Promise<ProjectScene> {
-    const response = await fetch(`${API_BASE_URL}/projects/scenes/${sceneId}/timing`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/scenes/${sceneId}/timing`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
@@ -121,21 +122,21 @@ export const projectsApi = {
   },
 
   async removeScene(sceneId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/projects/scenes/${sceneId}`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/scenes/${sceneId}`, {
       method: 'DELETE'
     });
     if (!response.ok) throw new Error('Failed to remove scene');
   },
 
   async getProjectTranscriptionSegments(projectId: string): Promise<any[]> {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/transcription-segments`);
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/transcription-segments`);
     if (!response.ok) throw new Error('Failed to fetch transcription segments');
     return response.json();
   },
 
   // New editing APIs
   async splitScene(sceneId: string, splitTime: number): Promise<{ scene1: ProjectScene; scene2: ProjectScene }> {
-    const response = await fetch(`${API_BASE_URL}/projects/scenes/${sceneId}/split`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/scenes/${sceneId}/split`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ splitTime })
@@ -145,7 +146,7 @@ export const projectsApi = {
   },
 
   async updateSceneAudioLevel(sceneId: string, audioLevel: number): Promise<ProjectScene> {
-    const response = await fetch(`${API_BASE_URL}/projects/scenes/${sceneId}/audio-level`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/scenes/${sceneId}/audio-level`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ audioLevel })
@@ -155,13 +156,13 @@ export const projectsApi = {
   },
 
   async getProjectHistory(projectId: string): Promise<any[]> {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/history`);
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/history`);
     if (!response.ok) throw new Error('Failed to fetch project history');
     return response.json();
   },
 
   async undoLastAction(projectId: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/undo`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/undo`, {
       method: 'POST'
     });
     if (!response.ok) throw new Error('Failed to undo last action');
@@ -169,7 +170,7 @@ export const projectsApi = {
   },
 
   async redoLastAction(projectId: string): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/redo`, {
+    const response = await apiRequest(`${API_BASE_URL}/projects/${projectId}/redo`, {
       method: 'POST'
     });
     if (!response.ok) throw new Error('Failed to redo last action');

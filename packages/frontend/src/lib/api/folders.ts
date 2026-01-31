@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 import type { Folder, BreadcrumbItem, SearchResults, CreateFolderDto, UpdateFolderDto, DeleteFolderResponse } from '$lib/types';
 import { api } from '../config/environment';
 
@@ -15,7 +16,7 @@ export class FoldersApi {
       url.searchParams.set('parentId', parentId);
     }
 
-    const response = await fetch(url.toString());
+    const response = await apiRequest(url.toString());
     if (!response.ok) {
       throw new Error(`Failed to fetch folders: ${response.statusText}`);
     }
@@ -25,7 +26,7 @@ export class FoldersApi {
 
   async getFolderById(id: string): Promise<FolderWithContents> {
     const folderId = id === 'root' ? 'root' : id;
-    const response = await fetch(`${this.baseUrl}/folders/${folderId}`);
+    const response = await apiRequest(`${this.baseUrl}/folders/${folderId}`);
     
     if (!response.ok) {
       if (response.status === 404) {
@@ -43,7 +44,7 @@ export class FoldersApi {
       url.searchParams.set('parentId', parentId);
     }
 
-    const response = await fetch(url.toString(), {
+    const response = await apiRequest(url.toString(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -60,7 +61,7 @@ export class FoldersApi {
   }
 
   async updateFolder(id: string, data: UpdateFolderDto): Promise<Folder> {
-    const response = await fetch(`${this.baseUrl}/folders/${id}`, {
+    const response = await apiRequest(`${this.baseUrl}/folders/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ export class FoldersApi {
   }
 
   async deleteFolder(id: string): Promise<DeleteFolderResponse> {
-    const response = await fetch(`${this.baseUrl}/folders/${id}`, {
+    const response = await apiRequest(`${this.baseUrl}/folders/${id}`, {
       method: 'DELETE',
     });
 
@@ -91,7 +92,7 @@ export class FoldersApi {
 
   async moveVideos(videoIds: string[], folderId: string | null): Promise<void> {
     const targetFolderId = folderId || 'root';
-    const response = await fetch(`${this.baseUrl}/folders/${targetFolderId}/move-videos`, {
+    const response = await apiRequest(`${this.baseUrl}/folders/${targetFolderId}/move-videos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ export class FoldersApi {
 
   async getBreadcrumbs(folderId: string | null): Promise<BreadcrumbItem[]> {
     const targetFolderId = folderId || 'root';
-    const response = await fetch(`${this.baseUrl}/folders/${targetFolderId}/breadcrumbs`);
+    const response = await apiRequest(`${this.baseUrl}/folders/${targetFolderId}/breadcrumbs`);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch breadcrumbs: ${response.statusText}`);
@@ -120,7 +121,7 @@ export class FoldersApi {
     const url = new URL(`${this.baseUrl}/search`);
     url.searchParams.set('q', query);
 
-    const response = await fetch(url.toString());
+    const response = await apiRequest(url.toString());
     if (!response.ok) {
       throw new Error(`Failed to search: ${response.statusText}`);
     }

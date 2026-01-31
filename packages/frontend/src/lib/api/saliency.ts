@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 export interface ReframeOptions {
   aspectRatio: string;
   customWidth?: number;
@@ -63,7 +64,7 @@ export const saliencyApi = {
    * Triggers saliency analysis for a video
    */
   async analyzeSaliency(videoId: string, sampleRate: number = 25, modelVersion: string = 'robust-saliency'): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/saliency/analyze`, {
+    const response = await apiRequest(`${API_BASE_URL}/videos/${videoId}/saliency/analyze`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -91,7 +92,7 @@ export const saliencyApi = {
    * Gets saliency analysis status for a video
    */
   async getSaliencyStatus(videoId: string): Promise<SaliencyStatus> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/saliency/status`);
+    const response = await apiRequest(`${API_BASE_URL}/videos/${videoId}/saliency/status`);
     
     if (!response.ok) {
       const error = await response.json();
@@ -105,7 +106,7 @@ export const saliencyApi = {
    * Triggers video reframing based on saliency data
    */
   async reframeVideo(videoId: string, options: ReframeOptions): Promise<ReframeResponse> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/reframe`, {
+    const response = await apiRequest(`${API_BASE_URL}/videos/${videoId}/reframe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -125,7 +126,7 @@ export const saliencyApi = {
    * Gets reframing job status
    */
   async getReframingStatus(jobId: string): Promise<ReframingStatus> {
-    const response = await fetch(`${API_BASE_URL}/reframe/${jobId}/status`);
+    const response = await apiRequest(`${API_BASE_URL}/reframe/${jobId}/status`);
     
     if (!response.ok) {
       const error = await response.json();
@@ -154,7 +155,7 @@ export const saliencyApi = {
    * Gets all reframed versions of a video
    */
   async getReframedVideos(videoId: string): Promise<ReframedVideo[]> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/reframed`);
+    const response = await apiRequest(`${API_BASE_URL}/videos/${videoId}/reframed`);
     
     if (!response.ok) {
       const error = await response.json();
@@ -168,7 +169,7 @@ export const saliencyApi = {
    * Deletes a reframed video
    */
   async deleteReframedVideo(reframedVideoId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/reframed-videos/${reframedVideoId}`, {
+    const response = await apiRequest(`${API_BASE_URL}/reframed-videos/${reframedVideoId}`, {
       method: 'DELETE'
     });
     

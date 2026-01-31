@@ -1,3 +1,4 @@
+import { apiRequest } from './api-client';
 import { api } from '../config/environment';
 
 const API_BASE_URL = api.baseUrl;
@@ -15,7 +16,7 @@ export interface SearchResult {
 
 export const searchApi = {
   async search(query: string, limit: number = 20): Promise<SearchResult[]> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE_URL}/search?q=${encodeURIComponent(query)}&limit=${limit}`
     );
     

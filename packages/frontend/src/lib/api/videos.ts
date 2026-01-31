@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import { api } from '../config/environment';
+import { apiRequest } from './api-client';
 
 const API_BASE_URL = api.baseUrl;
 
@@ -58,13 +59,7 @@ class VideosApi {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
 
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
+    const response = await apiRequest(url, options);
 
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}`;
@@ -117,6 +112,7 @@ class VideosApi {
       });
 
       xhr.open('POST', `${API_BASE_URL}/videos`);
+      xhr.withCredentials = true; // ← Send cookies with upload
       xhr.send(formData);
     });
   }
@@ -209,7 +205,7 @@ class VideosApi {
   }
 
   async deleteSceneVideo(videoId: string, startTime: number, endTime: number): Promise<void> {
-    const response = await fetch(
+    const response = await apiRequest(
       `${API_BASE_URL}/videos/${videoId}/scene-video?startTime=${startTime}&endTime=${endTime}`,
       { method: 'DELETE' }
     );
