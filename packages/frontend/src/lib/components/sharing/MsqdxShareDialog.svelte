@@ -14,6 +14,7 @@
     itemId = '',
     itemType = 'video' as 'project' | 'video' | 'folder',
     itemName = '',
+    onclose = null as (() => void) | null,
   } = $props();
 
   const dispatch = createEventDispatcher();
@@ -112,6 +113,7 @@
   function close() {
     open = false;
     dispatch('close');
+    if (onclose) onclose();
   }
 </script>
 

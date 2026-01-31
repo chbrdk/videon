@@ -9,6 +9,8 @@
     className = '',
     title = '',
     label = '',
+    onconfirm = null as ((data: { name: string }) => void) | null,
+    oncancel = null as (() => void) | null,
   } = $props();
 
   const dispatch = createEventDispatcher();
@@ -35,12 +37,15 @@
 
   function handleSubmit() {
     if (name.trim()) {
-      dispatch('confirm', { name: name.trim() });
+      const data = { name: name.trim() };
+      dispatch('confirm', data);
+      if (onconfirm) onconfirm(data);
     }
   }
 
   function handleCancel() {
     dispatch('cancel');
+    if (oncancel) oncancel();
   }
 
   function handleKeydown(event) {

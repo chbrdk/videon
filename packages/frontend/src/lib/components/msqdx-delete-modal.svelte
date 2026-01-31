@@ -15,6 +15,8 @@
     } | null,
     type = 'video' as 'video' | 'folder' | 'project',
     open = false,
+    onconfirm = null as (() => void) | null,
+    onclose = null as (() => void) | null,
   } = $props();
 
   const dispatch = createEventDispatcher();
@@ -30,12 +32,14 @@
   function handleClose() {
     if (!deleting) {
       dispatch('close');
+      if (onclose) onclose();
     }
   }
 
   async function handleDelete() {
     deleting = true;
     dispatch('confirm');
+    if (onconfirm) onconfirm();
   }
 
   function formatFileSize(bytes: number): string {

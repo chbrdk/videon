@@ -15,6 +15,8 @@
     open = $bindable(false),
     currentFolderId = null as string | null,
     onUploadComplete = () => {},
+    onProjectCreated = null as ((project: any) => void) | null,
+    onClose = null as (() => void) | null,
   } = $props();
 
   const dispatch = createEventDispatcher();
@@ -36,9 +38,15 @@
   let creating = false;
 
   function close() {
+    mode = 'menu';
+    files = null;
+    uploading = false;
+    progress = 0;
+    error = null;
+    newItemName = '';
     open = false;
-    resetState();
     dispatch('close');
+    if (onClose) onClose();
   }
 
   function resetState() {
@@ -110,6 +118,7 @@
     try {
       const project = await projectsApi.createProject({ name: newItemName });
       dispatch('projectCreated', project);
+      if (onProjectCreated) onProjectCreated(project);
       close();
     } catch (err: any) {
       error = err.message;
