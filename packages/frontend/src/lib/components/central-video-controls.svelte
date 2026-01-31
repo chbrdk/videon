@@ -38,7 +38,7 @@
   }
 
   function handleVolumeChange(event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target;
     const level = parseInt(target.value);
     dispatch('volumeChange', { level });
   }
@@ -64,7 +64,7 @@
   }
 
   function handleSearchInput(event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target;
     dispatch('searchInput', { value: target.value });
   }
 

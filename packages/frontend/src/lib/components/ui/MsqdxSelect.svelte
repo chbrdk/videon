@@ -52,7 +52,7 @@
   }
 
   function handleChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
+    const target = event.target;
     internalValue = target.value;
     onChange?.(event);
   }

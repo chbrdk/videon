@@ -100,7 +100,7 @@
     const playheadPosition = timeRatio * timelineWidth;
 
     // Update playhead element position
-    const playhead = timelineContainer?.querySelector('.playhead') as HTMLElement;
+    const playhead = timelineContainer?.querySelector('.playhead');
     if (playhead) {
       playhead.style.left = `${playheadPosition}px`;
     }

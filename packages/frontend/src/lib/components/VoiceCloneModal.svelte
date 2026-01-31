@@ -18,7 +18,7 @@
   let isCloning = false;
 
   function handleFileUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
+    const input = event.target;
     if (input.files && input.files[0]) {
       audioFile = input.files[0];
     }

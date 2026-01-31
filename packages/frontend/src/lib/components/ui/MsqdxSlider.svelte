@@ -50,7 +50,7 @@
   }
 
   function handleInput(event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target;
     internalValue = Number(target.value);
     onInput?.(event);
     onChange?.(event);

@@ -63,7 +63,7 @@
 
   function handleTrimStart(event: MouseEvent) {
     event.stopPropagation();
-    const target = event.currentTarget as HTMLElement;
+    const target = event.currentTarget;
     if (!target) return;
     const rect = target.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -78,7 +78,7 @@
 
   function handleTrimEnd(event: MouseEvent) {
     event.stopPropagation();
-    const target = event.currentTarget as HTMLElement;
+    const target = event.currentTarget;
     if (!target) return;
     const rect = target.getBoundingClientRect();
     const x = event.clientX - rect.left;

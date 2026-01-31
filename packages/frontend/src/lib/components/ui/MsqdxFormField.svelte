@@ -48,7 +48,7 @@
   });
 
   function handleInput(event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target;
     value = target.value;
     onInput?.(event);
     onChange?.(event);

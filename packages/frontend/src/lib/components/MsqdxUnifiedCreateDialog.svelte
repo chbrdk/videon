@@ -89,7 +89,7 @@
   }
 
   function handleFileSelect(event: Event) {
-    const target = event.target as HTMLInputElement;
+    const target = event.target;
     if (target.files) files = target.files;
   }
 
