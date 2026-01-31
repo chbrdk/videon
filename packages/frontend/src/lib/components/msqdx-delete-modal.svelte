@@ -68,7 +68,7 @@
           {/if}
         </h2>
         <button
-          on:click={handleClose}
+          onclick={handleClose}
           class="text-white/60 hover:text-white transition-colors"
           disabled={deleting}
         >

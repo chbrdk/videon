@@ -72,7 +72,7 @@
         id="folder-name"
         bind:this={nameInput}
         bind:value={name}
-        on:keydown={handleKeydown}
+        onkeydown={handleKeydown}
         placeholder={_('folder.namePlaceholder')}
         class="name-input"
         maxlength="100"
@@ -80,12 +80,12 @@
     </div>
 
     <div class="dialog-actions">
-      <button class="glass-button secondary" on:click={handleCancel} type="button">
+      <button class="glass-button secondary" onclick={handleCancel} type="button">
         {_('actions.cancel')}
       </button>
       <button
         class="glass-button primary"
-        on:click={handleSubmit}
+        onclick={handleSubmit}
         type="submit"
         disabled={!name.trim()}
       >

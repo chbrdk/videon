@@ -138,7 +138,7 @@
           </div>
           <button
             class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            on:click={close}
+            onclick={close}
           >
             <MaterialSymbol icon="close" fontSize={20} />
           </button>
@@ -172,7 +172,7 @@
                 variant="primary"
                 disabled={!email || inviteLoading}
                 loading={inviteLoading}
-                on:click={handleInvite}
+                onclick={handleInvite}
               >
                 Invite
               </MsqdxButton>
@@ -246,7 +246,7 @@
                       </span>
                       <button
                         class="text-red-400 hover:text-red-300 transition-colors p-1"
-                        on:click={() => handleRemove(user.userId)}
+                        onclick={() => handleRemove(user.userId)}
                         title="Remove Access"
                       >
                         <MaterialSymbol icon="delete" fontSize={18} />

@@ -137,10 +137,10 @@
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
-    on:click|self={close}
+    onclick={e => e.target === e.currentTarget && close()}
     role="button"
     tabindex="0"
-    on:keydown={e => e.key === 'Escape' && close()}
+    onkeydown={e => e.key === 'Escape' && close()}
   >
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -155,7 +155,7 @@
             {#if mode !== 'menu'}
               <button
                 class="p-1 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-                on:click={handleBack}
+                onclick={handleBack}
                 disabled={uploading || creating}
                 style="color: {MSQDX_COLORS.dark.textPrimary};"
               >
@@ -177,7 +177,7 @@
           </div>
           <button
             class="p-1 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            on:click={close}
+            onclick={close}
             disabled={uploading || creating}
             style="color: {MSQDX_COLORS.dark.textPrimary};"
           >
@@ -196,7 +196,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                on:click={() => (mode = 'upload')}
+                onclick={() => (mode = 'upload')}
               >
                 <div
                   class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
@@ -229,7 +229,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                on:click={() => {
+                onclick={() => {
                   mode = 'project';
                   newItemName = '';
                 }}
@@ -265,7 +265,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                on:click={() => {
+                onclick={() => {
                   mode = 'folder';
                   newItemName = '';
                 }}
@@ -330,12 +330,18 @@
                    border-color: {dragOver ? MSQDX_COLORS.brand.blue : MSQDX_COLORS.dark.border};
                    background-color: transparent;
                 "
-                on:dragover|preventDefault={() => (dragOver = true)}
-                on:dragleave|preventDefault={() => (dragOver = false)}
-                on:drop={handleDrop}
+                ondragover={e => {
+                  e.preventDefault();
+                  dragOver = true;
+                }}
+                ondragleave={e => {
+                  e.preventDefault();
+                  dragOver = false;
+                }}
+                ondrop={handleDrop}
                 role="button"
                 tabindex="0"
-                on:click={() => document.getElementById('dialog-file-input')?.click()}
+                onclick={() => document.getElementById('dialog-file-input')?.click()}
               >
                 <input
                   id="dialog-file-input"
@@ -343,7 +349,7 @@
                   multiple
                   accept="video/*"
                   class="hidden"
-                  on:change={handleFileSelect}
+                  onchange={handleFileSelect}
                 />
 
                 <MaterialSymbol
