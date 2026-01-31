@@ -31,7 +31,9 @@
 
   onMount(async () => {
     try {
-      const res = await fetch(`${api.baseUrl}/auth/me`);
+      const res = await fetch(`${api.baseUrl}/auth/me`, {
+        credentials: 'include',
+      });
       const authData = await res.json();
       isAuthenticated = authData.isAuthenticated;
       if (isAuthenticated && authData.user) {
