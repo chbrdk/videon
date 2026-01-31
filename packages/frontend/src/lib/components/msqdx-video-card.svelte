@@ -36,37 +36,62 @@
   $effect(() => {
     // Re-run if video id changes
     const currentVideoId = video.id;
+    if (!currentVideoId || typeof window === 'undefined') return;
 
-    const videoElement = document.createElement('video');
-    videoElement.crossOrigin = 'anonymous';
-    videoElement.src = getVideoUrl(currentVideoId);
-    videoElement.muted = true;
-    videoElement.currentTime = 1; // Set to 1 second to get a frame
+    let cleanup = () => {};
 
-    videoElement.onloadeddata = () => {
-      // Seek to 1 second
-      videoElement.currentTime = 1;
-    };
+    // Use a small timeout to avoid blocking main thread during initial render
+    const timer = setTimeout(() => {
+      const videoElement = document.createElement('video');
+      videoElement.crossOrigin = 'anonymous';
+      videoElement.src = getVideoUrl(currentVideoId);
+      videoElement.muted = true;
+      videoElement.preload = 'metadata'; // Only load metadata first
 
-    videoElement.onseeked = () => {
-      // Extract frame as thumbnail
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
-        const ctx = canvas.getContext('2d');
+      const onLoadedMetadata = () => {
+        videoElement.currentTime = 1; // Set to 1 second to get a frame
+      };
 
-        if (ctx) {
-          ctx.drawImage(videoElement, 0, 0);
-          thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
+      const onSeeked = () => {
+        // Extract frame as thumbnail
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          const ctx = canvas.getContext('2d');
+
+          if (ctx) {
+            ctx.drawImage(videoElement, 0, 0);
+            thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
+          }
+        } catch (error) {
+          // Silent fail for canvas errors (e.g. tainted)
         }
-      } catch (error) {
-        console.error('Failed to generate thumbnail:', error);
-      }
-    };
+        // Cleanup
+        videoElement.src = '';
+        videoElement.load();
+      };
 
-    videoElement.onerror = () => {
-      console.error('Failed to load video for thumbnail generation');
+      const onError = () => {
+        // Silent fail
+      };
+
+      videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
+      videoElement.addEventListener('seeked', onSeeked);
+      videoElement.addEventListener('error', onError);
+
+      cleanup = () => {
+        videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
+        videoElement.removeEventListener('seeked', onSeeked);
+        videoElement.removeEventListener('error', onError);
+        videoElement.src = '';
+        videoElement.load();
+      };
+    }, 100); // 100ms delay
+
+    return () => {
+      clearTimeout(timer);
+      cleanup();
     };
   });
 

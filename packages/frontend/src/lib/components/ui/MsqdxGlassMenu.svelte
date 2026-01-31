@@ -1,10 +1,10 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { MsqdxGlassCard } from '$lib/components/ui';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import MsqdxGlassCard from './MsqdxGlassCard.svelte';
+  import MaterialSymbol from './MaterialSymbol.svelte';
   import { MSQDX_COLORS } from '$lib/design-tokens';
 
-  let { items = [], align = 'right', width = 200 } = $props();
+  let { items = [], align = 'right', width = 200, onclose } = $props();
 
   const dispatch = createEventDispatcher();
 
@@ -13,6 +13,7 @@
   function handleClickOutside(event) {
     if (menuElement && !menuElement.contains(event.target)) {
       dispatch('close');
+      onclose?.();
     }
   }
 
@@ -20,6 +21,7 @@
     if (!item.disabled) {
       item.action();
       dispatch('close');
+      onclose?.();
     }
   }
 
