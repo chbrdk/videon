@@ -75,8 +75,7 @@
     {@render children?.()}
   </MsqdxAdminLayout>
 
-  <!-- Service Status Panel -->
-  <ServiceStatusPanel />
+  <!-- <ServiceStatusPanel /> -->
 {:else}
   <!-- Loading State -->
   <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -85,4 +84,4 @@
 {/if}
 
 <!-- Global Components -->
-<GlobalContextMenu />
+<!-- <GlobalContextMenu /> -->
