@@ -116,7 +116,7 @@
   "
 >
   <!-- Sidebar -->
-  <MsqdxAdminNav open={drawerOpen} onClose={handleDrawerClose} />
+  <!-- <MsqdxAdminNav open={drawerOpen} onClose={handleDrawerClose} /> -->
 
   <!-- Container: Header + Main -->
   <div
