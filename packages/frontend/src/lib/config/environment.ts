@@ -36,29 +36,27 @@ export interface Config {
 // Vite replaces import.meta.env.PUBLIC_BACKEND_URL at build time if the env var is set
 const BACKEND_URL_BUILD_TIME = import.meta.env.PUBLIC_BACKEND_URL;
 
-// Runtime detection: Always use browser's hostname and protocol to ensure consistency
-// If accessed via /videon prefix, use relative API path (proxied through Nginx)
-// Otherwise use direct backend URL
-const getBackendUrl = () => {
-  if (BACKEND_URL_BUILD_TIME) {
-    return BACKEND_URL_BUILD_TIME;
-  }
+// Internal Docker hostnames (backend, frontend, etc.) are NOT reachable from the browser
+const isInternalDockerUrl = (url: string) =>
+  !url || /^(https?:\/\/)?(backend|frontend|postgres|redis|analyzer)(:\d+)?(\/|$)/i.test(url);
 
+// Runtime detection: In browser, prefer same-origin when build URL is internal Docker
+const getBackendUrl = () => {
   if (typeof window !== 'undefined') {
     const { hostname, protocol } = window.location;
-    // Assume backend is on port 4001 in development, or use relative root API if proxied
-    // For production builds without explicit backend URL, we might want to assume same origin /api
-    // But here we return base backend URL (without /api)
-
+    // Internal Docker URL (e.g. http://backend:4001) → use same-origin (Coolify proxies /api)
+    if (BACKEND_URL_BUILD_TIME && isInternalDockerUrl(BACKEND_URL_BUILD_TIME)) {
+      return ''; // '' → api.baseUrl = '/api' (relative, same-origin)
+    }
+    if (BACKEND_URL_BUILD_TIME && !isInternalDockerUrl(BACKEND_URL_BUILD_TIME)) {
+      return BACKEND_URL_BUILD_TIME;
+    }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return `${protocol}//${hostname}:4001`;
     }
-    // In production (if not passed via env), assume same origin handling or fail gracefully
-    // Currently we prefer explicit env var.
-    return `${protocol}//${hostname}`;
+    return ''; // Production: same-origin /api
   }
-
-  return 'http://localhost:4001';
+  return BACKEND_URL_BUILD_TIME || 'http://localhost:4001';
 };
 
 const BACKEND_URL = getBackendUrl();

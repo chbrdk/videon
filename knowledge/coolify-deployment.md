@@ -15,9 +15,17 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 - `VITE_BASE_PATH=/` – App unter Root (https://videon..../)
 - `PUBLIC_BACKEND_URL` – Backend-URL für API-Calls
 
-### Checkliste bei "nichts zurück"
+### Spinner hängt (Auth-Check)
+
+**Ursache:** `PUBLIC_BACKEND_URL` zeigt auf interne Docker-Adresse (z.B. `http://backend:4001`), die der Browser nicht erreicht.
+
+**Fix:** Frontend erkennt interne Docker-URLs zur Laufzeit und nutzt stattdessen Same-Origin (`/api`). Coolify/Nginx proxied `/api` zum Backend.
+
+**Coolify:** `PUBLIC_BACKEND_URL` leer lassen oder auf öffentliche URL setzen (z.B. `https://videon.projects-a.plygrnd.tech`).
+
+### Checkliste bei "nichts zurück" / Spinner
 
 1. **Coolify Build-Logs prüfen** – schlägt der Frontend-Build fehl?
 2. **Container-Logs** – startet Nginx, gibt es Fehler?
 3. **Healthcheck** – `curl http://localhost:80/` im Container
-4. **Env-Variablen** – `VITE_BASE_PATH`, `PUBLIC_BACKEND_URL` in Coolify gesetzt?
+4. **Env-Variablen** – `VITE_BASE_PATH=/`, `PUBLIC_BACKEND_URL` leer oder öffentliche URL
