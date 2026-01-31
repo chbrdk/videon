@@ -42,7 +42,7 @@
     {$currentLocale === 'en' ? 'Root' : 'Hauptordner'}
   </a>
 
-  {#each $breadcrumbs as crumb}
+  {#each $breadcrumbs || [] as crumb}
     <MaterialSymbol
       icon="chevron_right"
       fontSize={MSQDX_ICONS.sizes.sm}

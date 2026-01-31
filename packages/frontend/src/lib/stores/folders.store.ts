@@ -39,8 +39,8 @@ export async function loadFolders(parentId?: string) {
     if (folderData) {
       const isRoot = !folderData.id;
       currentFolder.set(isRoot ? null : folderData);
-      folders.set(folderData.folders ?? []);
-      videosInFolder.set(folderData.videos ?? []);
+      folders.set(folderData?.folders ?? []);
+      videosInFolder.set(folderData?.videos ?? []);
       searchResults.set({ folders: [], videos: [], projects: [] });
       breadcrumbs.set(breadcrumbData ?? []);
     }

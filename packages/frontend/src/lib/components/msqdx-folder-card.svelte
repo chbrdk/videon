@@ -8,13 +8,13 @@
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   let {
-    folder,
+    folder = {} as any,
     selected = false,
     onSelect = undefined,
     onContextMenu = undefined,
     className = '',
   }: {
-    folder: any;
+    folder?: any;
     selected?: boolean;
     onSelect?: ((folder: any) => void) | undefined;
     onContextMenu?: ((e: MouseEvent, folder: any) => void) | undefined;

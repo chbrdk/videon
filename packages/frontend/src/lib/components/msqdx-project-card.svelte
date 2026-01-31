@@ -8,7 +8,8 @@
   import type { Project } from '$lib/api/projects';
   import { _ } from '$lib/i18n';
 
-  let { project }: { project: Project } = $props();
+  let { project = {} as Project }: { project?: Project } = $props();
+  if (!project || !project.id) return null;
 
   const dispatch = createEventDispatcher();
 

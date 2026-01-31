@@ -9,7 +9,9 @@
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  let { video }: { video: Video } = $props();
+  let { video = {} as Video }: { video?: Video } = $props();
+  // Safe access check
+  if (!video || !video.id) return null;
 
   const dispatch = createEventDispatcher<{
     select: { id: string };

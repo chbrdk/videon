@@ -131,7 +131,10 @@ let scrollAnimationId: number | null = null;
       // Fetch projects only at root level to avoid cluttering subfolders
       if (!folderId) {
           try {
-            projects = await projectsApi.getProjects();
+            // Safe check for projectsApi before calling
+            if (projectsApi && typeof projectsApi.getProjects === 'function') {
+                projects = await projectsApi.getProjects();
+            }
           } catch(e) {
               console.error("Failed to load projects", e);
           }
@@ -160,15 +163,15 @@ let scrollAnimationId: number | null = null;
   }
 
   // Get current folder contents
-  $: currentContents = $searchQuery ? $searchResults : { folders: $folders, videos: $videosInFolder };
-  $: displayedProjects = $searchQuery ? ($searchResults.projects || []) : projects;
+  $: currentContents = $searchQuery ? ($searchResults || { folders: [], videos: [], projects: [] }) : { folders: $folders || [], videos: $videosInFolder || [] };
+  $: displayedProjects = $searchQuery ? ($searchResults?.projects || []) : projects;
   
   $: allItems = [
     ...(displayedProjects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
-    ...(currentContents.folders || []).map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
-    ...(currentContents.videos || []).map(video => ({ ...video, id: video.id, type: 'video' as const }))
+    ...(currentContents?.folders || []).map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
+    ...(currentContents?.videos || []).map(video => ({ ...video, id: video.id, type: 'video' as const }))
   ];
-  $: totalVideos = (currentContents.videos || []).length;
+  $: totalVideos = (currentContents?.videos || []).length;
 
   $: {
     if (!revealMode) {
@@ -750,7 +753,7 @@ let scrollAnimationId: number | null = null;
         {/if}
         
         <!-- Projects -->
-        {#each displayedProjects as project (project.id)}
+        {#each (displayedProjects || []) as project (project.id)}
           <MsqdxProjectCard
             {project}
             on:rename={() => handleRenameProject(project)}
@@ -760,7 +763,7 @@ let scrollAnimationId: number | null = null;
         {/each}
 
         <!-- Folders -->
-        {#each currentContents.folders as folder (folder.id)}
+        {#each (currentContents?.folders || []) as folder (folder.id)}
           <div
             class="glass-card cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id === folder.id ? 'ring-2 ring-blue-400' : ''}"
             on:click={() => handleFolderClick(folder)}
@@ -784,7 +787,7 @@ let scrollAnimationId: number | null = null;
         {/each}
         
         <!-- Videos -->
-        {#each (currentContents.videos || []) as video (video.id)}
+        {#each (currentContents?.videos || []) as video (video.id)}
           <div class="video-card-wrapper">
         <MsqdxVideoCard 
               video={video}
