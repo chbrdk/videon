@@ -52,17 +52,18 @@ RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 
 # Debug: Create a shell script to run the build with "Trojan Horse" logging
 # STRATEGY: If build fails, deploy the error log as the website so we can read it.
+# IMPROVED: Show only last 100 lines to avoid truncation
 RUN echo '#!/bin/sh' > debug-build.sh && \
     echo 'echo "--- STARTING BUILD ---"' >> debug-build.sh && \
     echo 'if npm run build > build.output.txt 2>&1; then' >> debug-build.sh && \
     echo '  echo "Build Succeeded"' >> debug-build.sh && \
     echo '  exit 0' >> debug-build.sh && \
     echo 'else' >> debug-build.sh && \
-    echo '  echo "Build Failed! Packaging logs as index.html..."' >> debug-build.sh && \
+    echo '  echo "Build Failed! Packaging last 100 lines of logs as index.html..."' >> debug-build.sh && \
     echo '  mkdir -p build' >> debug-build.sh && \
-    echo '  echo "<html><body><h1>Build Failed</h1><pre>" > build/index.html' >> debug-build.sh && \
-    echo '  cat build.output.txt >> build/index.html' >> debug-build.sh && \
-    echo '  echo "</pre></body></html>" >> build/index.html' >> debug-build.sh && \
+    echo '  echo "<html><head><style>body{font-family:monospace;background:#1e1e1e;color:#d4d4d4;padding:20px;}h1{color:#ff6b6b;}pre{background:#2d2d2d;padding:15px;border-radius:5px;overflow-x:auto;}</style></head><body><h1>Build Failed - Last 100 Lines</h1><pre>" > build/index.html' >> debug-build.sh && \
+    echo '  tail -100 build.output.txt >> build/index.html' >> debug-build.sh && \
+    echo '  echo "</pre><hr><h2>Need full log?</h2><p>Check Coolify deployment logs or build locally</p></body></html>" >> build/index.html' >> debug-build.sh && \
     echo '  exit 0' >> debug-build.sh && \
     echo 'fi' >> debug-build.sh
 
