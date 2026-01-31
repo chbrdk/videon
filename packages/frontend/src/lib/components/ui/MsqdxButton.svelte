@@ -25,14 +25,7 @@
     ...rest
   }: Props & { children?: import('svelte').Snippet } = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
-
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
-    return unsubscribe;
-  });
+  let currentTheme = $derived($theme);    
 
   function getButtonStyles(): string {
     if (glass) {

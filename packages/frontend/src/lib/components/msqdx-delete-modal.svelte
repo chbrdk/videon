@@ -5,41 +5,33 @@
   import { _ } from '$lib/i18n';
 
   // Generic item type
-  let {
-    item = null as {
-      id: string;
-      name?: string;
-      originalName?: string;
-      filename?: string;
-      fileSize?: number;
-    } | null,
-    type = 'video' as 'video' | 'folder' | 'project',
-    open = false,
-    onconfirm = null as (() => void) | null,
-    onclose = null as (() => void) | null,
-  } = $props();
+  export let item: {
+    id: string;
+    name?: string;
+    originalName?: string;
+    filename?: string;
+    fileSize?: number;
+  } | null = null;
+  export let type: 'video' | 'folder' | 'project' = 'video';
+  export let open = false;
 
   const dispatch = createEventDispatcher();
-  let deleting = $state(false);
+  let deleting = false;
 
   // Reset deleting state when modal opens/closes or item changes
-  $effect(() => {
-    if (open === false || (open === true && item)) {
-      deleting = false;
-    }
-  });
+  $: if (open === false || (open === true && item)) {
+    deleting = false;
+  }
 
   function handleClose() {
     if (!deleting) {
       dispatch('close');
-      if (onclose) onclose();
     }
   }
 
   async function handleDelete() {
     deleting = true;
     dispatch('confirm');
-    if (onconfirm) onconfirm();
   }
 
   function formatFileSize(bytes: number): string {
@@ -51,7 +43,7 @@
   }
 
   // Helper to get display name
-  let displayName = $derived(item ? item.name || item.originalName || item.filename || 'Item' : '');
+  $: displayName = item ? item.name || item.originalName || item.filename || 'Item' : '';
 </script>
 
 {#if open}
@@ -72,7 +64,7 @@
           {/if}
         </h2>
         <button
-          onclick={handleClose}
+          on:click={handleClose}
           class="text-white/60 hover:text-white transition-colors"
           disabled={deleting}
         >
@@ -122,13 +114,13 @@
       </div>
 
       <div class="flex gap-3 justify-end">
-        <MsqdxButton variant="outlined" glass={true} disabled={deleting} onclick={handleClose}>
+        <MsqdxButton variant="outlined" glass={true} disabled={deleting} on:click={handleClose}>
           {_('actions.cancel')}
         </MsqdxButton>
         <MsqdxButton
           variant="contained"
           disabled={deleting}
-          onclick={handleDelete}
+          on:click={handleDelete}
           style="background-color: var(--msqdx-color-status-error); border-color: var(--msqdx-color-status-error); color: var(--msqdx-color-brand-white);"
         >
           {deleting ? _('delete.deleting') : _('delete.finalConfirm')}

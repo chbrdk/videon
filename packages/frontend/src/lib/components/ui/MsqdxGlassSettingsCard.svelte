@@ -31,14 +31,9 @@
     ...rest
   }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   const statusColor = $derived(() => {
     if (status === 'active') return MSQDX_COLORS.status.success;

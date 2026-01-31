@@ -2,53 +2,44 @@
   import { createEventDispatcher } from 'svelte';
   import { _ } from '$lib/i18n';
 
-  let {
-    open = false,
-    mode = 'create',
-    initialName = '',
-    className = '',
-    title = '',
-    label = '',
-    onconfirm = null as ((data: { name: string }) => void) | null,
-    oncancel = null as (() => void) | null,
-  } = $props();
+  export let open = false;
+  export let mode: 'create' | 'rename' = 'create';
+  export let initialName = '';
+  export let className = '';
+  export let title = '';
+  export let label = '';
 
   const dispatch = createEventDispatcher();
 
-  let name = $state(initialName);
-  let dialogElement: HTMLDialogElement | undefined = $state();
-  let nameInput: HTMLInputElement | undefined = $state();
+  let name = initialName;
+  let dialogElement: HTMLDialogElement | undefined;
+  let nameInput: HTMLInputElement | undefined;
 
   // Handle dialog open/close
-  $effect(() => {
-    if (open && dialogElement) {
-      dialogElement.showModal();
-      name = initialName;
-      setTimeout(() => {
-        if (nameInput) {
-          nameInput.focus();
-          nameInput.select();
-        }
-      }, 100);
-    } else if (!open && dialogElement) {
-      dialogElement.close();
-    }
-  });
+  $: if (open && dialogElement) {
+    dialogElement.showModal();
+    name = initialName;
+    setTimeout(() => {
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.select();
+      }
+    }, 100);
+  } else if (!open && dialogElement) {
+    dialogElement.close();
+  }
 
   function handleSubmit() {
     if (name.trim()) {
-      const data = { name: name.trim() };
-      dispatch('confirm', data);
-      if (onconfirm) onconfirm(data);
+      dispatch('confirm', { name: name.trim() });
     }
   }
 
   function handleCancel() {
     dispatch('cancel');
-    if (oncancel) oncancel();
   }
 
-  function handleKeydown(event) {
+  function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Enter') {
       event.preventDefault();
       handleSubmit();
@@ -59,13 +50,11 @@
   }
 
   // Derived values for display
-  let displayTitle = $derived(
-    title || (mode === 'create' ? _('folder.create') : _('folder.rename'))
-  );
-  let displayLabel = $derived(label || _('folder.name'));
+  $: displayTitle = title || (mode === 'create' ? _('folder.create') : _('folder.rename'));
+  $: displayLabel = label || _('folder.name');
 </script>
 
-<dialog bind:this={dialogElement} class="folder-dialog {className}" onclose={handleCancel}>
+<dialog bind:this={dialogElement} class="folder-dialog {className}" on:close={handleCancel}>
   <div class="dialog-content glass-card">
     <h2 class="dialog-title">
       {displayTitle}
@@ -77,7 +66,7 @@
         id="folder-name"
         bind:this={nameInput}
         bind:value={name}
-        onkeydown={handleKeydown}
+        on:keydown={handleKeydown}
         placeholder={_('folder.namePlaceholder')}
         class="name-input"
         maxlength="100"
@@ -85,12 +74,12 @@
     </div>
 
     <div class="dialog-actions">
-      <button class="glass-button secondary" onclick={handleCancel} type="button">
+      <button class="glass-button secondary" on:click={handleCancel} type="button">
         {_('actions.cancel')}
       </button>
       <button
         class="glass-button primary"
-        onclick={handleSubmit}
+        on:click={handleSubmit}
         type="submit"
         disabled={!name.trim()}
       >

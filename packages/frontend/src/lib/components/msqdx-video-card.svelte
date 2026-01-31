@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import type { Video } from '$lib/api/videos';
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
@@ -9,9 +9,7 @@
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  let { video = {} as Video }: { video?: Video } = $props();
-  // Safe access check
-  // Safe access check handled in template
+  export let video: Video = {} as Video;
 
   const dispatch = createEventDispatcher<{
     select: { id: string };
@@ -20,82 +18,58 @@
     share: { id: string };
   }>();
 
-  let thumbnailUrl = $state('');
+  let thumbnailUrl = '';
+  let videoElement: HTMLVideoElement | null = null;
 
   function handleClick(event?: Event) {
     const videoPath = `${base}/videos/${video.id}`;
-    console.log('Video card clicked, navigating to:', videoPath, event);
-    // Navigate directly using window.location for immediate navigation
     if (typeof window !== 'undefined') {
       window.location.href = videoPath;
       return;
     }
-    // Also dispatch event for parent component (if needed)
     dispatch('select', { id: video.id });
   }
 
   // Generate thumbnail from video
-  $effect(() => {
-    // Re-run if video id changes
+  $: if (video && video.id && typeof window !== 'undefined') {
     const currentVideoId = video.id;
-    if (!currentVideoId || typeof window === 'undefined') return;
 
-    let cleanup = () => {};
+    // Clear existing thumbnail when video changes
+    thumbnailUrl = '';
 
-    // Use a small timeout to avoid blocking main thread during initial render
     const timer = setTimeout(() => {
-      const videoElement = document.createElement('video');
-      videoElement.crossOrigin = 'anonymous';
-      videoElement.src = getVideoUrl(currentVideoId);
-      videoElement.muted = true;
-      videoElement.preload = 'metadata'; // Only load metadata first
+      const v = document.createElement('video');
+      v.crossOrigin = 'anonymous';
+      v.src = getVideoUrl(currentVideoId);
+      v.muted = true;
+      v.preload = 'metadata';
 
       const onLoadedMetadata = () => {
-        videoElement.currentTime = 1; // Set to 1 second to get a frame
+        v.currentTime = 1;
       };
 
       const onSeeked = () => {
-        // Extract frame as thumbnail
         try {
           const canvas = document.createElement('canvas');
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
+          canvas.width = v.videoWidth;
+          canvas.height = v.videoHeight;
           const ctx = canvas.getContext('2d');
-
           if (ctx) {
-            ctx.drawImage(videoElement, 0, 0);
+            ctx.drawImage(v, 0, 0);
             thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
           }
         } catch (error) {
-          // Silent fail for canvas errors (e.g. tainted)
+          // Silent fail
         }
-        // Cleanup
-        videoElement.src = '';
-        videoElement.load();
+        v.src = '';
+        v.load();
       };
 
-      const onError = () => {
-        // Silent fail
-      };
-
-      videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
-      videoElement.addEventListener('seeked', onSeeked);
-      videoElement.addEventListener('error', onError);
-
-      cleanup = () => {
-        videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
-        videoElement.removeEventListener('seeked', onSeeked);
-        videoElement.removeEventListener('error', onError);
-        videoElement.src = '';
-        videoElement.load();
-      };
-    }, 100); // 100ms delay
-
-    return () => {
-      clearTimeout(timer);
-      cleanup();
-    };
-  });
+      v.addEventListener('loadedmetadata', onLoadedMetadata);
+      v.addEventListener('seeked', onSeeked);
+      videoElement = v;
+    }, 100);
+  }
 
   function formatFileSize(bytes: number): string {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -152,11 +126,11 @@
     class="msqdx-glass-card group overflow-hidden transition-transform duration-200 hover:scale-105 cursor-pointer hoverable no-padding"
     role="button"
     tabindex="0"
-    onclick={e => {
+    on:click={e => {
       e.stopPropagation();
       handleClick(e);
     }}
-    onkeydown={e => {
+    on:keydown={e => {
       if (e.key === 'Enter') {
         e.preventDefault();
         handleClick();

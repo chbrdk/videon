@@ -40,12 +40,7 @@
     typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0
   );
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   $effect(() => {
     if (value !== undefined) {

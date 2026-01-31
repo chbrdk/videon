@@ -46,14 +46,9 @@
     ...rest
   }: Props & { children?: any } = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
-    return unsubscribe;
-  });
+  
 
   // Default font weights for different variants
   const VARIANT_WEIGHTS: Record<string, number> = {

@@ -70,7 +70,7 @@
   });
 
   function getChipStyles(): string {
-    const baseColor = chipColor();
+    const baseColor = chipColor;
     const rgb =
       baseColor
         .replace('#', '')
@@ -78,7 +78,7 @@
         ?.map(x => parseInt(x, 16))
         .join(', ') || '0, 202, 85';
 
-    if (chipVariant() === 'glass') {
+    if (chipVariant === 'glass') {
       return `
         background-color: rgba(${rgb}, 0.1);
         backdrop-filter: blur(4px);
@@ -88,7 +88,7 @@
       `;
     }
 
-    if (chipVariant() === 'filled') {
+    if (chipVariant === 'filled') {
       return `
         background-color: ${baseColor};
         color: ${getContrastColor(baseColor)};

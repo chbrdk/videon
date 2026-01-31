@@ -11,13 +11,8 @@
   import { createFolder } from '$lib/stores/folders.store';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  let {
-    open = $bindable(false),
-    currentFolderId = null as string | null,
-    onUploadComplete = () => {},
-    onProjectCreated = null as ((project: any) => void) | null,
-    onClose = null as (() => void) | null,
-  } = $props();
+  export let open = false;
+  export let currentFolderId: string | null = null;
 
   const dispatch = createEventDispatcher();
 
@@ -46,7 +41,6 @@
     newItemName = '';
     open = false;
     dispatch('close');
-    if (onClose) onClose();
   }
 
   function resetState() {
@@ -90,7 +84,7 @@
           currentFolderId || undefined
         );
       }
-      onUploadComplete();
+      dispatch('uploadComplete');
       close();
     } catch (err: any) {
       error = err.message || _('errors.uploadError');
@@ -118,7 +112,6 @@
     try {
       const project = await projectsApi.createProject({ name: newItemName });
       dispatch('projectCreated', project);
-      if (onProjectCreated) onProjectCreated(project);
       close();
     } catch (err: any) {
       error = err.message;
@@ -146,10 +139,10 @@
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
-    onclick={e => e.target === e.currentTarget && close()}
+    on:click={e => e.target === e.currentTarget && close()}
     role="button"
     tabindex="0"
-    onkeydown={e => e.key === 'Escape' && close()}
+    on:keydown={e => e.key === 'Escape' && close()}
   >
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -164,7 +157,7 @@
             {#if mode !== 'menu'}
               <button
                 class="p-1 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-                onclick={handleBack}
+                on:click={handleBack}
                 disabled={uploading || creating}
                 style="color: {MSQDX_COLORS.dark.textPrimary};"
               >
@@ -186,7 +179,7 @@
           </div>
           <button
             class="p-1 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            onclick={close}
+            on:click={close}
             disabled={uploading || creating}
             style="color: {MSQDX_COLORS.dark.textPrimary};"
           >
@@ -205,7 +198,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                onclick={() => (mode = 'upload')}
+                on:click={() => (mode = 'upload')}
               >
                 <div
                   class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
@@ -238,7 +231,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                onclick={() => {
+                on:click={() => {
                   mode = 'project';
                   newItemName = '';
                 }}
@@ -274,7 +267,7 @@
                   background-color: transparent;
                   border: 1px solid {MSQDX_COLORS.brand.orange};
                 "
-                onclick={() => {
+                on:click={() => {
                   mode = 'folder';
                   newItemName = '';
                 }}
@@ -339,18 +332,18 @@
                    border-color: {dragOver ? MSQDX_COLORS.brand.blue : MSQDX_COLORS.dark.border};
                    background-color: transparent;
                 "
-                ondragover={e => {
+                on:dragover={e => {
                   e.preventDefault();
                   dragOver = true;
                 }}
-                ondragleave={e => {
+                on:dragleave={e => {
                   e.preventDefault();
                   dragOver = false;
                 }}
-                ondrop={handleDrop}
+                on:drop={handleDrop}
                 role="button"
                 tabindex="0"
-                onclick={() => document.getElementById('dialog-file-input')?.click()}
+                on:click={() => document.getElementById('dialog-file-input')?.click()}
               >
                 <input
                   id="dialog-file-input"
@@ -358,7 +351,7 @@
                   multiple
                   accept="video/*"
                   class="hidden"
-                  onchange={handleFileSelect}
+                  on:change={handleFileSelect}
                 />
 
                 <MaterialSymbol
@@ -387,7 +380,7 @@
                       class="px-4 py-2 rounded-lg text-sm"
                       style="background-color: {MSQDX_COLORS.dark.border}; color: {MSQDX_COLORS.dark
                         .textPrimary};"
-                      onclick={e => {
+                      on:click={e => {
                         e.stopPropagation();
                         files = null;
                       }}>{_('dialog.clear')}</button
@@ -396,7 +389,7 @@
                       class="px-6 py-2 rounded-lg text-sm font-medium shadow-lg"
                       style="background-color: {MSQDX_COLORS.brand.blue}; color: {MSQDX_COLORS.brand
                         .white};"
-                      onclick={e => {
+                      on:click={e => {
                         e.stopPropagation();
                         handleUpload();
                       }}
@@ -419,7 +412,7 @@
             {/if}
           {:else if mode === 'project' || mode === 'folder'}
             <form
-              onsubmit={e => {
+              on:submit={e => {
                 e.preventDefault();
                 mode === 'project' ? handleCreateProject() : handleCreateFolder();
               }}

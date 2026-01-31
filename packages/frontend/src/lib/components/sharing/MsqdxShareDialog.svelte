@@ -9,37 +9,32 @@
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { sharingApi, type Collaborator } from '$lib/api/sharing';
 
-  let {
-    open = false,
-    itemId = '',
-    itemType = 'video' as 'project' | 'video' | 'folder',
-    itemName = '',
-    onclose = null as (() => void) | null,
-  } = $props();
+  export let open = false;
+  export let itemId = '';
+  export let itemType: 'project' | 'video' | 'folder' = 'video';
+  export let itemName = '';
 
   const dispatch = createEventDispatcher();
 
-  let collaborators = $state<Collaborator[]>([]);
-  let loading = $state(false);
-  let inviteLoading = $state(false);
-  let error = $state<string | null>(null);
-  let successMessage = $state<string | null>(null);
+  let collaborators: Collaborator[] = [];
+  let loading = false;
+  let inviteLoading = false;
+  let error: string | null = null;
+  let successMessage: string | null = null;
 
   // Invite Form
-  let email = $state('');
-  let role = $state<'VIEWER' | 'EDITOR'>('VIEWER');
+  let email = '';
+  let role: 'VIEWER' | 'EDITOR' = 'VIEWER';
 
   const roleOptions = [
     { value: 'VIEWER', label: 'Viewer' },
     { value: 'EDITOR', label: 'Editor' },
   ];
 
-  $effect(() => {
-    if (open && itemId) {
-      loadCollaborators();
-      resetForm();
-    }
-  });
+  $: if (open && itemId) {
+    loadCollaborators();
+    resetForm();
+  }
 
   function resetForm() {
     email = '';
@@ -113,7 +108,6 @@
   function close() {
     open = false;
     dispatch('close');
-    if (onclose) onclose();
   }
 </script>
 
@@ -121,7 +115,7 @@
   <div
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
-    onclick={e => e.target === e.currentTarget && close()}
+    on:click={e => e.target === e.currentTarget && close()}
   >
     <div
       class="w-full max-w-lg relative"
@@ -140,7 +134,7 @@
           </div>
           <button
             class="p-2 rounded-full hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            onclick={close}
+            on:click={close}
           >
             <MaterialSymbol icon="close" fontSize={20} />
           </button>
@@ -174,7 +168,7 @@
                 variant="primary"
                 disabled={!email || inviteLoading}
                 loading={inviteLoading}
-                onclick={handleInvite}
+                on:click={handleInvite}
               >
                 Invite
               </MsqdxButton>
@@ -248,7 +242,7 @@
                       </span>
                       <button
                         class="text-red-400 hover:text-red-300 transition-colors p-1"
-                        onclick={() => handleRemove(user.userId)}
+                        on:click={() => handleRemove(user.userId)}
                         title="Remove Access"
                       >
                         <MaterialSymbol icon="delete" fontSize={18} />

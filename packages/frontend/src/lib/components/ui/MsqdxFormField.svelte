@@ -37,15 +37,10 @@
     ...rest
   }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
   let isFocused = $state(false);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement;

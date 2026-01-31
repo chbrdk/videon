@@ -8,8 +8,7 @@
   import type { Project } from '$lib/api/projects';
   import { _ } from '$lib/i18n';
 
-  let { project = {} as Project }: { project?: Project } = $props();
-  // Safe access check handled in template
+  export let project: Project = {} as Project;
 
   const dispatch = createEventDispatcher();
 
@@ -26,8 +25,8 @@
 {#if project && project.id}
   <div
     class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-    onclick={handleClick}
-    onkeydown={e => e.key === 'Enter' && handleClick()}
+    on:click={handleClick}
+    on:keydown={e => e.key === 'Enter' && handleClick()}
     role="button"
     tabindex="0"
     style="

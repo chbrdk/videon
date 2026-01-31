@@ -18,15 +18,10 @@
 
   let { value, onChange, tabs, class: className = '' }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
   let internalValue = $state(value);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   $effect(() => {
     internalValue = value;

@@ -36,16 +36,11 @@
     ...rest
   }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
   let internalValue = $state(value ?? '');
   let isFocused = $state(false);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   $effect(() => {
     if (value !== undefined) {

@@ -20,14 +20,9 @@
     class: className = '',
   }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
-    return unsubscribe;
-  });
+  
 
   function getThemeColor(): string {
     switch (color) {

@@ -26,12 +26,7 @@
 
   let currentTheme: 'light' | 'dark' = $state('dark');
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   const cornerRadius = $derived(() => {
     return borderRadiusVariant 

@@ -26,19 +26,8 @@
     ...rest
   }: Props & { children?: any } = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
   let isHovered = $state(false);
-
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
-    return unsubscribe;
-  });
-
-  onMount(() => {
-    currentTheme = document.documentElement.classList.contains('light') ? 'light' : 'dark';
-  });
 
   function getBorderRadius(): string {
     if (borderRadiusVariant) {

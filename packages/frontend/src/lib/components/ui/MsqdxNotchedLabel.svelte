@@ -19,14 +19,9 @@
     ...rest
   }: Props & { children?: any } = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme = $derived($theme);
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
-    return unsubscribe;
-  });
+  
 
   const borderColor = $derived(() => {
     return currentTheme === 'dark' 
