@@ -26,8 +26,11 @@
   }
 
   $effect(() => {
+    // Guard against null menuElement
+    if (!menuElement) return;
+
     // 1. Capture parent for positioning reference BEFORE moving
-    const triggerContainer = menuElement?.parentElement;
+    const triggerContainer = menuElement.parentElement;
 
     if (triggerContainer) {
       // 2. Move to body to escape stacking contexts (transform, overflow:hidden)
