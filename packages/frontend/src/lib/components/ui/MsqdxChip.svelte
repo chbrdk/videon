@@ -123,7 +123,7 @@
   style={getChipStyles()}
   {...rest}
 >
-  {@render children?.()}
+  {#if children}{@render children()}{/if}
 </span>
 
 <style>

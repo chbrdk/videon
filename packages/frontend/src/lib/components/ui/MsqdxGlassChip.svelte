@@ -138,7 +138,7 @@
   tabindex={onClick ? 0 : undefined}
   {...rest}
 >
-  {@render children?.()}
+  {#if children}{@render children()}{/if}
 </span>
 
 <style>

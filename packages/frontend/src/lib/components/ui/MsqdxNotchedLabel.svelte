@@ -62,7 +62,7 @@
   "
   {...rest}
 >
-  {@render children?.()}
+  {#if children}{@render children()}{/if}
 </div>
 
 <style>

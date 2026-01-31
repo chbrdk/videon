@@ -87,7 +87,7 @@
     {#if loading}
       <span class="spinner"></span>
     {/if}
-    {@render children?.()}
+    {#if children}{@render children()}{/if}
   </a>
 {:else}
   <button
@@ -103,7 +103,7 @@
     {#if loading}
       <span class="spinner"></span>
     {/if}
-    {@render children?.()}
+    {#if children}{@render children()}{/if}
   </button>
 {/if}
 

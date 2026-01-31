@@ -110,7 +110,7 @@
       {rest.style || ''}
     "
   >
-    {@render children?.()}
+    {#if children}{@render children()}{/if}
   </MsqdxGlassCard>
 
   {#if bottomRightBadge}

@@ -111,7 +111,7 @@
   {#if accent !== 'none'}
     <div class="accent-border" style="background: {getAccentColor()};"></div>
   {/if}
-  {@render children?.()}
+  {#if children}{@render children()}{/if}
 </div>
 
 <style>
