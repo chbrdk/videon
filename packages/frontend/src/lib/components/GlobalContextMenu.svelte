@@ -1,7 +1,7 @@
 <script lang="ts">
   import { contextMenuStore } from '$lib/stores/context-menu.store';
   import { MaterialSymbol } from '$lib/components/ui';
-  
+
   function handleAction(action: string, segment: any) {
     window.dispatchEvent(new CustomEvent(`contextmenu-${action}`, { detail: segment }));
     contextMenuStore.set(null);
@@ -16,17 +16,17 @@
     style="top: {$contextMenuStore.y}px; left: {$contextMenuStore.x}px;"
     on:click|stopPropagation
   >
-    <button on:click={() => handleAction('play', $contextMenuStore!.segment)}>
+    <button on:click={() => handleAction('play', $contextMenuStore?.segment)}>
       <span class="icon-18px"><MaterialSymbol icon="play_arrow" fontSize={18} /></span> Play Segment
     </button>
-    <button on:click={() => handleAction('edit', $contextMenuStore!.segment)}>
+    <button on:click={() => handleAction('edit', $contextMenuStore?.segment)}>
       <span class="icon-18px"><MaterialSymbol icon="edit" fontSize={18} /></span> Edit Text
     </button>
-    <button on:click={() => handleAction('revoice', $contextMenuStore!.segment)}>
+    <button on:click={() => handleAction('revoice', $contextMenuStore?.segment)}>
       <span class="icon-18px"><MaterialSymbol icon="mic" fontSize={18} /></span> Re-Voice
     </button>
     <div class="divider"></div>
-    <button class="danger" on:click={() => handleAction('delete', $contextMenuStore!.segment)}>
+    <button class="danger" on:click={() => handleAction('delete', $contextMenuStore?.segment)}>
       <span class="icon-18px"><MaterialSymbol icon="delete" fontSize={18} /></span> Delete
     </button>
   </div>
@@ -62,7 +62,7 @@
     align-items: center;
     gap: 8px;
   }
-  
+
   .icon-18px {
     display: inline-block;
     width: 18px;
@@ -129,4 +129,3 @@
     z-index: 9999;
   }
 </style>
-
