@@ -124,14 +124,14 @@ app.set('trust proxy', 1);
 const redisClient = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
 redisClient.connect().catch(err => logger.error('Redis Session Client Error', err));
 
-// Session Middleware
+// Session Middleware - secure: true nur wenn req.secure (Proxy: X-Forwarded-Proto)
 app.use(session({
   store: new RedisStore({ client: redisClient }),
   secret: process.env.SESSION_SECRET || 'changeme_in_production_secret_key',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: 'auto', // true wenn HTTPS (via Proxy), sonst false
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     sameSite: 'lax'

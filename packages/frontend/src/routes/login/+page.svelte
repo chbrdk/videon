@@ -17,6 +17,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include', // Session-Cookie empfangen (wichtig hinter Proxy/Coolify)
       });
 
       const data = await response.json();

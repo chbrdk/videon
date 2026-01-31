@@ -23,6 +23,15 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 
 **Coolify:** `PUBLIC_BACKEND_URL` leer lassen oder auf öffentliche URL setzen (z.B. `https://videon.projects-a.plygrnd.tech`).
 
+### Spinner nach Login (Session-Cookie)
+
+**Ursache:** Session-Cookie wird nach Login nicht gesendet/empfangen.
+
+**Fixes:**
+1. **Login:** `credentials: 'include'` beim fetch – Cookie wird gespeichert
+2. **Backend:** `cookie.secure: 'auto'` – korrekt hinter Proxy (X-Forwarded-Proto)
+3. **Coolify:** Proxy muss `X-Forwarded-Proto: https` setzen
+
 ### Schnell-Fix: Auth-Bypass für Staging
 
 Wenn der Spinner weiterhin hängt, in Coolify **Build-Args** setzen:
