@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY, MSQDX_SPACING } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
   import MsqdxGlassCard from './MsqdxGlassCard.svelte';

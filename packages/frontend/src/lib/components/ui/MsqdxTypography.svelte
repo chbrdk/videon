@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { MSQDX_TYPOGRAPHY, MSQDX_COLORS } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
 
