@@ -1,11 +1,15 @@
 import path from 'path';
+import fs from 'fs';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
+// envDir: monorepo root only when it exists (Docker build has no parent, use cwd)
+const monorepoRoot = path.resolve(__dirname, '../..');
+const envDir = fs.existsSync(path.join(monorepoRoot, 'package.json')) ? monorepoRoot : __dirname;
+
 export default defineConfig({
   plugins: [sveltekit()],
-  // Load .env from monorepo root (for VITE_DEV_BYPASS_AUTH etc.)
-  envDir: path.resolve(__dirname, '../..'),
+  envDir,
   base: process.env.VITE_BASE_PATH === '/' ? '' : (process.env.VITE_BASE_PATH || '/videon'),
   server: {
     port: 3010,
