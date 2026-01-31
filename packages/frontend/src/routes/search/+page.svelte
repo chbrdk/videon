@@ -12,7 +12,7 @@
   let searching = false;
   let hasSearched = false;
   let results: SearchResult[] = [];
-  // ... (keep existing imports and logic, replace SVGs with Symbols)
+  let playingVideoId: string | null = null;
 
   // Project modal state
   let showProjectModal = false;
