@@ -68,11 +68,11 @@
 
 {#if isPublicRoute}
   <!-- Public Layout -->
-  {@render children?.()}
+  {#if children}{@render children()}{/if}
 {:else if isAuthenticated && !isCheckingAuth}
   <!-- Protected Layout -->
   <MsqdxAdminLayout>
-    {@render children?.()}
+    {#if children}{@render children()}{/if}
   </MsqdxAdminLayout>
 
   <!-- Service Status Panel -->
