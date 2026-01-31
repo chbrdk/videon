@@ -89,7 +89,7 @@
   {#if mounted && isMobile}
     <div class="nav-close-button">
       <button
-        on:click={onClose}
+        onclick={onClose}
         aria-label="Close navigation"
         style="
           color: #ffffff;
@@ -108,7 +108,7 @@
       {#if !isMobile}
         <li class="nav-item">
           <button
-            on:click={handleToggleExpand}
+            onclick={handleToggleExpand}
             aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
             style="
             width: {isExpanded ? 'calc(100% - 0.5rem)' : '40px'};
@@ -142,7 +142,7 @@
         <li class="nav-item">
           <a
             href={`${base}${item.path}`}
-            on:click={e => {
+            onclick={e => {
               e.preventDefault();
               handleItemClick();
               goto(`${base}${item.path}`);
@@ -191,7 +191,7 @@
   <div class="nav-footer">
     <a
       href="/settings"
-      on:click={e => {
+      onclick={e => {
         handleItemClick();
       }}
       title="Settings"
@@ -215,7 +215,7 @@
     </a>
 
     <button
-      on:click={() => theme.toggle()}
+      onclick={() => theme.toggle()}
       aria-label="Toggle theme"
       style="
         width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};
@@ -241,7 +241,7 @@
       {/if}
     </button>
     <button
-      on:click={handleLogout}
+      onclick={handleLogout}
       title="Sign Out"
       style="
         width: {isExpanded ? 'calc(100% - 0.5rem)' : isMobile ? '60px' : '40px'};

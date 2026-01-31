@@ -252,7 +252,7 @@
 <div class="fixed bottom-4 right-4 z-50">
   <!-- Main Status Button -->
   <button
-    on:click={toggleExpanded}
+    onclick={toggleExpanded}
     class="glass-button flex items-center gap-2 px-3 py-2 rounded-full shadow-lg hover:scale-105 transition-all duration-200"
     title="Service Status"
   >
@@ -267,7 +267,7 @@
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Service Status</h3>
         <button
-          on:click={checkServiceHealth}
+          onclick={checkServiceHealth}
           class="glass-button p-1 rounded"
           title="Refresh Status"
         >
@@ -290,7 +290,7 @@
             </span>
           </div>
           <button
-            on:click={() => restartService('backend')}
+            onclick={() => restartService('backend')}
             disabled={isOperating('backend')}
             class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center"
             title="Restart Backend"
@@ -318,7 +318,7 @@
           </div>
           {#if services.analyzer.running}
             <button
-              on:click={() => stopService('analyzer')}
+              onclick={() => stopService('analyzer')}
               disabled={isOperating('analyzer')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
               title="Stop Analyzer"
@@ -331,7 +331,7 @@
             </button>
           {:else}
             <button
-              on:click={() => startService('analyzer')}
+              onclick={() => startService('analyzer')}
               disabled={isOperating('analyzer')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
               title="Start Analyzer"
@@ -360,7 +360,7 @@
           </div>
           {#if services.saliency.running}
             <button
-              on:click={() => stopService('saliency')}
+              onclick={() => stopService('saliency')}
               disabled={isOperating('saliency')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
               title="Stop Saliency"
@@ -373,7 +373,7 @@
             </button>
           {:else}
             <button
-              on:click={() => startService('saliency')}
+              onclick={() => startService('saliency')}
               disabled={isOperating('saliency')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
               title="Start Saliency"
@@ -404,7 +404,7 @@
           </div>
           {#if services.audioSeparation.running}
             <button
-              on:click={() => stopService('audioSeparation')}
+              onclick={() => stopService('audioSeparation')}
               disabled={isOperating('audioSeparation')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
               title="Stop Audio Separation"
@@ -417,7 +417,7 @@
             </button>
           {:else}
             <button
-              on:click={() => startService('audioSeparation')}
+              onclick={() => startService('audioSeparation')}
               disabled={isOperating('audioSeparation')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
               title="Start Audio Separation"
