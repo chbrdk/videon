@@ -123,7 +123,7 @@
   <MsqdxGlassCard
     hoverable={!!onClick}
     class={className}
-    on:click={handleClick}
+    onclick={handleClick}
     role={onClick ? 'button' : undefined}
     tabindex={onClick ? 0 : undefined}
     {...rest}
