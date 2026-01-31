@@ -33,6 +33,9 @@
   import { projectsApi, type Project } from '$lib/api/projects';
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
+
+  // SvelteKit page data (unused but required to suppress warnings)
+  export let data = {};
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
   import MsqdxBreadcrumbs from '$lib/components/msqdx-breadcrumbs.svelte';

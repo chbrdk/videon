@@ -12,6 +12,9 @@
   import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
 
+  // SvelteKit page data (unused but required to suppress warnings)
+  export let data = {};
+
   // Load videos on mount only if not on a video detail page
   import { goto } from '$app/navigation';
   import { api } from '$lib/config/environment';
