@@ -11,7 +11,7 @@
 
   let { video = {} as Video }: { video?: Video } = $props();
   // Safe access check
-  if (!video || !video.id) return null;
+  // Safe access check handled in template
 
   const dispatch = createEventDispatcher<{
     select: { id: string };
@@ -147,21 +147,22 @@
   }
 </script>
 
-<div
-  class="msqdx-glass-card group overflow-hidden transition-transform duration-200 hover:scale-105 cursor-pointer hoverable no-padding"
-  role="button"
-  tabindex="0"
-  onclick={e => {
-    e.stopPropagation();
-    handleClick(e);
-  }}
-  onkeydown={e => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleClick();
-    }
-  }}
-  style="
+{#if video && video.id}
+  <div
+    class="msqdx-glass-card group overflow-hidden transition-transform duration-200 hover:scale-105 cursor-pointer hoverable no-padding"
+    role="button"
+    tabindex="0"
+    onclick={e => {
+      e.stopPropagation();
+      handleClick(e);
+    }}
+    onkeydown={e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleClick();
+      }
+    }}
+    style="
     --blur: var(--msqdx-glass-blur);
     --opacity: 0.05;
     --border-radius: var(--msqdx-radius-xxl);
@@ -170,94 +171,95 @@
     --border-color: var(--msqdx-color-brand-orange);
     --border-top-color: var(--msqdx-color-dark-border);
   "
->
-  <div
-    class="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 overflow-hidden relative rounded-t-[2.5rem] pointer-events-none"
-    style={thumbnailUrl
-      ? `background-image: url(${thumbnailUrl}); background-size: cover; background-position: center;`
-      : ''}
   >
-    <!-- Gradient overlay for better contrast -->
     <div
-      class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 pointer-events-none"
-    ></div>
-
-    <!-- Top Right Actions -->
-    <MsqdxCardMenu
-      items={[
-        {
-          label: _('actions.rename'),
-          icon: 'edit',
-          action: () => dispatch('rename', video),
-        },
-        {
-          label: _('actions.share') ?? 'Share',
-          icon: 'share',
-          action: () => dispatch('share', video),
-        },
-        {
-          label: _('actions.delete'),
-          icon: 'delete',
-          danger: true,
-          action: () => dispatch('delete', video),
-        },
-      ]}
-    />
-
-    <!-- Play Overlay -->
-    <div
-      class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-200 pointer-events-none"
+      class="aspect-video bg-gradient-to-br from-blue-500/20 to-purple-500/20 overflow-hidden relative rounded-t-[2.5rem] pointer-events-none"
+      style={thumbnailUrl
+        ? `background-image: url(${thumbnailUrl}); background-size: cover; background-position: center;`
+        : ''}
     >
+      <!-- Gradient overlay for better contrast -->
       <div
-        class="w-16 h-16 opacity-60 group-hover:opacity-80 transition-opacity play-icon pointer-events-none flex items-center justify-center"
+        class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 pointer-events-none"
+      ></div>
+
+      <!-- Top Right Actions -->
+      <MsqdxCardMenu
+        items={[
+          {
+            label: _('actions.rename'),
+            icon: 'edit',
+            action: () => dispatch('rename', video),
+          },
+          {
+            label: _('actions.share') ?? 'Share',
+            icon: 'share',
+            action: () => dispatch('share', video),
+          },
+          {
+            label: _('actions.delete'),
+            icon: 'delete',
+            danger: true,
+            action: () => dispatch('delete', video),
+          },
+        ]}
+      />
+
+      <!-- Play Overlay -->
+      <div
+        class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-200 pointer-events-none"
       >
-        <MaterialSymbol icon="play_arrow" fontSize={64} />
+        <div
+          class="w-16 h-16 opacity-60 group-hover:opacity-80 transition-opacity play-icon pointer-events-none flex items-center justify-center"
+        >
+          <MaterialSymbol icon="play_arrow" fontSize={64} />
+        </div>
+      </div>
+
+      <!-- Info Chips Overlay (Top Right) -->
+      <div class="absolute top-2 right-2 pointer-events-none">
+        <div class="flex flex-col items-end gap-2 pointer-events-none">
+          <!-- Status Chip -->
+          <MsqdxChip variant="glass" color={getStatusColor(video.status)}>
+            {getStatusText(video.status)}
+          </MsqdxChip>
+        </div>
       </div>
     </div>
 
-    <!-- Info Chips Overlay (Top Right) -->
-    <div class="absolute top-2 right-2 pointer-events-none">
-      <div class="flex flex-col items-end gap-2 pointer-events-none">
-        <!-- Status Chip -->
-        <MsqdxChip variant="glass" color={getStatusColor(video.status)}>
-          {getStatusText(video.status)}
+    <!-- Video Info -->
+    <div class="space-y-3 px-4 pt-3 pointer-events-none">
+      <h3 class="font-semibold text-lg truncate" title={video.originalName}>
+        {video.originalName}
+      </h3>
+
+      <!-- Info Chips -->
+      <div class="flex flex-wrap gap-2 pb-4 pointer-events-none">
+        <MsqdxChip
+          variant="glass"
+          color="info"
+          style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
+        >
+          <span class="w-3 h-3 chip-icon flex items-center justify-center"
+            ><MaterialSymbol icon="schedule" fontSize={12} /></span
+          >
+          <span>{formatDuration(video.duration)}</span>
+        </MsqdxChip>
+
+        <MsqdxChip
+          variant="glass"
+          color="info"
+          style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
+        >
+          <span class="w-3 h-3 chip-icon flex items-center justify-center"
+            ><MaterialSymbol icon="storage" fontSize={12} /></span
+          >
+          <span>{formatFileSize(video.fileSize)}</span>
         </MsqdxChip>
       </div>
     </div>
   </div>
-
-  <!-- Video Info -->
-  <div class="space-y-3 px-4 pt-3 pointer-events-none">
-    <h3 class="font-semibold text-lg truncate" title={video.originalName}>
-      {video.originalName}
-    </h3>
-
-    <!-- Info Chips -->
-    <div class="flex flex-wrap gap-2 pb-4 pointer-events-none">
-      <MsqdxChip
-        variant="glass"
-        color="info"
-        style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
-      >
-        <span class="w-3 h-3 chip-icon flex items-center justify-center"
-          ><MaterialSymbol icon="schedule" fontSize={12} /></span
-        >
-        <span>{formatDuration(video.duration)}</span>
-      </MsqdxChip>
-
-      <MsqdxChip
-        variant="glass"
-        color="info"
-        style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
-      >
-        <span class="w-3 h-3 chip-icon flex items-center justify-center"
-          ><MaterialSymbol icon="storage" fontSize={12} /></span
-        >
-        <span>{formatFileSize(video.fileSize)}</span>
-      </MsqdxChip>
-    </div>
-  </div>
-</div>
+{/if}
 
 <style>
   .msqdx-glass-card {

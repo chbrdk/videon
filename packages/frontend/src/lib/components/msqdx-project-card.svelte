@@ -9,7 +9,7 @@
   import { _ } from '$lib/i18n';
 
   let { project = {} as Project }: { project?: Project } = $props();
-  if (!project || !project.id) return null;
+  // Safe access check handled in template
 
   const dispatch = createEventDispatcher();
 
@@ -23,62 +23,68 @@
   }
 </script>
 
-<div
-  class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-  onclick={handleClick}
-  onkeydown={e => e.key === 'Enter' && handleClick()}
-  role="button"
-  tabindex="0"
-  style="
+{#if project && project.id}
+  <div
+    class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
+    onclick={handleClick}
+    onkeydown={e => e.key === 'Enter' && handleClick()}
+    role="button"
+    tabindex="0"
+    style="
     --blur: var(--msqdx-glass-blur);
     --background-color: var(--msqdx-color-dark-paper);
     --border-color: var(--msqdx-color-dark-border);
     border-radius: 40px;
   "
->
-  <!-- Project Menu -->
-  <MsqdxCardMenu
-    items={[
-      { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
-      {
-        label: _('actions.share') ?? 'Share',
-        icon: 'share',
-        action: () => handleMenuAction('share'),
-      },
-      {
-        label: _('actions.delete'),
-        icon: 'delete',
-        danger: true,
-        action: () => handleMenuAction('delete'),
-      },
-    ]}
-  />
+  >
+    <!-- Project Menu -->
+    <MsqdxCardMenu
+      items={[
+        { label: _('actions.rename'), icon: 'edit', action: () => handleMenuAction('rename') },
+        {
+          label: _('actions.share') ?? 'Share',
+          icon: 'share',
+          action: () => handleMenuAction('share'),
+        },
+        {
+          label: _('actions.delete'),
+          icon: 'delete',
+          danger: true,
+          action: () => handleMenuAction('delete'),
+        },
+      ]}
+    />
 
-  <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
-    <div
-      class="w-12 h-12 rounded-full flex items-center justify-center"
-      style="background-color: {MSQDX_COLORS.tints.purple};"
-    >
-      <MaterialSymbol icon="movie_edit" fontSize={24} style="color: {MSQDX_COLORS.brand.purple};" />
-    </div>
-    <h3
-      class="font-semibold leading-tight line-clamp-2"
-      style="
+    <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
+      <div
+        class="w-12 h-12 rounded-full flex items-center justify-center"
+        style="background-color: {MSQDX_COLORS.tints.purple};"
+      >
+        <MaterialSymbol
+          icon="movie_edit"
+          fontSize={24}
+          style="color: {MSQDX_COLORS.brand.purple};"
+        />
+      </div>
+      <h3
+        class="font-semibold leading-tight line-clamp-2"
+        style="
         color: {MSQDX_COLORS.dark.textPrimary};
         font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
       "
-    >
-      {project.name}
-    </h3>
-    <span
-      class="text-xs"
-      style="
+      >
+        {project.name}
+      </h3>
+      <span
+        class="text-xs"
+        style="
         color: {MSQDX_COLORS.dark.textSecondary};
         font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
       ">{project.scenes?.length || 0} Scenes</span
-    >
+      >
+    </div>
   </div>
-</div>
+{/if}
 
 <style>
   .msqdx-glass-card {
