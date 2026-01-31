@@ -4,16 +4,14 @@
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   const dispatch = createEventDispatcher();
-  // Force Runes mode
-  let { ...rest } = $props();
 </script>
 
 <div
   class="msqdx-glass-card group hoverable no-padding flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
   role="button"
   tabindex="0"
-  onclick={() => dispatch('click')}
-  onkeydown={e => e.key === 'Enter' && dispatch('click')}
+  on:click={() => dispatch('click')}
+  on:keydown={e => e.key === 'Enter' && dispatch('click')}
   style="
     --blur: var(--msqdx-glass-blur);
     --opacity: 0.05;

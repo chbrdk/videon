@@ -11,7 +11,7 @@
   } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let { className = '' } = $props();
+  export let className = '';
 </script>
 
 <nav

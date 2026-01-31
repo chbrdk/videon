@@ -2,20 +2,20 @@
   import { viewMode } from '$lib/stores/folders.store';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let { className = '' } = $props();
+  export let className = '';
 </script>
 
 <div class="glass-button-group {className}">
   <button
     class="glass-button rounded-full {$viewMode === 'grid' ? 'active' : ''}"
-    onclick={() => viewMode.set('grid')}
+    on:click={() => viewMode.set('grid')}
     title="Grid View"
   >
     <MaterialSymbol icon="grid_view" fontSize={20} />
   </button>
   <button
     class="glass-button rounded-full {$viewMode === 'list' ? 'active' : ''}"
-    onclick={() => viewMode.set('list')}
+    on:click={() => viewMode.set('list')}
     title="List View"
   >
     <MaterialSymbol icon="view_list" fontSize={20} />

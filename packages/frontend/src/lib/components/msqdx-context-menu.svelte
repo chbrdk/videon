@@ -1,12 +1,16 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { MsqdxGlassCard } from '$lib/components/ui';
 
-  let { x, y, items, onClose = () => {}, className = '' } = $props();
+  export let x: number;
+  export let y: number;
+  export let items: any[];
+  export let onClose: () => void = () => {};
+  export let className = '';
 
   const dispatch = createEventDispatcher();
 
-  let menuElement = $state();
+  let menuElement: HTMLElement;
 
   $effect(() => {
     function handleClickOutside(event) {
@@ -49,7 +53,7 @@
     <button
       class="context-menu-item"
       class:disabled={item.disabled}
-      onclick={() => handleItemClick(item)}
+      on:click={() => handleItemClick(item)}
       role="menuitem"
       disabled={item.disabled}
     >

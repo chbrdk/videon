@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { searchQuery, searchAll } from '$lib/stores/folders.store';
   import {
     MSQDX_SPACING,
@@ -10,8 +10,8 @@
   import { _ } from '$lib/i18n';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let debounceTimer = $state();
-  let { className = '' } = $props();
+  let debounceTimer: any;
+  export let className = '';
 
   function handleSearch() {
     clearTimeout(debounceTimer);
@@ -39,7 +39,7 @@
   <input
     type="search"
     bind:value={$searchQuery}
-    oninput={handleSearch}
+    on:input={handleSearch}
     placeholder={_('search.placeholder')}
     class="search-input"
     style="
@@ -51,7 +51,7 @@
   {#if $searchQuery}
     <button
       class="clear-button"
-      onclick={() => searchQuery.set('')}
+      on:click={() => searchQuery.set('')}
       title={_('search.clear')}
       style="
       width: {MSQDX_ICONS.sizes.lg}px;
