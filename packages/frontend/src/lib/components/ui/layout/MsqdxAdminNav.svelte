@@ -9,11 +9,12 @@
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let { open = false, onClose = () => {} }: { open?: boolean; onClose?: () => void } = $props();
+  export let open = false;
+  export let onClose = () => {};
 
-  let expanded = $state(false);
-  let mounted = $state(false);
-  let isMobile = $state(false);
+  let expanded = false;
+  let mounted = false;
+  let isMobile = false;
 
   onMount(() => {
     mounted = true;
@@ -58,19 +59,17 @@
     return currentPath?.startsWith(fullPath) ?? false;
   }
 
-  let navItems = $derived([
+  $: navItems = [
     { label: 'Videos', path: '/videos', icon: 'video_file' },
     { label: 'Suche', path: '/search', icon: 'search' },
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
     ...($userStore?.role === 'ADMIN'
       ? [{ label: 'Users', path: '/admin/users', icon: 'group' }]
       : []),
-  ]);
+  ];
 
-  let isExpanded = $derived(mounted && isMobile ? open : mounted ? expanded : false);
-  let sidebarWidth = $derived(
-    isExpanded ? (isMobile ? '95%' : '240px') : isMobile ? '95%' : '64px'
-  );
+  $: isExpanded = mounted && isMobile ? open : mounted ? expanded : false;
+  $: sidebarWidth = isExpanded ? (isMobile ? '95%' : '240px') : isMobile ? '95%' : '64px';
 </script>
 
 <nav

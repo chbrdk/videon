@@ -22,36 +22,33 @@
     [key: string]: any;
   }
 
-  let {
-    label,
-    options,
-    helperText,
-    value,
-    onChange,
-    error = false,
-    disabled = false,
-    fullWidth = true,
-    id,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let label: string;
+  export let options: Option[];
+  export let helperText: string | undefined = undefined;
+  export let value: string | number | undefined = undefined;
+  export let onChange: ((event: Event) => void) | undefined = undefined;
+  export let error = false;
+  export let disabled = false;
+  export let fullWidth = true;
+  export let id: string | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let internalValue = $state(value ?? '');
-  let isFocused = $state(false);
+  let internalValue = value ?? '';
+  let isFocused = false;
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  $effect(() => {
-    if (value !== undefined) {
-      internalValue = value;
-    }
-  });
+  $: if (value !== undefined) {
+    internalValue = value;
+  }
 
   function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;
@@ -59,35 +56,31 @@
     onChange?.(event);
   }
 
-  const borderColor = $derived(() => {
+  $: borderColor = (() => {
     if (error) return MSQDX_COLORS.status.error;
     if (isFocused) return MSQDX_COLORS.brand.green;
     return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  });
+  })();
 
-  const backgroundColor = $derived(() => {
+  $: backgroundColor = (() => {
     if (isFocused) {
       return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     }
     return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-  });
+  })();
 
-  const boxShadow = $derived(() => {
+  $: boxShadow = (() => {
     if (isFocused) {
-      if (error) {
-        return `0 0 0 4px rgba(248, 113, 113, 0.1)`;
-      }
+      if (error) return `0 0 0 4px rgba(248, 113, 113, 0.1)`;
       return `0 0 0 4px rgba(${MSQDX_COLORS.brand.orangeRgb}, 0.1)`;
     }
     return 'none';
-  });
+  })();
 
-  const iconColor = $derived(() => {
-    if (isFocused) {
-      return MSQDX_COLORS.brand.green;
-    }
+  $: iconColor = (() => {
+    if (isFocused) return MSQDX_COLORS.brand.green;
     return `rgba(${MSQDX_COLORS.brand.orangeRgb}, 0.6)`;
-  });
+  })();
 </script>
 
 <div class="msqdx-select-wrapper {className}" class:full-width={fullWidth}>
@@ -112,7 +105,7 @@
         border-color: {borderColor};
         box-shadow: {boxShadow};
       "
-      {...rest}
+      {...$$restProps}
     >
       {#each options as option}
         <option value={option.value}>{option.label}</option>

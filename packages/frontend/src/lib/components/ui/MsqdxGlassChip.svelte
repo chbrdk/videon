@@ -2,63 +2,61 @@
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
 
-  export type MsqdxGlassChipVariant = 
-    | "trait" 
-    | "vocab" 
-    | "pain" 
-    | "goal" 
-    | "value" 
-    | "interest" 
-    | "social"
-    | "draft"
-    | "published"
-    | "archived"
-    | "success"
-    | "processing"
-    | "error"
-    | "pending"
-    | "critical"
-    | "urgent"
-    | "high"
-    | "medium"
-    | "low";
+  export type MsqdxGlassChipVariant =
+    | 'trait'
+    | 'vocab'
+    | 'pain'
+    | 'goal'
+    | 'value'
+    | 'interest'
+    | 'social'
+    | 'draft'
+    | 'published'
+    | 'archived'
+    | 'success'
+    | 'processing'
+    | 'error'
+    | 'pending'
+    | 'critical'
+    | 'urgent'
+    | 'high'
+    | 'medium'
+    | 'low';
 
-  export type MsqdxGlassChipSize = "small" | "medium" | "large";
+  export type MsqdxGlassChipSize = 'small' | 'medium' | 'large';
 
   interface Props {
     children: any;
     variant?: MsqdxGlassChipVariant;
     size?: MsqdxGlassChipSize;
     highlighted?: boolean;
-    priority?: "high" | "medium" | "low";
+    priority?: 'high' | 'medium' | 'low';
     dashboard?: boolean;
     onClick?: () => void;
     class?: string;
     [key: string]: any;
   }
 
-  let {
-    children,
-    variant = "trait",
-    size = "small",
-    highlighted = false,
-    priority,
-    dashboard = false,
-    onClick,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let variant: MsqdxGlassChipVariant = 'trait';
+  export let size: MsqdxGlassChipSize = 'small';
+  export let highlighted = false;
+  export let priority: 'high' | 'medium' | 'low' | undefined = undefined;
+  export let dashboard = false;
+  export let onClick: (() => void) | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  const chipColor = $derived(() => {
+  $: chipColor = (() => {
     const colorMap: Record<string, string> = {
       trait: MSQDX_COLORS.brand.purple,
       vocab: MSQDX_COLORS.brand.blue,
@@ -81,31 +79,31 @@
       low: MSQDX_COLORS.status.info,
     };
     return colorMap[variant] || MSQDX_COLORS.brand.green;
-  });
+  })();
 
-  const padding = $derived(() => {
+  $: padding = (() => {
     const sizeMap = {
       small: `${MSQDX_SPACING.scale.xxs}px ${MSQDX_SPACING.scale.xs}px`,
       medium: `${MSQDX_SPACING.scale.xs}px ${MSQDX_SPACING.scale.sm}px`,
       large: `${MSQDX_SPACING.scale.sm}px ${MSQDX_SPACING.scale.md}px`,
     };
     return sizeMap[size];
-  });
+  })();
 
-  const fontSize = $derived(() => {
+  $: fontSize = (() => {
     const sizeMap = {
       small: MSQDX_TYPOGRAPHY.fontSize.xs,
       medium: MSQDX_TYPOGRAPHY.fontSize.sm,
       large: MSQDX_TYPOGRAPHY.fontSize.body2,
     };
     return sizeMap[size];
-  });
+  })();
 </script>
 
 <span
   class="msqdx-glass-chip {className} variant-{variant} size-{size}"
-  class:highlighted={highlighted}
-  class:dashboard={dashboard}
+  class:highlighted
+  class:dashboard
   class:clickable={!!onClick}
   class:priority-high={priority === 'high'}
   class:priority-medium={priority === 'medium'}
@@ -136,7 +134,7 @@
   on:click={onClick}
   role={onClick ? 'button' : undefined}
   tabindex={onClick ? 0 : undefined}
-  {...rest}
+  {...$$restProps}
 >
   <slot />
 </span>
@@ -171,7 +169,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 0 4px rgba(var(--msqdx-color-brand-orange-rgb), 0.2);
     }
     50% {

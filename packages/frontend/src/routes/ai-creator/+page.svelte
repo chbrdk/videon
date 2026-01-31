@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { aiCreatorApi, type VideoSuggestion, type SelectedScene } from '$lib/api/ai-creator';
+  import { aiCreatorApi } from '$lib/api/ai-creator';
+  import type { VideoSuggestion, SelectedScene } from '$lib/api/ai-creator';
   import { currentLocale, _ } from '$lib/i18n';
   import { onMount } from 'svelte';
 

@@ -19,34 +19,26 @@
     class?: string;
   }
 
-  let {
-    steps,
-    activeStep = 0,
-    orientation = 'horizontal',
-    showConnector = true,
-    class: className = '',
-  }: Props = $props();
+  export let steps: Step[];
+  export let activeStep = 0;
+  export let orientation: 'horizontal' | 'vertical' = 'horizontal';
+  export let showConnector = true;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  const connectorColor = $derived(() => {
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
-  });
-
-  const stepIconBg = $derived(() => {
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  });
-
-  const stepIconColor = $derived(() => {
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
-  });
+  $: connectorColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
+  $: stepIconBg = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  $: stepIconColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
 </script>
 
 <div

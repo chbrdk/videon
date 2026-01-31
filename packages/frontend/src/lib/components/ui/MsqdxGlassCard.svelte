@@ -14,24 +14,23 @@
     [key: string]: any; // For rest props
   }
 
-  let {
-    blur = 12,
-    opacity = 0.05,
-    hoverable = false,
-    noPadding = false,
-    accent = 'none' as const,
-    borderRadiusVariant = undefined,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let blur = 12;
+  export let opacity = 0.05;
+  export let hoverable = false;
+  export let noPadding = false;
+  export let accent: 'purple' | 'yellow' | 'none' = 'none';
+  export let borderRadiusVariant: keyof typeof MSQDX_SPACING.borderRadius | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let isHovered = $state(false);
+  let isHovered = false;
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
+  const unsubscribe = theme.subscribe(value => {
+    currentTheme = value;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
@@ -99,11 +98,11 @@
       --border-top-color: {getBorderTopColor()};
       --accent-color: {getAccentColor()};
     "
-  onmouseenter={() => (isHovered = true)}
-  onmouseleave={() => (isHovered = false)}
+  on:mouseenter={() => (isHovered = true)}
+  on:mouseleave={() => (isHovered = false)}
   role={hoverable ? 'button' : undefined}
   tabindex={hoverable ? 0 : undefined}
-  {...rest}
+  {...$$restProps}
 >
   {#if accent !== 'none'}
     <div class="accent-border" style="background: {getAccentColor()};"></div>

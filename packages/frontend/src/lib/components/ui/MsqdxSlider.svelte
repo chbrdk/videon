@@ -19,39 +19,34 @@
     [key: string]: any;
   }
 
-  let {
-    label,
-    helperText,
-    showValue = false,
-    valueLabel,
-    value = 0,
-    min = 0,
-    max = 100,
-    step = 1,
-    disabled = false,
-    onChange,
-    onInput,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let label: string | undefined = undefined;
+  export let helperText: string | undefined = undefined;
+  export let showValue = false;
+  export let valueLabel: string | undefined = undefined;
+  export let value: number | number[] = 0;
+  export let min = 0;
+  export let max = 100;
+  export let step = 1;
+  export let disabled = false;
+  export let onChange: ((event: Event) => void) | undefined = undefined;
+  export let onInput: ((event: Event) => void) | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let internalValue = $state(
-    typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0
-  );
+  let internalValue = typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0;
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  $effect(() => {
-    if (value !== undefined) {
-      internalValue = typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0;
-    }
-  });
+  $: if (value !== undefined) {
+    internalValue = typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0;
+  }
 
   function handleInput(event: Event) {
     const target = event.target as HTMLInputElement;
@@ -60,17 +55,9 @@
     onChange?.(event);
   }
 
-  const displayValue = $derived(() => {
-    return valueLabel || (showValue ? String(internalValue) : undefined);
-  });
-
-  const percentage = $derived(() => {
-    return ((internalValue - min) / (max - min)) * 100;
-  });
-
-  const railColor = $derived(() => {
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-  });
+  $: displayValue = valueLabel || (showValue ? String(internalValue) : undefined);
+  $: percentage = ((internalValue - min) / (max - min)) * 100;
+  $: railColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
 </script>
 
 <div class="msqdx-slider-wrapper {className}">
@@ -118,7 +105,7 @@
         --thumb-color: var(--msqdx-color-brand-orange);
         --thumb-border: {currentTheme === 'dark' ? '#0f0f0f' : '#ffffff'};
       "
-      {...rest}
+      {...$$restProps}
     />
   </div>
 

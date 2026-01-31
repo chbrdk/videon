@@ -20,30 +20,29 @@
     [key: string]: any;
   }
 
-  let {
-    label,
-    errorText,
-    icon,
-    success = false,
-    error = false,
-    required = false,
-    disabled = false,
-    placeholder,
-    type = 'text',
-    value = $bindable(),
-    onInput,
-    onChange,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let label: string;
+  export let errorText: string | undefined = undefined;
+  export let icon: string | undefined = undefined;
+  export let success = false;
+  export let error = false;
+  export let required = false;
+  export let disabled = false;
+  export let placeholder: string | undefined = undefined;
+  export let type = 'text';
+  export let value: string | number | undefined = undefined;
+  export let onInput: ((event: Event) => void) | undefined = undefined;
+  export let onChange: ((event: Event) => void) | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let isFocused = $state(false);
+  let isFocused = false;
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
@@ -54,32 +53,27 @@
     onChange?.(event);
   }
 
-  const borderColor = $derived(() => {
+  $: borderColor = (() => {
     if (error) return MSQDX_COLORS.status.error;
     if (success) return MSQDX_COLORS.status.success;
-    // Always use brand orange as requested
     return MSQDX_COLORS.brand.orange;
-  });
+  })();
 
-  const backgroundColor = $derived(() => {
+  $: backgroundColor = (() => {
     if (isFocused) {
       return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     }
     return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-  });
+  })();
 
-  const boxShadow = $derived(() => {
+  $: boxShadow = (() => {
     if (isFocused) {
-      if (error) {
-        return `0 0 0 4px rgba(248, 113, 113, 0.1)`;
-      }
-      if (success) {
-        return `0 0 0 4px rgba(34, 197, 94, 0.1)`;
-      }
+      if (error) return `0 0 0 4px rgba(248, 113, 113, 0.1)`;
+      if (success) return `0 0 0 4px rgba(34, 197, 94, 0.1)`;
       return `0 0 0 4px rgba(${MSQDX_COLORS.brand.orangeRgb}, 0.1)`;
     }
     return 'none';
-  });
+  })();
 </script>
 
 <div class="msqdx-form-field-wrapper {className}">
@@ -115,7 +109,7 @@
         border-color: {borderColor};
         box-shadow: {boxShadow};
       "
-      {...rest}
+      {...$$restProps}
     />
 
     <div class="msqdx-form-field-icon-end">

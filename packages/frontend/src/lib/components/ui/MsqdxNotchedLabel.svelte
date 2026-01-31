@@ -11,39 +11,27 @@
     [key: string]: any;
   }
 
-  let {
-    borderRadius = 20,
-    notchPosition = 'top-right',
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let borderRadius = 20;
+  export let notchPosition: NotchPosition = 'top-right';
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  const borderColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.12)' 
-      : 'rgba(0, 0, 0, 0.12)';
-  });
+  $: borderColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)';
 
-  const borderTopColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.18)' 
-      : 'rgba(0, 0, 0, 0.18)';
-  });
+  $: borderTopColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.18)';
 
-  const backgroundColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(0, 0, 0, 0.05)' 
-      : 'rgba(255, 255, 255, 0.05)';
-  });
+  $: backgroundColor =
+    currentTheme === 'dark' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
 </script>
 
 <div
@@ -59,7 +47,7 @@
     border-top-color: {borderTopColor};
     --notch-radius: {borderRadius}px;
   "
-  {...rest}
+  {...$$restProps}
 >
   <slot />
 </div>
@@ -95,8 +83,16 @@
     border-bottom-right-radius: var(--notch-radius, 20px);
     box-shadow: var(--shadow, none);
     z-index: 1;
-    mask-image: radial-gradient(circle var(--notch-radius, 20px) at 0 50%, transparent var(--notch-radius, 20px), black var(--notch-radius, 20px));
-    -webkit-mask-image: radial-gradient(circle var(--notch-radius, 20px) at 0 50%, transparent var(--notch-radius, 20px), black var(--notch-radius, 20px));
+    mask-image: radial-gradient(
+      circle var(--notch-radius, 20px) at 0 50%,
+      transparent var(--notch-radius, 20px),
+      black var(--notch-radius, 20px)
+    );
+    -webkit-mask-image: radial-gradient(
+      circle var(--notch-radius, 20px) at 0 50%,
+      transparent var(--notch-radius, 20px),
+      black var(--notch-radius, 20px)
+    );
   }
 
   :global(.light) .msqdx-notched-label {

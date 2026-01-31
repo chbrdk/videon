@@ -13,63 +13,47 @@
     [key: string]: any;
   }
 
-  let {
-    topLeftBadge,
-    bottomRightBadge,
-    topLeftSize = { width: 70, height: 55 },
-    bottomRightSize = { width: "70%", height: 55 },
-    borderRadiusVariant,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let topLeftBadge: any = undefined;
+  export let bottomRightBadge: any = undefined;
+  export let topLeftSize = { width: 70, height: 55 };
+  export let bottomRightSize = { width: '70%', height: 55 };
+  export let borderRadiusVariant: keyof typeof MSQDX_SPACING.borderRadius | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  const cornerRadius = $derived(() => {
-    return borderRadiusVariant 
-      ? MSQDX_SPACING.borderRadius[borderRadiusVariant]
-      : MSQDX_RESPONSIVE.cardRadius.md;
-  });
+  $: cornerRadius = borderRadiusVariant
+    ? MSQDX_SPACING.borderRadius[borderRadiusVariant]
+    : MSQDX_RESPONSIVE.cardRadius.md;
 
-  const borderColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.12)' 
-      : 'rgba(0, 0, 0, 0.12)';
-  });
+  $: borderColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)';
 
-  const borderTopColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(255, 255, 255, 0.18)' 
-      : 'rgba(0, 0, 0, 0.18)';
-  });
+  $: borderTopColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 0, 0, 0.18)';
 
-  const backgroundColor = $derived(() => {
-    return currentTheme === 'dark' 
-      ? 'rgba(0, 0, 0, 0.05)' 
-      : 'rgba(255, 255, 255, 0.05)';
-  });
+  $: backgroundColor =
+    currentTheme === 'dark' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
 
-  const bottomRightWidth = $derived(() => {
-    return typeof bottomRightSize.width === 'number' 
-      ? `${bottomRightSize.width}px` 
+  $: bottomRightWidth =
+    typeof bottomRightSize.width === 'number'
+      ? `${bottomRightSize.width}px`
       : bottomRightSize.width;
-  });
 
-  const invertedCornerRight = $derived(() => {
-    return typeof bottomRightSize.width === 'number' 
-      ? `${bottomRightSize.width}px` 
+  $: invertedCornerRight =
+    typeof bottomRightSize.width === 'number'
+      ? `${bottomRightSize.width}px`
       : `calc(${bottomRightSize.width} - ${cornerRadius * 2}px)`;
-  });
 </script>
 
-<div 
+<div
   class="msqdx-glass-corner-card-container {className}"
   style="position: relative; overflow: visible; display: flex; flex-direction: column;"
 >
@@ -101,12 +85,12 @@
   {/if}
 
   <MsqdxGlassCard
-    {...rest}
-    borderRadiusVariant={borderRadiusVariant}
+    {...$$restProps}
+    {borderRadiusVariant}
     style="
       {topLeftBadge ? 'border-top-left-radius: 0 !important;' : ''}
       {bottomRightBadge ? 'border-bottom-right-radius: 0 !important;' : ''}
-      {rest.style || ''}
+      {$$restProps.style || ''}
     "
   >
     <slot />
@@ -181,12 +165,16 @@
 
   .msqdx-inverted-corner.top-left {
     top: 0;
-    clip-path: circle(var(--corner-radius, 32px) at var(--corner-radius, 32px) var(--corner-radius, 32px));
+    clip-path: circle(
+      var(--corner-radius, 32px) at var(--corner-radius, 32px) var(--corner-radius, 32px)
+    );
   }
 
   .msqdx-inverted-corner.bottom-right {
     bottom: 0;
-    clip-path: circle(var(--corner-radius, 32px) at var(--corner-radius, 32px) var(--corner-radius, 32px));
+    clip-path: circle(
+      var(--corner-radius, 32px) at var(--corner-radius, 32px) var(--corner-radius, 32px)
+    );
   }
 
   :global(.light) .msqdx-corner-badge {

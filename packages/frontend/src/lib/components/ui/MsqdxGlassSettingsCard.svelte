@@ -18,35 +18,34 @@
     [key: string]: any;
   }
 
-  let {
-    title,
-    description,
-    icon,
-    href,
-    count,
-    status,
-    accentColor = MSQDX_COLORS.brand.green,
-    class: className = '',
-    onClick,
-    ...rest
-  }: Props = $props();
+  export let title: string;
+  export let description: string;
+  export let icon: string;
+  export let href: string | undefined = undefined;
+  export let count: number | undefined = undefined;
+  export let status: 'active' | 'inactive' | 'error' | undefined = undefined;
+  export let accentColor = MSQDX_COLORS.brand.green;
+  let className = '';
+  export { className as class };
+  export let onClick: (() => void) | undefined = undefined;
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  const statusColor = $derived(() => {
+  $: statusColor = (() => {
     if (status === 'active') return MSQDX_COLORS.status.success;
     if (status === 'error') return MSQDX_COLORS.status.error;
     return currentTheme === 'dark'
       ? MSQDX_COLORS.dark.textSecondary
       : MSQDX_COLORS.light.textSecondary;
-  });
+  })();
 
   function handleClick() {
     if (onClick) {
@@ -61,7 +60,7 @@
     class="msqdx-settings-card-link {className}"
     style="text-decoration: none; color: inherit;"
   >
-    <MsqdxGlassCard hoverable={true} {...rest}>
+    <MsqdxGlassCard hoverable={true} {...$$restProps}>
       <div class="msqdx-settings-card-content">
         <div
           class="msqdx-settings-card-icon"
@@ -126,7 +125,7 @@
     on:click={handleClick}
     role={onClick ? 'button' : undefined}
     tabindex={onClick ? 0 : undefined}
-    {...rest}
+    {...$$restProps}
   >
     <div class="msqdx-settings-card-content">
       <div

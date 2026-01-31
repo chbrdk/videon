@@ -13,23 +13,22 @@
     [key: string]: any;
   }
 
-  let {
-    variant = 'contained' as const,
-    glass = false,
-    loading = false,
-    disabled = false,
-    type = 'button' as const,
-    href,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let variant: 'contained' | 'outlined' | 'text' = 'contained';
+  export let glass = false;
+  export let loading = false;
+  export let disabled = false;
+  export let type: 'button' | 'submit' | 'reset' = 'button';
+  export let href: string | undefined = undefined;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
+  const unsubscribe = theme.subscribe(value => {
+    currentTheme = value;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
@@ -81,7 +80,7 @@
     class:loading
     class:disabled={disabled || loading}
     style={getButtonStyles()}
-    {...rest}
+    {...$$restProps}
   >
     {#if loading}
       <span class="spinner"></span>
@@ -98,7 +97,7 @@
     disabled={disabled || loading}
     style={getButtonStyles()}
     on:click
-    {...rest}
+    {...$$restProps}
   >
     {#if loading}
       <span class="spinner"></span>

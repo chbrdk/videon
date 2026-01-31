@@ -16,37 +16,29 @@
     class?: string;
   }
 
-  let { value, onChange, tabs, class: className = '' }: Props = $props();
+  export let value: string | number;
+  export let onChange: ((value: string | number) => void) | undefined = undefined;
+  export let tabs: Tab[];
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
-  let internalValue = $state(value);
+  let internalValue = value;
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(t => {
-      currentTheme = t;
-    });
+  const unsubscribe = theme.subscribe(t => {
+    currentTheme = t;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
-  $effect(() => {
-    internalValue = value;
-  });
+  $: internalValue = value;
 
-  const activeIndex = $derived(() => {
-    return tabs.findIndex(tab => tab.value === internalValue);
-  });
-
-  const indicatorWidth = $derived(() => {
-    return `calc(100% / ${tabs.length})`;
-  });
-
-  const indicatorTransform = $derived(() => {
-    return `translateX(${activeIndex * 100}%)`;
-  });
-
-  const borderColor = $derived(() => {
-    return currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
-  });
+  $: activeIndex = tabs.findIndex(tab => tab.value === internalValue);
+  $: indicatorWidth = `calc(100% / ${tabs.length})`;
+  $: indicatorTransform = `translateX(${activeIndex * 100}%)`;
+  $: borderColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
 
   function handleTabClick(tabValue: string | number) {
     internalValue = tabValue;

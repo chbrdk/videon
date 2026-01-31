@@ -10,29 +10,26 @@
     qwenVLDescription?: string | null;
   }
 
-  let {
-    objects = [],
-    faces = [],
-    sceneClassification = [],
-    customObjects = [],
-    aiDescription = null,
-    qwenVLDescription = null,
-  }: Props = $props();
+  export let objects: Array<{ label: string; confidence: number }> = [];
+  export let faces: Array<{ confidence: number }> = [];
+  export let sceneClassification: Array<{ label: string; confidence: number; category: string }> =
+    [];
+  export let customObjects: Array<{ label: string; confidence: number }> = [];
+  export let aiDescription: string | null = null;
+  export let qwenVLDescription: string | null = null;
 
   // Svelte 5 state for collapsible sections
-  let summaryExpanded = $state(true);
-  let detailsExpanded = $state(false);
+  let summaryExpanded = true;
+  let detailsExpanded = false;
 
   // Svelte 5 derived state
-  let topObjects = $derived(objects.sort((a, b) => b.confidence - a.confidence).slice(0, 5));
+  $: topObjects = objects.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
 
-  let topSceneClassification = $derived(
-    sceneClassification.sort((a, b) => b.confidence - a.confidence).slice(0, 3)
-  );
+  $: topSceneClassification = sceneClassification
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 3);
 
-  let topCustomObjects = $derived(
-    customObjects.sort((a, b) => b.confidence - a.confidence).slice(0, 3)
-  );
+  $: topCustomObjects = customObjects.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
 
   // Parse Qwen VL structured output
   interface ParsedQwenVL {
@@ -42,7 +39,7 @@
     details: Array<{ title: string; content: string }>;
   }
 
-  let parsedQwenVL = $derived(parseQwenVLDescription(qwenVLDescription));
+  $: parsedQwenVL = parseQwenVLDescription(qwenVLDescription);
 
   function parseQwenVLDescription(description: string | null): ParsedQwenVL {
     if (!description)

@@ -11,20 +11,21 @@
     'aria-label'?: string;
     'aria-hidden'?: boolean;
   }
-  
-  let {
-    icon,
-    fontSize = 24,
-    weight = 200,
-    fill = 0,
-    grade = 0,
-    opticalSize = 24,
-    class: className = '',
-    style = '',
-    'aria-label': ariaLabel,
-    'aria-hidden': ariaHidden
-  }: Props = $props();
-  
+
+  export let icon: string;
+  export let fontSize: number | string = 24;
+  export let weight = 200;
+  export let fill: 0 | 1 = 0;
+  export let grade = 0;
+  export let opticalSize = 24;
+  let className = '';
+  export { className as class };
+  export let style = '';
+  export let ariaLabel: string | undefined = undefined;
+  export { ariaLabel as 'aria-label' };
+  export let ariaHidden: boolean | undefined = undefined;
+  export { ariaHidden as 'aria-hidden' };
+
   const normalizedFontSize = typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
   const fontVariationSettings = `'FILL' ${fill}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opticalSize}`;
 </script>

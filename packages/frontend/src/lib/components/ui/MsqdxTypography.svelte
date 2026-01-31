@@ -2,32 +2,32 @@
   import { MSQDX_TYPOGRAPHY, MSQDX_COLORS } from '$lib/design-tokens';
   import { theme } from '$lib/stores/theme.store';
 
-  export type FontWeightVariant = 
-    | "thin" 
-    | "extralight" 
-    | "light" 
-    | "regular" 
-    | "medium" 
-    | "semibold" 
-    | "bold" 
-    | "extrabold" 
-    | "black"
+  export type FontWeightVariant =
+    | 'thin'
+    | 'extralight'
+    | 'light'
+    | 'regular'
+    | 'medium'
+    | 'semibold'
+    | 'bold'
+    | 'extrabold'
+    | 'black'
     | number;
 
-  export type TypographyVariant = 
-    | "h1" 
-    | "h2" 
-    | "h3" 
-    | "h4" 
-    | "h5" 
-    | "h6" 
-    | "subtitle1" 
-    | "subtitle2" 
-    | "body1" 
-    | "body2" 
-    | "button" 
-    | "caption" 
-    | "overline";
+  export type TypographyVariant =
+    | 'h1'
+    | 'h2'
+    | 'h3'
+    | 'h4'
+    | 'h5'
+    | 'h6'
+    | 'subtitle1'
+    | 'subtitle2'
+    | 'body1'
+    | 'body2'
+    | 'button'
+    | 'caption'
+    | 'overline';
 
   interface Props {
     variant?: TypographyVariant;
@@ -37,20 +37,19 @@
     [key: string]: any;
   }
 
-  let {
-    variant = 'body1',
-    weight,
-    eyebrow = false,
-    class: className = '',
-    ...rest
-  }: Props = $props();
+  export let variant: TypographyVariant = 'body1';
+  export let weight: FontWeightVariant | undefined = undefined;
+  export let eyebrow = false;
+  let className = '';
+  export { className as class };
 
   let currentTheme: 'light' | 'dark' = 'dark';
 
-  $effect(() => {
-    const unsubscribe = theme.subscribe(value => {
-      currentTheme = value;
-    });
+  const unsubscribe = theme.subscribe(value => {
+    currentTheme = value;
+  });
+
+  onMount(() => {
     return unsubscribe;
   });
 
@@ -72,100 +71,81 @@
   };
 
   // Determine font weight
-  // Priority: explicit weight prop > variant default > regular
-  const computedWeight = $derived(() => {
+  $: computedWeight = (() => {
     if (weight) {
-      // Explicit weight prop takes precedence
-      if (typeof weight === 'number') {
-        return weight;
-      } else if (weight in MSQDX_TYPOGRAPHY.fontWeight) {
+      if (typeof weight === 'number') return weight;
+      if (weight in MSQDX_TYPOGRAPHY.fontWeight) {
         return MSQDX_TYPOGRAPHY.fontWeight[weight as keyof typeof MSQDX_TYPOGRAPHY.fontWeight];
       }
     }
-    // Use variant-specific default weight
     return VARIANT_WEIGHTS[variant] || MSQDX_TYPOGRAPHY.fontWeight.regular;
-  });
+  })();
 
   // Determine font size based on variant
-  const computedFontSize = $derived(() => {
+  $: computedFontSize = (() => {
     const sizeMap: Record<string, string> = {
-      h1: MSQDX_TYPOGRAPHY.fontSize['4xl'], // 2.5rem
-      h2: MSQDX_TYPOGRAPHY.fontSize['3xl'], // 2rem
-      h3: MSQDX_TYPOGRAPHY.fontSize['2xl'], // 1.5rem
-      h4: MSQDX_TYPOGRAPHY.fontSize.xl, // 1.25rem
-      h5: MSQDX_TYPOGRAPHY.fontSize.lg, // 1.125rem
-      h6: MSQDX_TYPOGRAPHY.fontSize.base, // 1rem
-      subtitle1: MSQDX_TYPOGRAPHY.fontSize.lg, // 1.125rem
-      subtitle2: MSQDX_TYPOGRAPHY.fontSize.base, // 1rem
-      body1: MSQDX_TYPOGRAPHY.fontSize.body1, // 0.875rem
-      body2: MSQDX_TYPOGRAPHY.fontSize.body2, // 0.8125rem
-      button: MSQDX_TYPOGRAPHY.fontSize.body1, // 0.875rem
-      caption: MSQDX_TYPOGRAPHY.fontSize.sm, // 0.75rem
-      overline: MSQDX_TYPOGRAPHY.fontSize.xs, // 0.625rem
+      h1: MSQDX_TYPOGRAPHY.fontSize['4xl'],
+      h2: MSQDX_TYPOGRAPHY.fontSize['3xl'],
+      h3: MSQDX_TYPOGRAPHY.fontSize['2xl'],
+      h4: MSQDX_TYPOGRAPHY.fontSize.xl,
+      h5: MSQDX_TYPOGRAPHY.fontSize.lg,
+      h6: MSQDX_TYPOGRAPHY.fontSize.base,
+      subtitle1: MSQDX_TYPOGRAPHY.fontSize.lg,
+      subtitle2: MSQDX_TYPOGRAPHY.fontSize.base,
+      body1: MSQDX_TYPOGRAPHY.fontSize.body1,
+      body2: MSQDX_TYPOGRAPHY.fontSize.body2,
+      button: MSQDX_TYPOGRAPHY.fontSize.body1,
+      caption: MSQDX_TYPOGRAPHY.fontSize.sm,
+      overline: MSQDX_TYPOGRAPHY.fontSize.xs,
     };
     return sizeMap[variant] || MSQDX_TYPOGRAPHY.fontSize.body1;
-  });
+  })();
 
   // Determine HTML element based on variant
-  const elementTag = $derived(() => {
+  $: elementTag = (() => {
     if (eyebrow) return 'span';
     if (variant.startsWith('h')) return variant;
     if (variant === 'body1' || variant === 'body2') return 'p';
-    if (variant === 'button') return 'span';
     return 'span';
-  });
+  })();
 
   // Get text color based on theme and eyebrow
-  const textColor = $derived(() => {
+  $: textColor = (() => {
     if (eyebrow) {
-      return currentTheme === 'dark' 
-        ? MSQDX_COLORS.dark.textSecondary 
+      return currentTheme === 'dark'
+        ? MSQDX_COLORS.dark.textSecondary
         : MSQDX_COLORS.light.textSecondary;
     }
-    return currentTheme === 'dark' 
-      ? MSQDX_COLORS.dark.textPrimary 
-      : MSQDX_COLORS.light.textPrimary;
-  });
+    return currentTheme === 'dark' ? MSQDX_COLORS.dark.textPrimary : MSQDX_COLORS.light.textPrimary;
+  })();
 </script>
 
 {#if true}
-  {@const Tag = elementTag}
-  {@const styles = {
-    fontFamily: MSQDX_TYPOGRAPHY.fontFamily.primary,
-    fontWeight: eyebrow ? MSQDX_TYPOGRAPHY.fontWeight.bold : computedWeight(),
-    fontSize: eyebrow ? MSQDX_TYPOGRAPHY.fontSize.sm : computedFontSize(),
-    lineHeight: MSQDX_TYPOGRAPHY.lineHeight.normal,
-    color: textColor(),
-    margin: 0,
-    textTransform: eyebrow ? 'uppercase' : 'none',
-    letterSpacing: eyebrow ? '0.12em' : 'normal',
-    marginBottom: eyebrow ? '0.5rem' : '0',
-  }}
-
-  <Tag
+  <svelte:element
+    this={elementTag}
     class="msqdx-typography {className} {eyebrow ? 'eyebrow' : ''}"
     style="
-      font-family: {styles.fontFamily};
-      font-weight: {styles.fontWeight};
-      font-size: {styles.fontSize};
-      line-height: {styles.lineHeight};
-      color: {styles.color};
-      margin: {styles.margin};
-      text-transform: {styles.textTransform};
-      letter-spacing: {styles.letterSpacing};
-      margin-bottom: {styles.marginBottom};
+      font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
+      font-weight: {eyebrow ? MSQDX_TYPOGRAPHY.fontWeight.bold : computedWeight};
+      font-size: {eyebrow ? MSQDX_TYPOGRAPHY.fontSize.sm : computedFontSize};
+      line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
+      color: {textColor};
+      margin: 0;
+      text-transform: {eyebrow ? 'uppercase' : 'none'};
+      letter-spacing: {eyebrow ? '0.12em' : 'normal'};
+      margin-bottom: {eyebrow ? '0.5rem' : '0'};
     "
-    {...rest}
+    {...$$restProps}
   >
-      <slot />
-    </Tag>
+    <slot />
+  </svelte:element>
 {/if}
 
 <style>
   .msqdx-typography {
     display: block;
   }
-  
+
   .msqdx-typography.eyebrow {
     display: block;
   }

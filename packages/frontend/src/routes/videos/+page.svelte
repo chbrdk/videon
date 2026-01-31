@@ -1,15 +1,15 @@
 <script lang="ts">
-import { onMount, tick, onDestroy } from 'svelte';
+  import { onMount, tick, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve, base } from '$app/paths';
   import { page } from '$app/stores';
-  import { 
-    folders, 
-    currentFolder, 
+  import {
+    folders,
+    currentFolder,
     videosInFolder,
-    viewMode, 
-    selectedItems, 
-    searchQuery, 
+    viewMode,
+    selectedItems,
+    searchQuery,
     searchResults,
     isLoading,
     error,
@@ -27,10 +27,10 @@ import { onMount, tick, onDestroy } from 'svelte';
     getVideoContextMenuItems,
     searchAll,
     initializeFolders,
-    moveVideoToFolder
+    moveVideoToFolder,
   } from '$lib/stores/folders.store';
   import { videosApi } from '$lib/api/videos';
-  import { projectsApi, type Project } from '$lib/api/projects'; 
+  import { projectsApi, type Project } from '$lib/api/projects';
   import type { VideoResponse } from '$lib/types';
   import { _, currentLocale } from '$lib/i18n';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
@@ -55,29 +55,28 @@ import { onMount, tick, onDestroy } from 'svelte';
   // State
   let projects: Project[] = []; // Projects state
   let contextMenu = { show: false, x: 0, y: 0, items: [] };
-  
+
   // Generic Dialog States
-  let renameDialog = { open: false, type: 'folder' as 'folder'|'project'|'video', item: null };
+  let renameDialog = { open: false, type: 'folder' as 'folder' | 'project' | 'video', item: null };
   const renameTitles = {
     folder: _('folder.rename'),
     project: _('projects.rename'),
-    video: _('actions.rename')
+    video: _('actions.rename'),
   };
-  
-  
-  let deleteDialog = { open: false, type: 'video' as 'video'|'folder'|'project', item: null };
-  let shareDialog = { open: false, type: 'video' as 'video'|'project', item: null as any };
-  
+
+  let deleteDialog = { open: false, type: 'video' as 'video' | 'folder' | 'project', item: null };
+  let shareDialog = { open: false, type: 'video' as 'video' | 'project', item: null as any };
+
   let unifiedDialogOpen = false;
   let activeMenuProjectId: string | null = null;
-  
+
   // Handlers for card events
   function handleRenameFolderClick(event) {
     renameDialog = { open: true, type: 'folder', item: event.detail };
   }
 
   function handleDeleteFolderClick(event) {
-     deleteDialog = { open: true, type: 'folder', item: event.detail };
+    deleteDialog = { open: true, type: 'folder', item: event.detail };
   }
 
   function handleRenameVideo(event) {
@@ -85,10 +84,10 @@ import { onMount, tick, onDestroy } from 'svelte';
   }
 
   function handleDeleteVideo(event) {
-     if (event.stopPropagation) event.stopPropagation(); // Check because sometimes detail is passed directly? No, event.detail is item. event is CustomEvent.
-     deleteDialog = { open: true, type: 'video', item: event.detail };
+    if (event.stopPropagation) event.stopPropagation(); // Check because sometimes detail is passed directly? No, event.detail is item. event is CustomEvent.
+    deleteDialog = { open: true, type: 'video', item: event.detail };
   }
-  
+
   function handleRenameProject(project) {
     renameDialog = { open: true, type: 'project', item: project };
   }
@@ -104,15 +103,15 @@ import { onMount, tick, onDestroy } from 'svelte';
   function handleShareVideo(video) {
     shareDialog = { open: true, type: 'video', item: video };
   }
-let revealMode = false;
-let revealedCount = 0;
-let revealedVideoIds = new Set<string>();
-let totalVideos = 0;
-let revealTimer: ReturnType<typeof setTimeout> | null = null;
-const REVEAL_DELAY_MS = 400;
-const MIN_SCROLL_DURATION = 4000;
-let scrollAnimationId: number | null = null;
- 
+  let revealMode = false;
+  let revealedCount = 0;
+  let revealedVideoIds = new Set<string>();
+  let totalVideos = 0;
+  let revealTimer: ReturnType<typeof setTimeout> | null = null;
+  const REVEAL_DELAY_MS = 400;
+  const MIN_SCROLL_DURATION = 4000;
+  let scrollAnimationId: number | null = null;
+
   // Initialize
   onMount(async () => {
     if (searchQueryParam) {
@@ -122,13 +121,13 @@ let scrollAnimationId: number | null = null;
       loadFolders(folderId);
       // Fetch projects only at root level to avoid cluttering subfolders
       if (!folderId) {
-          try {
-            projects = await projectsApi.getProjects();
-          } catch(e) {
-              console.error("Failed to load projects", e);
-          }
+        try {
+          projects = await projectsApi.getProjects();
+        } catch (e) {
+          console.error('Failed to load projects', e);
+        }
       } else {
-          projects = [];
+        projects = [];
       }
     }
   });
@@ -140,9 +139,12 @@ let scrollAnimationId: number | null = null;
       loadFolders(newFolderId);
       // Update projects visibility based on folder
       if (!newFolderId) {
-           projectsApi.getProjects().then(p => projects = p).catch(e => console.error(e));
+        projectsApi
+          .getProjects()
+          .then(p => (projects = p))
+          .catch(e => console.error(e));
       } else {
-          projects = [];
+        projects = [];
       }
     }
   }
@@ -153,11 +155,17 @@ let scrollAnimationId: number | null = null;
   }
 
   // Get current folder contents
-  $: currentContents = $searchQuery ? $searchResults : { folders: $folders, videos: $videosInFolder };
+  $: currentContents = $searchQuery
+    ? $searchResults
+    : { folders: $folders, videos: $videosInFolder };
   $: allItems = [
     ...projects.map(project => ({ ...project, id: project.id, type: 'project' as const })),
-    ...currentContents.folders.map(folder => ({ ...folder, id: folder.id, type: 'folder' as const })),
-    ...currentContents.videos.map(video => ({ ...video, id: video.id, type: 'video' as const }))
+    ...currentContents.folders.map(folder => ({
+      ...folder,
+      id: folder.id,
+      type: 'folder' as const,
+    })),
+    ...currentContents.videos.map(video => ({ ...video, id: video.id, type: 'video' as const })),
   ];
   $: totalVideos = currentContents.videos.length;
 
@@ -171,7 +179,9 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-  $: revealedVideoIds = new Set(currentContents.videos.slice(0, revealedCount).map((video) => video.id));
+  $: revealedVideoIds = new Set(
+    currentContents.videos.slice(0, revealedCount).map(video => video.id)
+  );
 
   $: if (revealMode && totalVideos > 0 && revealedCount < totalVideos && !revealTimer) {
     startAutoReveal();
@@ -281,15 +291,11 @@ let scrollAnimationId: number | null = null;
     }
   }
 
-
-
-
-
   // Drag & Drop handlers
   let draggedVideo: VideoResponse | null = null;
   let dragOverFolder: any = null;
 
-  function handleVideoDragStart(event: DragEvent, video: VideoResponse) {
+  function handleVideoDragStart(event: DragEvent, video: any) {
     draggedVideo = video;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -311,9 +317,9 @@ let scrollAnimationId: number | null = null;
 
   async function handleFolderDrop(event: DragEvent, folder: { id: string; name: string }) {
     event.preventDefault();
-    
+
     if (!draggedVideo) return;
-    
+
     try {
       await moveVideoToFolder(draggedVideo.id, folder.id);
       console.log(`Video "${draggedVideo.originalName}" moved to folder "${folder.name}"`);
@@ -327,9 +333,9 @@ let scrollAnimationId: number | null = null;
 
   async function handleRootDrop(event: DragEvent) {
     event.preventDefault();
-    
+
     if (!draggedVideo) return;
-    
+
     try {
       await moveVideoToFolder(draggedVideo.id, null);
       console.log(`Video "${draggedVideo.originalName}" moved to root folder`);
@@ -356,14 +362,14 @@ let scrollAnimationId: number | null = null;
 
     try {
       if (renameDialog.type === 'folder') {
-         await updateFolder(renameDialog.item.id, name);
-         loadFolders(folderId); 
+        await updateFolder(renameDialog.item.id, name);
+        loadFolders(folderId);
       } else if (renameDialog.type === 'video') {
-         await videosApi.updateVideo(renameDialog.item.id, { originalName: name });
-         loadFolders(folderId);
+        await videosApi.updateVideo(renameDialog.item.id, { originalName: name });
+        loadFolders(folderId);
       } else if (renameDialog.type === 'project') {
-         await projectsApi.updateProject(renameDialog.item.id, { name });
-         projects = await projectsApi.getProjects(); 
+        await projectsApi.updateProject(renameDialog.item.id, { name });
+        projects = await projectsApi.getProjects();
       }
       renameDialog = { ...renameDialog, open: false, item: null };
     } catch (error) {
@@ -373,7 +379,7 @@ let scrollAnimationId: number | null = null;
 
   async function handleDeleteConfirm() {
     if (!deleteDialog.item) return;
-    
+
     try {
       if (deleteDialog.type === 'video') {
         await videosApi.deleteVideo(deleteDialog.item.id);
@@ -393,7 +399,7 @@ let scrollAnimationId: number | null = null;
   }
 
   function handleUploadComplete() {
-      loadFolders(folderId);
+    loadFolders(folderId);
   }
 
   // Context menu handlers
@@ -402,23 +408,23 @@ let scrollAnimationId: number | null = null;
     const rect = event.target.getBoundingClientRect();
     contextMenu.x = rect.right;
     contextMenu.y = rect.bottom;
-    
+
     if (item.type === 'folder') {
       contextMenu.items = [
         {
           label: _('actions.rename'),
           icon: 'edit',
           action: () => {
-             renameDialog = { open: true, type: 'folder', item };
-          }
+            renameDialog = { open: true, type: 'folder', item };
+          },
         },
         {
           label: _('actions.delete'),
           icon: 'delete',
           action: () => {
-             deleteDialog = { open: true, type: 'folder', item };
-          }
-        }
+            deleteDialog = { open: true, type: 'folder', item };
+          },
+        },
       ];
     } else {
       contextMenu.items = [
@@ -427,7 +433,7 @@ let scrollAnimationId: number | null = null;
           icon: 'share',
           action: () => {
             shareDialog = { open: true, type: 'video', item };
-          }
+          },
         },
         {
           label: _('contextMenu.moveToFolder'),
@@ -435,15 +441,15 @@ let scrollAnimationId: number | null = null;
           action: () => {
             // TODO: Implement folder selection dialog
             console.log('Move video to folder:', item.originalName);
-          }
+          },
         },
         {
           label: _('actions.delete'),
           icon: 'delete',
           action: () => {
             deleteDialog = { open: true, type: 'video', item };
-          }
-        }
+          },
+        },
       ];
     }
     contextMenu.show = true;
@@ -479,12 +485,12 @@ let scrollAnimationId: number | null = null;
 
   function handleDrop(event, targetFolder) {
     event.preventDefault();
-    
+
     if (!event.dataTransfer) return;
-    
+
     const data = event.dataTransfer.getData('text/plain');
     if (!data) return;
-    
+
     try {
       const draggedItem = JSON.parse(data);
       if (draggedItem.type === 'video') {
@@ -499,24 +505,35 @@ let scrollAnimationId: number | null = null;
   function getStatusChipClass(status) {
     const normalized = status?.toUpperCase?.() ?? 'UNKNOWN';
     switch (normalized) {
-      case 'UPLOADED': return 'chip chip-primary';
-      case 'ANALYZING': return 'chip chip-warning';
+      case 'UPLOADED':
+        return 'chip chip-primary';
+      case 'ANALYZING':
+        return 'chip chip-warning';
       case 'ANALYZED':
-      case 'COMPLETE': return 'chip chip-success';
-      case 'ERROR': return 'chip chip-error';
-      default: return 'chip chip-default';
+      case 'COMPLETE':
+        return 'chip chip-success';
+      case 'ERROR':
+        return 'chip chip-error';
+      default:
+        return 'chip chip-default';
     }
   }
 
   function getStatusText(status) {
     const normalized = status?.toUpperCase?.() ?? 'UNKNOWN';
     switch (normalized) {
-      case 'UPLOADED': return _('status.uploaded');
-      case 'ANALYZING': return _('status.analyzing');
-      case 'ANALYZED': return _('status.analyzed');
-      case 'COMPLETE': return _('status.complete');
-      case 'ERROR': return _('status.error');
-      default: return _('status.unknown');
+      case 'UPLOADED':
+        return _('status.uploaded');
+      case 'ANALYZING':
+        return _('status.analyzing');
+      case 'ANALYZED':
+        return _('status.analyzed');
+      case 'COMPLETE':
+        return _('status.complete');
+      case 'ERROR':
+        return _('status.error');
+      default:
+        return _('status.unknown');
     }
   }
 
@@ -536,7 +553,7 @@ let scrollAnimationId: number | null = null;
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 </script>
@@ -547,7 +564,6 @@ let scrollAnimationId: number | null = null;
 </svelte:head>
 
 <div class="max-w-7xl mx-auto space-y-8">
-
   <!-- Breadcrumbs -->
   <MsqdxBreadcrumbs />
 
@@ -559,7 +575,7 @@ let scrollAnimationId: number | null = null;
     </div>
     <!-- Action Buttons -->
     <div class="glass-button-group" style="display: flex; gap: 0.5rem;">
-      <MsqdxButton 
+      <MsqdxButton
         variant="text"
         glass={true}
         on:click={handleCreateFolder}
@@ -567,7 +583,7 @@ let scrollAnimationId: number | null = null;
       >
         <MaterialSymbol icon="create_new_folder" fontSize={20} />
       </MsqdxButton>
-      <MsqdxButton 
+      <MsqdxButton
         variant="text"
         glass={true}
         href={resolve('/upload')}
@@ -583,21 +599,18 @@ let scrollAnimationId: number | null = null;
     <div class="glass-card p-4">
       <div class="flex items-center justify-between">
         <span class="text-gray-700 dark:text-white/80">
-          {$selectedItems.size} {_('selection.selected')}
+          {$selectedItems.size}
+          {_('selection.selected')}
         </span>
         <div class="flex items-center gap-2">
-          <MsqdxButton 
+          <MsqdxButton
             variant="outlined"
             glass={true}
             on:click={() => moveVideos(Array.from($selectedItems), null)}
           >
             {_('actions.move')}
           </MsqdxButton>
-          <MsqdxButton 
-            variant="outlined"
-            glass={true}
-            on:click={deselectAll}
-          >
+          <MsqdxButton variant="outlined" glass={true} on:click={deselectAll}>
             {_('actions.deselect')}
           </MsqdxButton>
         </div>
@@ -611,7 +624,7 @@ let scrollAnimationId: number | null = null;
       <div class="text-red-200">
         <h3 class="font-semibold mb-2">{_('errors.loadingError')}</h3>
         <p>{$error}</p>
-        <MsqdxButton 
+        <MsqdxButton
           variant="contained"
           glass={true}
           class="mt-4"
@@ -631,7 +644,9 @@ let scrollAnimationId: number | null = null;
       <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">📁</div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
         {#if $searchQuery}
-          {$searchQuery ? _('pages.videoGallery.emptyState.noResults') : _('pages.videoGallery.emptyState.emptyFolder')}
+          {$searchQuery
+            ? _('pages.videoGallery.emptyState.noResults')
+            : _('pages.videoGallery.emptyState.emptyFolder')}
         {:else}
           {_('pages.videoGallery.emptyState.emptyFolder')}
         {/if}
@@ -645,18 +660,10 @@ let scrollAnimationId: number | null = null;
       </p>
       {#if !$searchQuery}
         <div class="flex items-center justify-center gap-4">
-          <MsqdxButton 
-            variant="contained"
-            glass={true}
-            on:click={handleCreateFolder}
-          >
+          <MsqdxButton variant="contained" glass={true} on:click={handleCreateFolder}>
             {_('pages.videoGallery.emptyState.createFolder')}
           </MsqdxButton>
-          <MsqdxButton 
-            variant="contained"
-            glass={true}
-            href={resolve('/upload')}
-          >
+          <MsqdxButton variant="contained" glass={true} href={resolve('/upload')}>
             {_('pages.videoGallery.emptyState.uploadVideo')}
           </MsqdxButton>
         </div>
@@ -665,23 +672,28 @@ let scrollAnimationId: number | null = null;
   {:else}
     <!-- Content -->
     {#if $viewMode === 'grid'}
-      <div 
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
-        on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 {draggedVideo &&
+        !dragOverFolder
+          ? 'ring-2 ring-blue-400 ring-opacity-50'
+          : ''}"
+        on:dragover={e => {
+          e.preventDefault();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        }}
         on:drop={handleRootDrop}
       >
         <!-- Add Item Card -->
-        <MsqdxAddItemCard on:click={() => unifiedDialogOpen = true} />
+        <MsqdxAddItemCard on:click={() => (unifiedDialogOpen = true)} />
 
         <!-- Parent folder (if not root) -->
         {#if $currentFolder}
-          <div 
-            class="folder-card glass-card cursor-pointer"
-            on:click={() => navigateToParent()}
-          >
+          <div class="folder-card glass-card cursor-pointer" on:click={() => navigateToParent()}>
             <div class="folder-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6M20,18H4V8H20V18Z"/>
+                <path
+                  d="M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6M20,18H4V8H20V18Z"
+                />
               </svg>
             </div>
             <div class="folder-content">
@@ -690,94 +702,111 @@ let scrollAnimationId: number | null = null;
             </div>
           </div>
         {/if}
-        
+
         <!-- Projects -->
         {#each projects as project (project.id)}
           <div
-             class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-             on:click={() => goto(`${base}/projects/${project.id}`)}
-             style="
+            class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
+            on:click={() => goto(`${base}/projects/${project.id}`)}
+            style="
                --blur: var(--msqdx-glass-blur);
                --background-color: var(--msqdx-color-dark-paper);
                --border-color: var(--msqdx-color-dark-border);
                border-radius: 40px;
              "
           >
-             <!-- Project Menu -->
-             <div class="absolute top-2 right-2 z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                <div class="relative">
-                  <button 
-                    class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
-                    on:click|stopPropagation={() => activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id}
-                  >
-                    <MaterialSymbol icon="more_vert" fontSize={20} />
-                  </button>
+            <!-- Project Menu -->
+            <div
+              class="absolute top-2 right-2 z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <div class="relative">
+                <button
+                  class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  on:click|stopPropagation={() =>
+                    (activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id)}
+                >
+                  <MaterialSymbol icon="more_vert" fontSize={20} />
+                </button>
 
-                  {#if activeMenuProjectId === project.id}
-                    <MsqdxGlassMenu
-                      align="right"
-                      items={[
-                        { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
-                        { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
-                        { label: 'Share', icon: 'share', action: () => handleShareProject(project) },
-                        { label: 'Delete', icon: 'delete', danger: true, action: () => handleDeleteProject(project) }
-                      ]}
-                      on:close={() => activeMenuProjectId = null}
-                    />
-                  {/if}
-                </div>
-             </div>
+                {#if activeMenuProjectId === project.id}
+                  <MsqdxGlassMenu
+                    align="right"
+                    items={[
+                      { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
+                      { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
+                      { label: 'Share', icon: 'share', action: () => handleShareProject(project) },
+                      {
+                        label: 'Delete',
+                        icon: 'delete',
+                        danger: true,
+                        action: () => handleDeleteProject(project),
+                      },
+                    ]}
+                    on:close={() => (activeMenuProjectId = null)}
+                  />
+                {/if}
+              </div>
+            </div>
 
-             <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
-                 <div
-                   class="w-12 h-12 rounded-full flex items-center justify-center"
-                   style="background-color: {MSQDX_COLORS.tints.purple};"
-                 >
-                     <MaterialSymbol icon="movie_edit" fontSize={24} style="color: {MSQDX_COLORS.brand.purple};" />
-                 </div>
-                 <h3
-                    class="font-semibold leading-tight"
-                    style="
+            <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
+              <div
+                class="w-12 h-12 rounded-full flex items-center justify-center"
+                style="background-color: {MSQDX_COLORS.tints.purple};"
+              >
+                <MaterialSymbol
+                  icon="movie_edit"
+                  fontSize={24}
+                  style="color: {MSQDX_COLORS.brand.purple};"
+                />
+              </div>
+              <h3
+                class="font-semibold leading-tight"
+                style="
                       color: {MSQDX_COLORS.dark.textPrimary};
                       font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
                     "
-                 >{project.name}</h3>
-                 <span
-                    class="text-xs"
-                    style="
+              >
+                {project.name}
+              </h3>
+              <span
+                class="text-xs"
+                style="
                       color: {MSQDX_COLORS.dark.textSecondary};
                       font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
-                    "
-                 >{project.scenes?.length || 0} Scenes</span>
-             </div>
+                    ">{project.scenes?.length || 0} Scenes</span
+              >
+            </div>
           </div>
         {/each}
 
         <!-- Folders -->
         {#each currentContents.folders as folder (folder.id)}
           <div
-            class="glass-card cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id === folder.id ? 'ring-2 ring-blue-400' : ''}"
-            on:dragover={(e) => handleFolderDragOver(e, folder)}
+            class="glass-card cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id ===
+            folder.id
+              ? 'ring-2 ring-blue-400'
+              : ''}"
+            on:dragover={e => handleFolderDragOver(e, folder)}
             on:dragleave={handleFolderDragLeave}
-            on:drop={(e) => handleFolderDrop(e, folder)}
+            on:drop={e => handleFolderDrop(e, folder)}
           >
-            <MsqdxFolderCard 
-              {folder} 
+            <MsqdxFolderCard
+              {folder}
               selected={$selectedItems.has(folder.id)}
               onSelect={toggleSelection}
-              onContextMenu={(e) => handleContextMenu(e, { ...folder, type: 'folder' })}
+              onContextMenu={e => handleContextMenu(e, { ...folder, type: 'folder' })}
               on:rename={handleRenameFolderClick}
               on:delete={handleDeleteFolderClick}
             />
           </div>
         {/each}
-        
+
         <!-- Videos -->
         {#each currentContents.videos as video (video.id)}
           <div class="video-card-wrapper">
-            <MsqdxVideoCard 
-              video={video}
-              on:select={(e) => {
+            <MsqdxVideoCard
+              {video}
+              on:select={e => {
                 console.log('Video card select event:', e.detail);
                 handleVideoClick(e.detail.id);
               }}
@@ -789,81 +818,106 @@ let scrollAnimationId: number | null = null;
       </div>
     {:else}
       <!-- List View -->
-      <div 
-        class="glass-card {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
-        on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
+      <div
+        class="glass-card {draggedVideo && !dragOverFolder
+          ? 'ring-2 ring-blue-400 ring-opacity-50'
+          : ''}"
+        on:dragover={e => {
+          e.preventDefault();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        }}
         on:drop={handleRootDrop}
       >
-        <div class="space-y-4"> <!-- Increased spacing -->
-             <!-- Add Item (List Look) - Optional, mainly for grid, but good to have access -->
-            <button 
-                class="w-full flex items-center justify-center gap-2 p-4 border border-dashed border-white/20 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-                on:click={() => unifiedDialogOpen = true}
-            >
-                <MaterialSymbol icon="add" fontSize={24} />
-                <span class="font-medium">Add New Item</span>
-            </button>
+        <div class="space-y-4">
+          <!-- Increased spacing -->
+          <!-- Add Item (List Look) - Optional, mainly for grid, but good to have access -->
+          <button
+            class="w-full flex items-center justify-center gap-2 p-4 border border-dashed border-white/20 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            on:click={() => (unifiedDialogOpen = true)}
+          >
+            <MaterialSymbol icon="add" fontSize={24} />
+            <span class="font-medium">Add New Item</span>
+          </button>
 
           <div class="space-y-2">
             {#each allItems as item (item.id)}
-                <div 
-                class="list-item flex items-center gap-4 p-4 hover:bg-white/5 rounded-lg cursor-pointer {dragOverFolder?.id === item.id ? 'bg-blue-500/20' : ''}"
+              <div
+                class="list-item flex items-center gap-4 p-4 hover:bg-white/5 rounded-lg cursor-pointer {dragOverFolder?.id ===
+                item.id
+                  ? 'bg-blue-500/20'
+                  : ''}"
                 draggable={item.type === 'video'}
-                on:click={(e) => handleItemClick(e, item)}
-                on:contextmenu={(e) => handleContextMenu(e, item)}
-                on:dragstart={item.type === 'video' ? (e) => handleVideoDragStart(e, item as VideoResponse) : undefined}
-                on:dragover={item.type === 'folder' ? (e) => handleFolderDragOver(e, item) : undefined}
+                on:click={e => handleItemClick(e, item)}
+                on:contextmenu={e => handleContextMenu(e, item)}
+                on:dragstart={item.type === 'video'
+                  ? e => handleVideoDragStart(e, item)
+                  : undefined}
+                on:dragover={item.type === 'folder'
+                  ? e => handleFolderDragOver(e, item)
+                  : undefined}
                 on:dragleave={item.type === 'folder' ? handleFolderDragLeave : undefined}
-                on:drop={item.type === 'folder' ? (e) => handleFolderDrop(e, item) : undefined}
+                on:drop={item.type === 'folder' ? e => handleFolderDrop(e, item) : undefined}
                 style:opacity={1}
                 style:pointer-events="auto"
-                >
-                <input 
-                    type="checkbox" 
-                    checked={$selectedItems.has(item.id)}
-                    on:change={() => toggleSelection(item.id)}
-                    class="w-4 h-4"
+              >
+                <input
+                  type="checkbox"
+                  checked={$selectedItems.has(item.id)}
+                  on:change={() => toggleSelection(item.id)}
+                  class="w-4 h-4"
                 />
-                
+
                 {#if item.type === 'folder'}
-                    <div class="text-2xl">📁</div>
-                    <div class="flex-1">
+                  <div class="text-2xl">📁</div>
+                  <div class="flex-1">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.name}</h3>
                     <p class=" text-gray-600 dark:text-white/60">{_('folder.type')}</p>
-                    </div>
+                  </div>
                 {:else if item.type === 'project'}
-                   <div class="text-2xl" style="color: {MSQDX_COLORS.brand.purple};">
-                      <MaterialSymbol icon="movie_edit" fontSize={24} />
-                   </div>
-                   <div class="flex-1">
-                     <h3 class="font-semibold" style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};">{item.name}</h3>
-                     <div class="flex items-center gap-2">
-                        <span style="color: {MSQDX_COLORS.dark.textSecondary}; font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};">Project</span>
-                        <span 
-                          class="text-xs px-2 py-0.5 rounded-full"
-                          style="
+                  <div class="text-2xl" style="color: {MSQDX_COLORS.brand.purple};">
+                    <MaterialSymbol icon="movie_edit" fontSize={24} />
+                  </div>
+                  <div class="flex-1">
+                    <h3
+                      class="font-semibold"
+                      style="color: {MSQDX_COLORS.dark.textPrimary}; font-family: {MSQDX_TYPOGRAPHY
+                        .fontFamily.primary};"
+                    >
+                      {item.name}
+                    </h3>
+                    <div class="flex items-center gap-2">
+                      <span
+                        style="color: {MSQDX_COLORS.dark
+                          .textSecondary}; font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};"
+                        >Project</span
+                      >
+                      <span
+                        class="text-xs px-2 py-0.5 rounded-full"
+                        style="
                             background-color: {MSQDX_COLORS.tints.purple}; 
                             color: {MSQDX_COLORS.brand.purple};
                             font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
                           "
-                        >
-                          {item.scenes?.length || 0} Scenes
-                        </span>
-                     </div>
-                   </div>
+                      >
+                        {item.scenes?.length || 0} Scenes
+                      </span>
+                    </div>
+                  </div>
                 {:else}
-                    <div class="text-2xl">🎬</div>
-                    <div class="flex-1">
+                  <div class="text-2xl">🎬</div>
+                  <div class="flex-1">
                     <h3 class="font-semibold text-gray-900 dark:text-white">{item.originalName}</h3>
                     <div class="flex items-center gap-2">
-                        <span class=" text-gray-600 dark:text-white/60">{formatFileSize(item.fileSize)}</span>
-                        <span class="{getStatusChipClass(item.status)}">
+                      <span class=" text-gray-600 dark:text-white/60"
+                        >{formatFileSize(item.fileSize)}</span
+                      >
+                      <span class={getStatusChipClass(item.status)}>
                         {getStatusText(item.status)}
-                        </span>
+                      </span>
                     </div>
-                    </div>
+                  </div>
                 {/if}
-                </div>
+              </div>
             {/each}
           </div>
         </div>
@@ -874,11 +928,11 @@ let scrollAnimationId: number | null = null;
 
 <!-- Context Menu -->
 {#if contextMenu.show}
-  <MsqdxContextMenu 
+  <MsqdxContextMenu
     x={contextMenu.x}
     y={contextMenu.y}
     items={contextMenu.items}
-    onClose={() => contextMenu.show = false}
+    onClose={() => (contextMenu.show = false)}
   />
 {/if}
 
@@ -887,39 +941,39 @@ let scrollAnimationId: number | null = null;
   bind:open={unifiedDialogOpen}
   currentFolderId={folderId}
   on:uploadComplete={handleUploadComplete}
-  on:projectCreated={(e) => goto(`${base}/projects/${e.detail.id}`)}
-  on:close={() => unifiedDialogOpen = false}
-/> 
+  on:projectCreated={e => goto(`${base}/projects/${e.detail.id}`)}
+  on:close={() => (unifiedDialogOpen = false)}
+/>
 
 <!-- Folder Dialog (Keep for Rename) -->
 <!-- Folder Dialog (Generic Rename) -->
-<MsqdxFolderDialog 
-  open={renameDialog.open} 
+<MsqdxFolderDialog
+  open={renameDialog.open}
   mode="rename"
   title={renameTitles[renameDialog.type]}
   label={_('actions.rename')}
-  initialName={renameDialog.item ? (renameDialog.item.name || renameDialog.item.originalName) : ''}
-  on:confirm={handleRenameConfirm} 
-  on:cancel={() => renameDialog = { ...renameDialog, open: false }} 
+  initialName={renameDialog.item ? renameDialog.item.name || renameDialog.item.originalName : ''}
+  on:confirm={handleRenameConfirm}
+  on:cancel={() => (renameDialog = { ...renameDialog, open: false })}
 />
 
 <!-- Delete Modal -->
-<MsqdxDeleteModal 
-  open={deleteDialog.open} 
-  item={deleteDialog.item} 
+<MsqdxDeleteModal
+  open={deleteDialog.open}
+  item={deleteDialog.item}
   type={deleteDialog.type}
-  on:confirm={handleDeleteConfirm} 
-  on:close={() => deleteDialog = { ...deleteDialog, open: false }} 
+  on:confirm={handleDeleteConfirm}
+  on:close={() => (deleteDialog = { ...deleteDialog, open: false })}
 />
 
-  {#if shareDialog.open}
-    <ShareDialog
-      isOpen={shareDialog.open}
-      projectId={shareDialog.type === 'project' ? shareDialog.item.id : undefined}
-      videoId={shareDialog.type === 'video' ? shareDialog.item.id : undefined}
-      on:close={() => shareDialog = { ...shareDialog, open: false }}
-    />
-  {/if}
+{#if shareDialog.open}
+  <ShareDialog
+    isOpen={shareDialog.open}
+    projectId={shareDialog.type === 'project' ? shareDialog.item.id : undefined}
+    videoId={shareDialog.type === 'video' ? shareDialog.item.id : undefined}
+    on:close={() => (shareDialog = { ...shareDialog, open: false })}
+  />
+{/if}
 
 <style>
   .glass-button-group {

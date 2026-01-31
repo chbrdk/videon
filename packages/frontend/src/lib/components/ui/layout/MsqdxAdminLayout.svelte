@@ -11,11 +11,12 @@
   import { base } from '$app/paths';
   import MsqdxAdminNav from './MsqdxAdminNav.svelte';
 
-  let { title, subtitle }: { title?: string; subtitle?: string } = $props();
+  export let title: string | undefined = undefined;
+  export let subtitle: string | undefined = undefined;
 
-  let drawerOpen = $state(false);
-  let mounted = $state(false);
-  let isMobile = $state(false);
+  let drawerOpen = false;
+  let mounted = false;
+  let isMobile = false;
 
   onMount(() => {
     mounted = true;
@@ -89,9 +90,9 @@
     return 'toc';
   }
 
-  let currentTheme = $derived($theme);
-  let pageTitle = $derived(getPageTitle());
-  let pageIcon = $derived(getPageIcon());
+  $: currentTheme = $theme;
+  $: pageTitle = getPageTitle();
+  $: pageIcon = getPageIcon();
 </script>
 
 <div
