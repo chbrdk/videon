@@ -92,7 +92,8 @@ services:
       args:
         PUBLIC_BACKEND_URL: ${PUBLIC_BACKEND_URL}
         VITE_BASE_PATH: /
-        VITE_PUBLIC_BYPASS_AUTH: ${VITE_PUBLIC_BYPASS_AUTH:-}
+        # VITE_PUBLIC_BYPASS_AUTH: Default true damit App lädt (Coolify). Für echte Auth: false setzen.
+        VITE_PUBLIC_BYPASS_AUTH: ${VITE_PUBLIC_BYPASS_AUTH:-true}
     container_name: prismvid-frontend
     environment:
       NODE_ENV: production

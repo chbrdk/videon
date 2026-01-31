@@ -32,12 +32,14 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 2. **Backend:** `cookie.secure: 'auto'` – korrekt hinter Proxy (X-Forwarded-Proto)
 3. **Coolify:** Proxy muss `X-Forwarded-Proto: https` setzen
 
-### Auth-Bypass (Schnell-Fix bei Spinner)
+### Auth-Bypass (Default seit Jan 2025)
 
-**Wenn Spinner überall hängt:** In Coolify Build-Args setzen:
-- `VITE_PUBLIC_BYPASS_AUTH=true`
+**Default:** `VITE_PUBLIC_BYPASS_AUTH=true` – App lädt ohne Session (Coolify-kompatibel).
 
-→ App lädt ohne Session. **Temporär** – für echte Auth wieder entfernen.
+**Für echte Auth:** In Coolify Build-Args setzen:
+- `VITE_PUBLIC_BYPASS_AUTH=false`
+
+Dann müssen Proxy-Header (X-Forwarded-Proto, X-Forwarded-For) und Session-Cookie korrekt konfiguriert sein.
 
 ### Spinner überall (Jan 2025)
 
@@ -58,3 +60,4 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 3. **Healthcheck** – `curl http://localhost:80/` im Container
 4. **Env-Variablen** – `VITE_BASE_PATH=/`, `PUBLIC_BACKEND_URL` leer oder öffentliche URL
 5. **Proxy** – Coolify muss `/api` zum Frontend-Container routen (Frontend-Nginx proxied dann zum Backend)
+6. **Proxy-Header** – Frontend-Nginx leitet X-Forwarded-Proto und X-Forwarded-For an Backend weiter (für Session-Cookie)
