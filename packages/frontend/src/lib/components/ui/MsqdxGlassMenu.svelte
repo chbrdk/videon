@@ -1,16 +1,14 @@
 <script>
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import { MsqdxGlassCard } from '$lib/components/ui';
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_COLORS } from '$lib/design-tokens';
 
-  export let items = [];
-  export let align = 'right'; // 'left' or 'right'
-  export let width = 200;
+  let { items = [], align = 'right', width = 200 } = $props();
 
   const dispatch = createEventDispatcher();
 
-  let menuElement;
+  let menuElement = $state();
 
   function handleClickOutside(event) {
     if (menuElement && !menuElement.contains(event.target)) {
@@ -25,7 +23,7 @@
     }
   }
 
-  onMount(() => {
+  $effect(() => {
     // 1. Capture parent for positioning reference BEFORE moving
     const triggerContainer = menuElement?.parentElement;
 
