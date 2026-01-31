@@ -7,11 +7,19 @@
   import { createEventDispatcher } from 'svelte';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  export let folder: any; // Using any to avoid strict type issues for now, similar to before
-  export let selected = false;
-  export let onSelect: ((folder: any) => void) | undefined = undefined;
-  export let onContextMenu: ((e: MouseEvent, folder: any) => void) | undefined = undefined;
-  export let className = '';
+  let {
+    folder,
+    selected = false,
+    onSelect = undefined,
+    onContextMenu = undefined,
+    className = '',
+  }: {
+    folder: any;
+    selected?: boolean;
+    onSelect?: ((folder: any) => void) | undefined;
+    onContextMenu?: ((e: MouseEvent, folder: any) => void) | undefined;
+    className?: string;
+  } = $props();
 
   const dispatch = createEventDispatcher();
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { createEventDispatcher } from 'svelte';
   import type { Video } from '$lib/api/videos';
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
@@ -9,7 +9,7 @@
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
-  export let video: Video;
+  let { video }: { video: Video } = $props();
 
   const dispatch = createEventDispatcher<{
     select: { id: string };
@@ -18,7 +18,7 @@
     share: { id: string };
   }>();
 
-  let thumbnailUrl = '';
+  let thumbnailUrl = $state('');
 
   function handleClick(event?: Event) {
     const videoPath = `${base}/videos/${video.id}`;
@@ -33,10 +33,13 @@
   }
 
   // Generate thumbnail from video
-  onMount(() => {
+  $effect(() => {
+    // Re-run if video id changes
+    const currentVideoId = video.id;
+
     const videoElement = document.createElement('video');
     videoElement.crossOrigin = 'anonymous';
-    videoElement.src = getVideoUrl(video.id);
+    videoElement.src = getVideoUrl(currentVideoId);
     videoElement.muted = true;
     videoElement.currentTime = 1; // Set to 1 second to get a frame
 

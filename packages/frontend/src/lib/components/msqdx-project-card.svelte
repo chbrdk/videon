@@ -8,7 +8,7 @@
   import type { Project } from '$lib/api/projects';
   import { _ } from '$lib/i18n';
 
-  export let project: Project;
+  let { project }: { project: Project } = $props();
 
   const dispatch = createEventDispatcher();
 
