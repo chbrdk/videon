@@ -36,6 +36,7 @@
 
   // SvelteKit page data (unused but required to suppress warnings)
   export let data = {};
+  export let params = {};
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import MsqdxViewToggle from '$lib/components/msqdx-view-toggle.svelte';
   import MsqdxBreadcrumbs from '$lib/components/msqdx-breadcrumbs.svelte';

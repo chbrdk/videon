@@ -14,6 +14,7 @@
 
   // SvelteKit page data (unused but required to suppress warnings)
   export let data = {};
+  export let params = {};
 
   // Load videos on mount only if not on a video detail page
   import { goto } from '$app/navigation';
