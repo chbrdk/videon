@@ -1,8 +1,11 @@
+import path from 'path';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit()],
+  // Load .env from monorepo root (for VITE_DEV_BYPASS_AUTH etc.)
+  envDir: path.resolve(__dirname, '../..'),
   base: process.env.VITE_BASE_PATH === '/' ? '' : (process.env.VITE_BASE_PATH || '/videon'),
   server: {
     port: 3010,

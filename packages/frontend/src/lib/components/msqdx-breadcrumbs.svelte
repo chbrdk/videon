@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { breadcrumbs } from '$lib/stores/folders.store';
+  import { safeBreadcrumbs } from '$lib/stores/folders.store';
   import { currentLocale } from '$lib/i18n';
   import { resolve } from '$app/paths';
   import {
@@ -42,7 +42,7 @@
     {($currentLocale ?? 'de') === 'en' ? 'Root' : 'Hauptordner'}
   </a>
 
-  {#each ($breadcrumbs ?? []) as crumb}
+  {#each $safeBreadcrumbs as crumb}
     <MaterialSymbol
       icon="chevron_right"
       fontSize={MSQDX_ICONS.sizes.sm}

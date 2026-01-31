@@ -3,6 +3,7 @@
  * Provides consistent configuration across the application
  */
 
+import path from 'path';
 import dotenv from 'dotenv';
 import { getDatabaseUrl, getStorageConfig } from './storion';
 import { getUnionConfig } from './union';
@@ -10,8 +11,10 @@ import { getUnionConfig } from './union';
 // Zentrale Konfiguration
 const environment = process.env.NODE_ENV || 'development';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables (project root .env for monorepo)
+const projectRoot = path.resolve(__dirname, '../../../..');
+dotenv.config({ path: path.join(projectRoot, '.env') });
+dotenv.config(); // Fallback: cwd .env
 
 export interface AppConfig {
   port: number;

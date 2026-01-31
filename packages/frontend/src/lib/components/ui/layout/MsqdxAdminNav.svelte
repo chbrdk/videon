@@ -62,7 +62,7 @@
     { label: 'Videos', path: '/videos', icon: 'video_file' },
     { label: 'Suche', path: '/search', icon: 'search' },
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
-    ...($userStore?.role === 'ADMIN'
+    ...(($userStore ?? null)?.role === 'ADMIN'
       ? [{ label: 'Users', path: '/admin/users', icon: 'group' }]
       : []),
   ]);
@@ -224,7 +224,7 @@
       "
     >
       <MaterialSymbol
-        icon={$theme === 'dark' ? 'light_mode' : 'dark_mode'}
+        icon={($theme ?? 'dark') === 'dark' ? 'light_mode' : 'dark_mode'}
         fontSize={28}
         style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
       />
@@ -236,7 +236,7 @@
           font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};
           line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
           color: rgba(255, 255, 255, 0.7);
-        ">{$theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span
+        ">{($theme ?? 'dark') === 'dark' ? 'Light Mode' : 'Dark Mode'}</span
         >
       {/if}
     </button>

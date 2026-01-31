@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable, derived, get } from 'svelte/store';
 import { FoldersApi } from '$lib/api/folders';
 import type { VideoResponse, Folder, BreadcrumbItem, SearchResults, ContextMenuItem } from '$lib/types';
 
@@ -18,6 +18,18 @@ export const searchQuery = writable<string>('');
 export const searchResults = writable<SearchResults>({ folders: [], videos: [], projects: [] });
 export const isLoading = writable<boolean>(false);
 export const error = writable<string | null>(null);
+
+// Svelte 5: Safe derived stores - verhindern null bei Hydration (r-Fehler)
+export const safeFolders = derived(folders, ($f) => $f ?? []);
+export const safeVideosInFolder = derived(videosInFolder, ($v) => $v ?? []);
+export const safeSearchQuery = derived(searchQuery, ($q) => $q ?? '');
+export const safeSearchResults = derived(searchResults, ($r) => $r ?? { folders: [], videos: [], projects: [] });
+export const safeSelectedItems = derived(selectedItems, ($s) => $s ?? new Set());
+export const safeViewMode = derived(viewMode, ($v) => $v ?? 'grid');
+export const safeBreadcrumbs = derived(breadcrumbs, ($b) => $b ?? []);
+export const safeIsLoading = derived(isLoading, ($l) => $l ?? false);
+export const safeError = derived(error, ($e) => $e ?? null);
+export const safeCurrentFolder = derived(currentFolder, ($c) => $c ?? null);
 
 // API instance
 const foldersApi = new FoldersApi();

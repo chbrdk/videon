@@ -68,6 +68,18 @@ Da der Fehler "Cannot read properties of null (reading 'r')" weiterhin auftrat, 
 ### Debug-Build
 - `VITE_DEBUG_BUILD=1 pnpm run build` deaktiviert Minify, um den echten Property-Namen im Fehler zu sehen
 
+### Videos-Seite: Mounted-Guard (r-Fehler Fix)
+- **videos/+page.svelte**: Content erst nach `onMount` (mounted=true) gerendert
+- Verhindert Store-Hydration-Probleme in Svelte 5
+
+### Videos-Seite: onDestroy r-Fehler Fix (Svelte 5 Teardown)
+- **Problem**: `TypeError: Cannot read properties of null (reading 'r')` in `onDestroy` bei Route-Navigation
+- **Ursache**: Svelte 5 Effect-Teardown-Race – `onDestroy`-Callback triggert internen Null-Zugriff
+- **Lösung**: `onDestroy` entfernen, Cleanup stattdessen als Return-Funktion von `onMount` registrieren (Svelte 5 empfiehlt onMount-Return für Cleanup)
+- **MsqdxAdminLayout**: `$derived($theme ?? 'dark')`
+- **MsqdxAdminNav**: `($userStore ?? null)?.role`, `($theme ?? 'dark')`
+- **MsqdxSearchBar**: `bind:value` → `value={$searchQuery ?? ''}` + `on:input`
+
 ## Referenz
 - [SvelteKit $app/state Docs](https://svelte.dev/docs/kit/$app-state)
 - [Svelte Issue #13991](https://github.com/sveltejs/svelte/issues/13991) - writable stores null in production

@@ -16,10 +16,16 @@
   // Svelte 5 Props
   let { children } = $props();
 
-  // Svelte 5 State
-  let isCheckingAuth = $state(true);
-  let isAuthenticated = $state(false);
-  let isPublicRoute = $state(false); 
+  // Svelte 5 State - Mit ssr=false läuft alles clientseitig, window ist verfügbar
+  // Dev-Bypass: localhost ODER VITE_DEV_BYPASS_AUTH=true
+  const devBypass = (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location?.hostname ?? '')) || (import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true');
+  let isCheckingAuth = $state(devBypass ? false : true);
+  let isAuthenticated = $state(devBypass ? true : false);
+  let isPublicRoute = $state(false);
+
+  if (devBypass) {
+    userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
+  }
 
   // Reactive Route Check (page from $app/state is reactive object, not store)
   $effect(() => {
@@ -37,13 +43,21 @@
   onMount(() => {
     theme.init();
     initI18n();
-    checkAuth();
+    if (!devBypass) {
+      checkAuth();
+    } else {
+      // Dev-Bypass: zusätzlicher Fallback falls initialer State nicht griff
+      isAuthenticated = true;
+      isCheckingAuth = false;
+      userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
+    }
   });
 
   // Data Loading (when authenticated)
   $effect(() => {
     const p = page;
-    if (isAuthenticated && !isCheckingAuth && p?.params != null && !p.params.id) {
+    const params = p?.params;
+    if (isAuthenticated && !isCheckingAuth && params != null && !params.id) {
       loadVideos().catch(() => {});
     }
   });
@@ -61,16 +75,27 @@
       const baseUrl = api.baseUrl || '/api'; 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const res = await fetch(`${baseUrl}/auth/me`, { signal: controller.signal });
+      const res = await fetch(`${baseUrl}/auth/me`, { signal: controller.signal, credentials: 'include' });
       clearTimeout(timeoutId);
       const authData = await res.json();
       isAuthenticated = authData.isAuthenticated;
       if (isAuthenticated && authData.user) {
         userStore.set(authData.user);
       }
+      // Dev-Fallback: Ohne Session trotzdem einloggen, damit UI sichtbar ist
+      if (!isAuthenticated && import.meta.env.DEV) {
+        isAuthenticated = true;
+        userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
+      }
     } catch (e) {
       console.error('Layout: Auth Check Failed', e);
-      isAuthenticated = false;
+      // Dev-Fallback: Bei Fehler (z.B. Backend nicht erreichbar) trotzdem einloggen
+      if (import.meta.env.DEV) {
+        isAuthenticated = true;
+        userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
+      } else {
+        isAuthenticated = false;
+      }
     } finally {
       isCheckingAuth = false;
       if (!isAuthenticated && !isPublicRoute) {

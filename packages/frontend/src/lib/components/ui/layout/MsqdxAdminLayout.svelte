@@ -89,7 +89,7 @@
     return 'toc';
   }
 
-  let currentTheme = $derived($theme);
+  let currentTheme = $derived($theme ?? 'dark');
   let pageTitle = $derived(getPageTitle());
   let pageIcon = $derived(getPageIcon());
 </script>

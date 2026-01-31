@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchQuery, searchAll } from '$lib/stores/folders.store';
+  import { searchQuery, searchAll, safeSearchQuery } from '$lib/stores/folders.store';
   import {
     MSQDX_SPACING,
     MSQDX_COLORS,
@@ -16,8 +16,8 @@
   function handleSearch() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      if (($searchQuery ?? '').trim()) {
-        searchAll($searchQuery);
+    if ($safeSearchQuery.trim()) {
+      searchAll($safeSearchQuery);
       }
     }, 300);
   }
@@ -38,8 +38,8 @@
   />
   <input
     type="search"
-    bind:value={$searchQuery}
-    on:input={handleSearch}
+    value={$safeSearchQuery}
+    on:input={(e) => { searchQuery.set((e.target as HTMLInputElement).value); handleSearch(); }}
     placeholder={_('search.placeholder')}
     class="search-input"
     style="
@@ -48,7 +48,7 @@
       font-weight: {MSQDX_TYPOGRAPHY.fontWeight.medium};
     "
   />
-  {#if $searchQuery}
+  {#if $safeSearchQuery.trim()}
     <button
       class="clear-button"
       on:click={() => searchQuery.set('')}

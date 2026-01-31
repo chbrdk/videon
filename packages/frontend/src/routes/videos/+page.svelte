@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onMount, tick, onDestroy } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { goto, afterNavigate } from '$app/navigation';
   import { resolve, base } from '$app/paths';
   import { 
@@ -12,6 +12,16 @@ import { onMount, tick, onDestroy } from 'svelte';
     searchResults,
     isLoading,
     error,
+    safeFolders,
+    safeVideosInFolder,
+    safeSearchQuery,
+    safeSearchResults,
+    safeSelectedItems,
+    safeViewMode,
+    safeBreadcrumbs,
+    safeIsLoading,
+    safeError,
+    safeCurrentFolder,
     loadFolders,
     createFolder,
     updateFolder,
@@ -62,7 +72,8 @@ import { onMount, tick, onDestroy } from 'svelte';
   }
   afterNavigate(updateUrlParams);
 
-  // State
+  // State - mounted guard verhindert r-Fehler bei Svelte 5 Store-Hydration
+  let mounted = false;
   let projects: Project[] = []; // Projects state
   let contextMenu = { show: false, x: 0, y: 0, items: [] };
   
@@ -130,6 +141,7 @@ let scrollAnimationId: number | null = null;
   
   // Initialize
   onMount(async () => {
+    mounted = true;
     updateUrlParams();
     if (searchQueryParam) {
       searchQuery.set(searchQueryParam);
@@ -154,7 +166,6 @@ let scrollAnimationId: number | null = null;
   // React to folderId changes
   $: {
     loadFolders(folderId);
-    // Update projects visibility based on folder
     if (!folderId) {
       projectsApi.getProjects().then((p) => (projects = p)).catch(() => (projects = []));
     } else {
@@ -163,14 +174,14 @@ let scrollAnimationId: number | null = null;
   }
 
   // Handle search query changes from URL
-  $: if (searchQueryParam && searchQueryParam !== ($searchQuery ?? '')) {
+  $: if (searchQueryParam && searchQueryParam !== $safeSearchQuery) {
     searchQuery.set(searchQueryParam);
     searchAll(searchQueryParam);
   }
 
-  // Get current folder contents (null-safe for Svelte 5 hydration)
-  $: currentContents = ($searchQuery ?? '') ? ($searchResults ?? { folders: [], videos: [], projects: [] }) : { folders: $folders ?? [], videos: $videosInFolder ?? [] };
-  $: displayedProjects = ($searchQuery ?? '') ? ($searchResults?.projects ?? []) : projects;
+  // Get current folder contents - safe stores verhindern r-Fehler
+  $: currentContents = $safeSearchQuery ? $safeSearchResults : { folders: $safeFolders, videos: $safeVideosInFolder };
+  $: displayedProjects = $safeSearchQuery ? ($safeSearchResults?.projects ?? []) : projects;
   
   $: allItems = [
     ...(displayedProjects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
@@ -251,11 +262,6 @@ let scrollAnimationId: number | null = null;
       scrollAnimationId = null;
     }
   }
-
-  onDestroy(() => {
-    stopAutoReveal();
-    stopPageScroll();
-  });
 
   // Video handlers
   function handleVideoClick(videoId: string) {
@@ -566,6 +572,11 @@ let scrollAnimationId: number | null = null;
   <meta name="description" content={_('pages.videoGallery.description')} />
 </svelte:head>
 
+{#if !mounted}
+  <div class="flex items-center justify-center min-h-[200px]">
+    <p class="text-gray-500 dark:text-gray-400">Lade...</p>
+  </div>
+{:else}
 <div class="max-w-7xl mx-auto space-y-8">
 
   <!-- Local Page Header (matching Settings style) -->
@@ -620,17 +631,17 @@ let scrollAnimationId: number | null = null;
   </div>
 
   <!-- Selection Toolbar -->
-  {#if ($selectedItems ?? new Set()).size > 0}
+  {#if $safeSelectedItems.size > 0}
     <div class="glass-card p-4">
       <div class="flex items-center justify-between">
         <span class="text-gray-700 dark:text-white/80">
-          {($selectedItems ?? new Set()).size} {_('selection.selected')}
+          {$safeSelectedItems.size} {_('selection.selected')}
         </span>
         <div class="flex items-center gap-2">
           <MsqdxButton 
             variant="outlined"
             glass={true}
-            on:click={() => moveVideos(Array.from($selectedItems ?? new Set()), null)}
+            on:click={() => moveVideos(Array.from($safeSelectedItems), null)}
           >
             {_('actions.move')}
           </MsqdxButton>
@@ -647,11 +658,11 @@ let scrollAnimationId: number | null = null;
   {/if}
 
   <!-- Error State -->
-  {#if $error}
+  {#if $safeError}
     <div class="glass-card p-6">
       <div class="text-red-200">
         <h3 class="font-semibold mb-2">{_('errors.loadingError')}</h3>
-        <p>{$error}</p>
+        <p>{$safeError}</p>
         <MsqdxButton 
           variant="contained"
           glass={true}
@@ -662,7 +673,7 @@ let scrollAnimationId: number | null = null;
         </MsqdxButton>
       </div>
     </div>
-  {:else if $isLoading}
+  {:else if $safeIsLoading}
     <div class="glass-card text-center py-16">
       <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">⏳</div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{_('loading.loading')}</h3>
@@ -671,20 +682,20 @@ let scrollAnimationId: number | null = null;
     <div class="glass-card text-center py-16">
       <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">📁</div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-        {#if $searchQuery}
-          {$searchQuery ? _('pages.videoGallery.emptyState.noResults') : _('pages.videoGallery.emptyState.emptyFolder')}
+        {#if $safeSearchQuery}
+          {$safeSearchQuery ? _('pages.videoGallery.emptyState.noResults') : _('pages.videoGallery.emptyState.emptyFolder')}
         {:else}
           {_('pages.videoGallery.emptyState.emptyFolder')}
         {/if}
       </h3>
       <p class="text-gray-600 dark:text-white/70 mb-8">
-        {#if $searchQuery}
+        {#if $safeSearchQuery}
           {_('pages.videoGallery.emptyState.noResultsMessage')}
         {:else}
           {_('pages.videoGallery.emptyState.emptyFolderMessage')}
         {/if}
       </p>
-      {#if !$searchQuery}
+      {#if !$safeSearchQuery}
         <div class="flex items-center justify-center gap-4">
           <MsqdxButton 
             variant="contained"
@@ -705,7 +716,7 @@ let scrollAnimationId: number | null = null;
     </div>
   {:else}
     <!-- Content -->
-    {#if ($viewMode ?? 'grid') === 'grid'}
+    {#if $safeViewMode === 'grid'}
       <div 
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
         role="application"
@@ -716,7 +727,7 @@ let scrollAnimationId: number | null = null;
         <MsqdxAddItemCard on:click={() => unifiedDialogOpen = true} />
 
         <!-- Parent folder (if not root) -->
-        {#if $currentFolder != null}
+        {#if $safeCurrentFolder != null}
           <div 
             role="button"
             tabindex="0"
@@ -774,7 +785,7 @@ let scrollAnimationId: number | null = null;
           >
             <MsqdxFolderCard 
               {folder} 
-              selected={($selectedItems ?? new Set()).has(folder.id)}
+              selected={$safeSelectedItems.has(folder.id)}
               onSelect={toggleSelection}
               onContextMenu={(e) => handleContextMenu(e, { ...folder, type: 'folder' })}
               on:rename={handleRenameFolderClick}
@@ -837,7 +848,7 @@ let scrollAnimationId: number | null = null;
                 >
                 <input 
                     type="checkbox" 
-                    checked={($selectedItems ?? new Set()).has(item.id)}
+                    checked={$safeSelectedItems.has(item.id)}
                     on:change={() => toggleSelection(item.id)}
                     class="w-4 h-4"
                 />
@@ -940,6 +951,7 @@ let scrollAnimationId: number | null = null;
     itemName={shareDialog.item?.name || shareDialog.item?.originalName || ''}
     on:close={() => (shareDialog = { ...shareDialog, open: false })}
   />
+{/if}
 
 <style>
   .glass-button-group {

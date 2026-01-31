@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { viewMode } from '$lib/stores/folders.store';
+  import { viewMode, safeViewMode } from '$lib/stores/folders.store';
   import { MaterialSymbol } from '$lib/components/ui';
 
   export let className = '';
@@ -7,14 +7,14 @@
 
 <div class="glass-button-group {className}">
   <button
-    class="glass-button rounded-full {($viewMode ?? 'grid') === 'grid' ? 'active' : ''}"
+    class="glass-button rounded-full {$safeViewMode === 'grid' ? 'active' : ''}"
     on:click={() => viewMode.set('grid')}
     title="Grid View"
   >
     <MaterialSymbol icon="grid_view" fontSize={20} />
   </button>
   <button
-    class="glass-button rounded-full {($viewMode ?? 'grid') === 'list' ? 'active' : ''}"
+    class="glass-button rounded-full {$safeViewMode === 'list' ? 'active' : ''}"
     on:click={() => viewMode.set('list')}
     title="List View"
   >
