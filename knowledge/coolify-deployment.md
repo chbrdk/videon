@@ -32,13 +32,24 @@ In `docker-compose.prod.yml` werden diese Build-Args gesetzt:
 2. **Backend:** `cookie.secure: 'auto'` – korrekt hinter Proxy (X-Forwarded-Proto)
 3. **Coolify:** Proxy muss `X-Forwarded-Proto: https` setzen
 
-### Schnell-Fix: Auth-Bypass für Staging
+### Auth-Bypass (Schnell-Fix bei Spinner)
 
-Wenn der Spinner weiterhin hängt, in Coolify **Build-Args** setzen:
-
+**Wenn Spinner überall hängt:** In Coolify Build-Args setzen:
 - `VITE_PUBLIC_BYPASS_AUTH=true`
 
-→ App lädt ohne Session (Demo-Modus). **Nur für Staging/Test**, nicht für Produktion mit echten Nutzern.
+→ App lädt ohne Session. **Temporär** – für echte Auth wieder entfernen.
+
+### Spinner überall (Jan 2025)
+
+**Ursache:** Route-Erkennung oder Auth-Check hängt.
+
+**Fixes (Layout):**
+1. **Sofortige Route-Erkennung** – `isPublicRoute` wird aus `window.location.pathname` initialisiert (verhindert Spinner-Flash auf /login)
+2. **Fallback in $effect** – Falls `page.url.pathname` noch nicht bereit, wird `window.location.pathname` verwendet
+3. **checkAuth finally** – Nutzt `window.location.pathname` für `isPublicRoute`, falls $effect noch nicht lief
+4. **Stale-Detection** – Nach 8s Spinner: Fehlermeldung + "Seite neu laden" Button
+5. **Timeout-Redirect** – Nach 6s hängendem Auth-Check: Redirect zu /login
+6. **Zentrale Route-Logik** – `$lib/utils/routes.ts` mit `isPathPublic()` (base-aware)
 
 ### Checkliste bei "nichts zurück" / Spinner
 
@@ -46,3 +57,4 @@ Wenn der Spinner weiterhin hängt, in Coolify **Build-Args** setzen:
 2. **Container-Logs** – startet Nginx, gibt es Fehler?
 3. **Healthcheck** – `curl http://localhost:80/` im Container
 4. **Env-Variablen** – `VITE_BASE_PATH=/`, `PUBLIC_BACKEND_URL` leer oder öffentliche URL
+5. **Proxy** – Coolify muss `/api` zum Frontend-Container routen (Frontend-Nginx proxied dann zum Backend)

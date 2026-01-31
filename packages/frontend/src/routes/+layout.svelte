@@ -7,11 +7,11 @@
   import { theme } from '$lib/stores/theme.store';
   import { initI18n } from '$lib/i18n';
   import ServiceStatusPanel from '$lib/components/ServiceStatusPanel.svelte';
-  import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import { api } from '$lib/config/environment';
+  import { isPathPublic } from '$lib/utils/routes';
 
   // Svelte 5 Props
   let { children } = $props();
@@ -21,21 +21,20 @@
   const devBypass = (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location?.hostname ?? '')) || (import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true') || (import.meta.env.VITE_PUBLIC_BYPASS_AUTH === 'true');
   let isCheckingAuth = $state(devBypass ? false : true);
   let isAuthenticated = $state(devBypass ? true : false);
-  let isPublicRoute = $state(false);
+  // Sofortige Initialisierung aus window.location (verhindert Spinner-Flash auf /login)
+  let isPublicRoute = $state(typeof window !== 'undefined' ? isPathPublic(window.location.pathname) : false);
+  let authStale = $state(false); // Spinner hängt > 8s
 
   if (devBypass) {
     userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
   }
 
-  // Reactive Route Check (page from $app/state is reactive object, not store)
+  // Reactive Route Check: page aus $app/state + Fallback window.location
   $effect(() => {
-    const p = page;
-    if (p?.url?.pathname != null) {
-      const path = p.url.pathname;
-      // Base-aware: /videon/login or /login both match
-      isPublicRoute = ['/login', '/register'].some(
-        (r) => path === r || path === `${r}/` || path.endsWith(r) || path.endsWith(`${r}/`)
-      );
+    const pathFromPage = page?.url?.pathname;
+    const path = pathFromPage ?? (typeof window !== 'undefined' ? window.location.pathname : '');
+    if (path) {
+      isPublicRoute = isPathPublic(path);
     }
   });
 
@@ -43,20 +42,34 @@
   onMount(() => {
     theme.init();
     initI18n();
-    // Timeout-Fallback: Bei hängendem Auth-Check nach 5s zu Login
+    // Sofort: Route aus window.location setzen (falls $effect noch nicht lief)
+    if (typeof window !== 'undefined') {
+      isPublicRoute = isPathPublic(window.location.pathname);
+    }
+    // Stale-Detection: Nach 8s Spinner Fehlermeldung anzeigen
+    const staleId = setTimeout(() => {
+      if (!devBypass && isCheckingAuth) authStale = true;
+    }, 8000);
+    // Timeout-Fallback: Bei hängendem Auth-Check nach 6s zu Login
     let authDone = false;
     const timeoutId = setTimeout(() => {
       if (!devBypass && !authDone) {
+        authDone = true;
+        isCheckingAuth = false;
         window.location.href = `${base ?? ''}/login`;
       }
-    }, 5000);
+    }, 6000);
     if (!devBypass) {
-      checkAuth().finally(() => {
-        authDone = true;
-        clearTimeout(timeoutId);
-      });
+      checkAuth()
+        .finally(() => {
+          authDone = true;
+          clearTimeout(timeoutId);
+          clearTimeout(staleId);
+        })
+        .catch(() => {
+          isCheckingAuth = false;
+        });
     } else {
-      // Dev-Bypass: zusätzlicher Fallback falls initialer State nicht griff
       isAuthenticated = true;
       isCheckingAuth = false;
       userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
@@ -72,9 +85,9 @@
     }
   });
 
-  async function checkAuth() { 
-    const devBypass = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true' || import.meta.env.VITE_PUBLIC_BYPASS_AUTH === 'true';
-    if (devBypass) {
+  async function checkAuth(): Promise<void> {
+    const bypass = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true' || import.meta.env.VITE_PUBLIC_BYPASS_AUTH === 'true';
+    if (bypass) {
       isAuthenticated = true;
       isCheckingAuth = false;
       userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
@@ -82,24 +95,28 @@
       return;
     }
     try {
-      const baseUrl = api.baseUrl || '/api'; 
+      const baseUrl = api.baseUrl || '/api';
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(`${baseUrl}/auth/me`, { signal: controller.signal, credentials: 'include' });
       clearTimeout(timeoutId);
-      const authData = await res.json();
-      isAuthenticated = authData.isAuthenticated;
+      const text = await res.text();
+      let authData: { isAuthenticated?: boolean; user?: unknown } = { isAuthenticated: false };
+      try {
+        authData = text ? JSON.parse(text) : authData;
+      } catch {
+        console.warn('Layout: /auth/me returned non-JSON', text?.slice(0, 100));
+      }
+      isAuthenticated = !!authData.isAuthenticated;
       if (isAuthenticated && authData.user) {
         userStore.set(authData.user);
       }
-      // Dev-Fallback: Ohne Session trotzdem einloggen, damit UI sichtbar ist
       if (!isAuthenticated && import.meta.env.DEV) {
         isAuthenticated = true;
         userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
       }
     } catch (e) {
       console.error('Layout: Auth Check Failed', e);
-      // Dev-Fallback: Bei Fehler (z.B. Backend nicht erreichbar) trotzdem einloggen
       if (import.meta.env.DEV) {
         isAuthenticated = true;
         userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
@@ -108,9 +125,12 @@
       }
     } finally {
       isCheckingAuth = false;
-      if (!isAuthenticated && !isPublicRoute) {
+      // isPublicRoute aus window.location falls $effect noch nicht lief
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      const publicRoute = isPathPublic(path) || isPublicRoute;
+      if (!isAuthenticated && !publicRoute) {
         window.location.href = `${base ?? ''}/login`;
-      } else if (isAuthenticated && isPublicRoute) {
+      } else if (isAuthenticated && publicRoute) {
         goto(`${base ?? ''}/`);
       }
     }
@@ -130,8 +150,25 @@
   <ServiceStatusPanel />
 {:else}
   <!-- Loading State -->
-  <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+  <div class="h-screen w-full flex flex-col items-center justify-center gap-6 bg-gray-50 dark:bg-gray-900">
     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      {authStale ? 'Verbindung zum Server dauert zu lange.' : 'Authentifizierung...'}
+    </p>
+    <div class="flex flex-col items-center gap-2">
+      <a href={`${base ?? ''}/login`} class="text-sm text-primary-500 hover:underline font-medium">
+        Zur Anmeldung
+      </a>
+      {#if authStale}
+        <button
+          type="button"
+          class="text-xs text-gray-400 hover:text-gray-600 underline cursor-pointer bg-transparent border-none"
+          on:click={() => window.location.reload()}
+        >
+          Seite neu laden
+        </button>
+      {/if}
+    </div>
   </div>
 {/if}
 
