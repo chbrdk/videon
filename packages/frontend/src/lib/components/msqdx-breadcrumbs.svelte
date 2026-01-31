@@ -1,23 +1,21 @@
-<script>
-  import { breadcrumbs } from '$lib/stores/folders.store';
-  import { currentLocale } from '$lib/i18n';
-  import { resolve } from '$app/paths';
-  import { MSQDX_SPACING, MSQDX_COLORS, MSQDX_EFFECTS, MSQDX_TYPOGRAPHY, MSQDX_ICONS } from '$lib/design-tokens';
-  import { MaterialSymbol } from '$lib/components/ui';
+import {breadcrumbs} from '$lib/stores/folders.store'; import {currentLocale} from '$lib/i18n'; import
+{resolve} from '$app/paths'; import {(MSQDX_SPACING,
+MSQDX_COLORS,
+MSQDX_EFFECTS,
+MSQDX_TYPOGRAPHY,
+MSQDX_ICONS)} from '$lib/design-tokens'; import {MaterialSymbol} from '$lib/components/ui'; let {(className =
+  '')} = $props();
 
-  export let className = '';
-</script>
-
-<nav 
-  class="breadcrumbs {className}" 
+<nav
+  class="breadcrumbs {className}"
   style="
     border-radius: {MSQDX_SPACING.borderRadius.full}px;
     padding: {MSQDX_SPACING.scale.xs}px {MSQDX_SPACING.scale.sm}px;
     gap: {MSQDX_SPACING.scale.xs}px;
   "
 >
-  <a 
-    href={resolve('/videos')} 
+  <a
+    href={resolve('/videos')}
     class="breadcrumb-item"
     style="
       font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
@@ -27,24 +25,24 @@
       border-radius: {MSQDX_SPACING.borderRadius.full}px;
     "
   >
-    <MaterialSymbol 
-      icon="home" 
-      fontSize={MSQDX_ICONS.sizes.sm} 
+    <MaterialSymbol
+      icon="home"
+      fontSize={MSQDX_ICONS.sizes.sm}
       weight={MSQDX_ICONS.weights.regular}
       style="margin-right: 0.35rem;"
     />
     {$currentLocale === 'en' ? 'Root' : 'Hauptordner'}
   </a>
-  
+
   {#each $breadcrumbs as crumb}
-    <MaterialSymbol 
-      icon="chevron_right" 
-      fontSize={MSQDX_ICONS.sizes.sm} 
+    <MaterialSymbol
+      icon="chevron_right"
+      fontSize={MSQDX_ICONS.sizes.sm}
       weight={MSQDX_ICONS.weights.regular}
       class="breadcrumb-separator"
     />
-    <a 
-      href={resolve(`/videos?folder=${crumb.id}`)} 
+    <a
+      href={resolve(`/videos?folder=${crumb.id}`)}
       class="breadcrumb-item"
       style="
         font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};

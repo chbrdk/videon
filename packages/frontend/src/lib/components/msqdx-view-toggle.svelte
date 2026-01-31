@@ -1,9 +1,5 @@
-<script>
-  import { viewMode } from '$lib/stores/folders.store';
-  import { MaterialSymbol } from '$lib/components/ui';
-
-  export let className = '';
-</script>
+import {viewMode} from '$lib/stores/folders.store'; import {MaterialSymbol} from '$lib/components/ui';
+let {(className = '')} = $props();
 
 <div class="glass-button-group {className}">
   <button

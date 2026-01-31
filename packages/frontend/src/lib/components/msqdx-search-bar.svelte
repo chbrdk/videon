@@ -10,8 +10,8 @@
   import { _ } from '$lib/i18n';
   import { MaterialSymbol } from '$lib/components/ui';
 
-  let debounceTimer;
-  export let className = '';
+  let debounceTimer = $state();
+  let { className = '' } = $props();
 
   function handleSearch() {
     clearTimeout(debounceTimer);

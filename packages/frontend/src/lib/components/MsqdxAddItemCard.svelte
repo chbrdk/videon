@@ -1,10 +1,10 @@
-<script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { MaterialSymbol } from '$lib/components/ui';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   const dispatch = createEventDispatcher();
-</script>
+  // Force Runes mode
+  let { ...rest } = $props();
 
 <div
   class="msqdx-glass-card group hoverable no-padding flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
