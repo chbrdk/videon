@@ -52,7 +52,7 @@ RUN cat .svelte-kit/tsconfig.json || echo "No generated tsconfig found"
 
 # Debug: Create a shell script to run the build with "Trojan Horse" logging
 # STRATEGY: If build fails, deploy the error log as the website so we can read it.
-# IMPROVED: Show errors first, then last 50 lines
+# IMPROVED: Show errors with context, then last 50 lines
 RUN echo '#!/bin/sh' > debug-build.sh && \
     echo 'echo "--- STARTING BUILD ---"' >> debug-build.sh && \
     echo 'if npm run build > build.output.txt 2>&1; then' >> debug-build.sh && \
@@ -63,8 +63,8 @@ RUN echo '#!/bin/sh' > debug-build.sh && \
     echo '  mkdir -p build' >> debug-build.sh && \
     echo '  echo "<html><head><style>body{font-family:monospace;background:#1e1e1e;color:#d4d4d4;padding:20px;}h1{color:#ff6b6b;}h2{color:#ffa500;}pre{background:#2d2d2d;padding:15px;border-radius:5px;overflow-x:auto;white-space:pre-wrap;}</style></head><body>" > build/index.html' >> debug-build.sh && \
     echo '  echo "<h1>Build Failed</h1>" >> build/index.html' >> debug-build.sh && \
-    echo '  echo "<h2>Error Lines (grep -i error):</h2><pre>" >> build/index.html' >> debug-build.sh && \
-    echo '  grep -i "error" build.output.txt | head -50 >> build/index.html || echo "No error lines found" >> build/index.html' >> debug-build.sh && \
+    echo '  echo "<h2>Error Lines (with 10 lines context):</h2><pre>" >> build/index.html' >> debug-build.sh && \
+    echo '  grep -A 10 -i "error" build.output.txt | head -100 >> build/index.html || echo "No error lines found" >> build/index.html' >> debug-build.sh && \
     echo '  echo "</pre><h2>Last 50 Lines:</h2><pre>" >> build/index.html' >> debug-build.sh && \
     echo '  tail -50 build.output.txt >> build/index.html' >> debug-build.sh && \
     echo '  echo "</pre></body></html>" >> build/index.html' >> debug-build.sh && \
