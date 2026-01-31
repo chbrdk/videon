@@ -1,10 +1,18 @@
-import {breadcrumbs} from '$lib/stores/folders.store'; import {currentLocale} from '$lib/i18n'; import
-{resolve} from '$app/paths'; import {(MSQDX_SPACING,
-MSQDX_COLORS,
-MSQDX_EFFECTS,
-MSQDX_TYPOGRAPHY,
-MSQDX_ICONS)} from '$lib/design-tokens'; import {MaterialSymbol} from '$lib/components/ui'; let {(className =
-  '')} = $props();
+<script lang="ts">
+  import { breadcrumbs } from '$lib/stores/folders.store';
+  import { currentLocale } from '$lib/i18n';
+  import { resolve } from '$app/paths';
+  import {
+    MSQDX_SPACING,
+    MSQDX_COLORS,
+    MSQDX_EFFECTS,
+    MSQDX_TYPOGRAPHY,
+    MSQDX_ICONS,
+  } from '$lib/design-tokens';
+  import { MaterialSymbol } from '$lib/components/ui';
+
+  let { className = '' } = $props();
+</script>
 
 <nav
   class="breadcrumbs {className}"
