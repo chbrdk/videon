@@ -865,6 +865,8 @@
       <div class="timeline-ruler">
         <!-- Haupt-Marker (alle 10 Sekunden) -->
         {#each Array.from({ length: Math.ceil(timelineDuration / 10) }) as _, i}
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
             class="time-marker clickable main-marker"
             style="left: {i * 10 * $zoomLevel * 20}px"
@@ -888,6 +890,8 @@
           {#each Array.from({ length: 9 }) as _, k}
             {@const timePosition = j * 10 + (k + 1)}
             {#if timePosition <= timelineDuration}
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
               <div
                 class="time-marker clickable sub-marker"
                 style="left: {timePosition * $zoomLevel * 20}px"

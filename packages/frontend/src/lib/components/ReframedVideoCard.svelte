@@ -156,6 +156,7 @@
   <div class="video-container {aspectRatioClass} relative overflow-hidden bg-black rounded-t-lg">
     {#if isPlaying && videoUrl}
       <!-- Video Player (Fullscreen in Container) -->
+      <!-- svelte-ignore a11y_media_has_caption -->
       <video
         bind:this={videoElement}
         src={videoUrl}

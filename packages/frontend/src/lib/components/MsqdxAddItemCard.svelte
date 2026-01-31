@@ -6,6 +6,7 @@
   const dispatch = createEventDispatcher();
   // Force Runes mode
   let { ...rest } = $props();
+</script>
 
 <div
   class="msqdx-glass-card group hoverable no-padding flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"

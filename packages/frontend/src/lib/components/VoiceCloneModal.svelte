@@ -77,7 +77,15 @@
 </script>
 
 {#if show}
-  <div class="modal-overlay" on:click={handleClose}>
+  <div
+    class="modal-overlay"
+    on:click={handleClose}
+    role="button"
+    tabindex="0"
+    on:keydown={e => e.key === 'Escape' && handleClose()}
+  >
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="modal-content glass-card" on:click|stopPropagation>
       <div class="modal-header">
         <h2 class="flex items-center gap-2">
@@ -102,11 +110,8 @@
 
         <div class="form-group">
           <label>{_('voiceClone.description')}</label>
-          <textarea
-            bind:value={description}
-            rows="2"
-            placeholder={_('voiceClone.descPlaceholder')}
-          />
+          <textarea bind:value={description} rows="2" placeholder={_('voiceClone.descPlaceholder')}
+          ></textarea>
         </div>
 
         <div class="form-group">

@@ -184,7 +184,15 @@
 
   <!-- Search Modal - Positioned relative to Add Scene Button -->
   {#if showSearchModal}
-    <div class="search-modal-overlay" on:click={() => dispatch('closeSearchModal')}>
+    <div
+      class="search-modal-overlay"
+      on:click={() => dispatch('closeSearchModal')}
+      role="button"
+      tabindex="0"
+      on:keydown={e => e.key === 'Escape' && dispatch('closeSearchModal')}
+    >
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="search-modal" on:click|stopPropagation>
         <div class="search-modal-header">
           <h3 class="text-lg font-bold">
