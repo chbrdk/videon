@@ -707,6 +707,7 @@ let scrollAnimationId: number | null = null;
     {#if $viewMode === 'grid'}
       <div 
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
+        role="application"
         on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
         on:drop={handleRootDrop}
       >
@@ -716,8 +717,11 @@ let scrollAnimationId: number | null = null;
         <!-- Parent folder (if not root) -->
         {#if $currentFolder}
           <div 
+            role="button"
+            tabindex="0"
             class="folder-card glass-card cursor-pointer flex flex-col items-center justify-center p-6 h-full text-center gap-3"
             on:click={() => navigateToParent()}
+            on:keydown={(e) => e.key === 'Enter' && navigateToParent()}
             style="min-height: 200px; border-radius: 40px !important;"
           >
             <div
@@ -799,6 +803,7 @@ let scrollAnimationId: number | null = null;
       <!-- List View -->
       <div 
         class="glass-card {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
+        role="application"
         on:dragover={(e) => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; }}
         on:drop={handleRootDrop}
       >
@@ -815,9 +820,12 @@ let scrollAnimationId: number | null = null;
           <div class="space-y-2">
             {#each allItems as item (item.id)}
                 <div 
+                role="button"
+                tabindex="0"
                 class="list-item flex items-center gap-4 p-4 hover:bg-white/5 rounded-lg cursor-pointer {dragOverFolder?.id === item.id ? 'bg-blue-500/20' : ''}"
                 draggable={item.type === 'video'}
                 on:click={(e) => handleItemClick(e, item)}
+                on:keydown={(e) => e.key === 'Enter' && handleItemClick(e, item)}
                 on:contextmenu={(e) => handleContextMenu(e, item)}
                 on:dragstart={item.type === 'video' ? (e) => handleVideoDragStart(e, item as VideoResponse) : undefined}
                 on:dragover={item.type === 'folder' ? (e) => handleFolderDragOver(e, item) : undefined}
