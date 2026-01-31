@@ -85,9 +85,10 @@
 
         {#if aspectRatio === 'custom'}
           <div class="form-group">
-            <label>{$t('reframe.customDimensions')}</label>
+            <label for="custom-width">{$t('reframe.customDimensions')}</label>
             <div class="form-row">
               <input
+                id="custom-width"
                 type="number"
                 bind:value={customWidth}
                 placeholder={$t('reframe.width')}

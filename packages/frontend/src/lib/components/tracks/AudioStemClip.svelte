@@ -124,6 +124,10 @@
       style="left: {trimStartPx}px;"
       on:mousedown={handleTrimStart}
       role="slider"
+      aria-orientation="horizontal"
+      aria-valuenow={trimStart * 100}
+      aria-valuemin="0"
+      aria-valuemax="100"
       tabindex="0"
       title="Trim start"
     ></div>
@@ -132,6 +136,10 @@
       style="left: {trimEndPx}px;"
       on:mousedown={handleTrimEnd}
       role="slider"
+      aria-orientation="horizontal"
+      aria-valuenow={trimEnd * 100}
+      aria-valuemin="0"
+      aria-valuemax="100"
       tabindex="0"
       title="Trim end"
     ></div>

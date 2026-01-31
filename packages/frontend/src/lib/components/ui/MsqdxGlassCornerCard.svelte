@@ -24,7 +24,7 @@
     ...rest
   }: Props & { children?: any } = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme: 'light' | 'dark' = $state('dark');
 
   $effect(() => {
     const unsubscribe = theme.subscribe(t => {

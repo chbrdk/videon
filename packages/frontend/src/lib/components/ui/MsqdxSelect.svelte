@@ -104,9 +104,9 @@
       class="msqdx-select"
       value={internalValue}
       {disabled}
-      on:change={handleChange}
-      on:focus={() => (isFocused = true)}
-      on:blur={() => (isFocused = false)}
+      onchange={handleChange}
+      onfocus={() => (isFocused = true)}
+      onblur={() => (isFocused = false)}
       style="
         background-color: {backgroundColor};
         border-color: {borderColor};

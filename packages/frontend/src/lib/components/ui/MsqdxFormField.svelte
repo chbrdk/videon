@@ -107,9 +107,9 @@
       {placeholder}
       value={value || ''}
       {disabled}
-      on:input={handleInput}
-      on:focus={() => (isFocused = true)}
-      on:blur={() => (isFocused = false)}
+      oninput={handleInput}
+      onfocus={() => (isFocused = true)}
+      onblur={() => (isFocused = false)}
       style="
         background-color: {backgroundColor};
         border-color: {borderColor};

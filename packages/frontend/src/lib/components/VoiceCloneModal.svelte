@@ -99,8 +99,9 @@
 
       <div class="modal-body">
         <div class="form-group">
-          <label>{_('voiceClone.name')}</label>
+          <label for="voice-name">{_('voiceClone.name')}</label>
           <input
+            id="voice-name"
             type="text"
             bind:value={name}
             placeholder={_('voiceClone.namePlaceholder')}
@@ -109,13 +110,17 @@
         </div>
 
         <div class="form-group">
-          <label>{_('voiceClone.description')}</label>
-          <textarea bind:value={description} rows="2" placeholder={_('voiceClone.descPlaceholder')}
+          <label for="voice-desc">{_('voiceClone.description')}</label>
+          <textarea
+            id="voice-desc"
+            bind:value={description}
+            rows="2"
+            placeholder={_('voiceClone.descPlaceholder')}
           ></textarea>
         </div>
 
         <div class="form-group">
-          <label>{_('voiceClone.audioSource')}</label>
+          <label for="audio-source">{_('voiceClone.audioSource')}</label>
 
           {#if sourceSegment}
             <div class="source-info flex items-center gap-2">

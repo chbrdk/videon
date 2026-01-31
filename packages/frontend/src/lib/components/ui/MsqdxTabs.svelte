@@ -60,7 +60,7 @@
       <button
         class="msqdx-tab"
         class:active={internalValue === tab.value}
-        on:click={() => handleTabClick(tab.value)}
+        onclick={() => handleTabClick(tab.value)}
         type="button"
       >
         {#if tab.icon}

@@ -35,7 +35,7 @@
     ...rest
   }: Props = $props();
 
-  let currentTheme: 'light' | 'dark' = 'dark';
+  let currentTheme: 'light' | 'dark' = $state('dark');
   let internalValue = $state(
     typeof value === 'number' ? value : Array.isArray(value) ? value[0] : 0
   );
@@ -110,8 +110,8 @@
       {step}
       value={internalValue}
       {disabled}
-      on:input={handleInput}
-      on:change={handleInput}
+      oninput={handleInput}
+      onchange={handleInput}
       style="
         --thumb-size: 20px;
         --track-height: 6px;

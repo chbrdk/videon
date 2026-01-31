@@ -252,8 +252,11 @@
       on:mousedown={(e) => handleDragStart(e, scene)}
       role="button"
       tabindex="0"
+      on:keydown={(e) => e.key === 'Enter' && handleSceneClick(scene)}
       title="Scene {i+1}: {formatTime(scene.startTime)} - {formatTime(scene.endTime)} ({(scene.endTime - scene.startTime).toFixed(1)}s)"
     >
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <!-- Always use thumbnail for Project Scenes (Szene-Videos werden on-demand generiert) -->
       <img 
         src={scene.sceneId ? 

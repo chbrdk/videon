@@ -3,7 +3,7 @@
   import { zoomLevel } from '$lib/stores/timeline.store';
   import type { VoiceSegment } from '$lib/api/voice-segment';
   import VoiceSegmentClip from './VoiceSegmentClip.svelte';
-  
+
   export let audioStemId: string;
   export let segments: VoiceSegment[] = [];
   export let currentTime: number = 0;
@@ -14,28 +14,27 @@
   function handleSegmentRightClick(event: MouseEvent, segment: VoiceSegment) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Dispatch event with mouse coordinates to parent
     dispatch('contextmenu', {
       event,
-      segment
+      segment,
     });
   }
 
   // Reactive functions that recalculate when zoom changes
   $: getSegmentLeft = (startTime: number) => `${startTime * $zoomLevel * 20}px`;
-  
+
   $: getSegmentWidth = (startTime: number, endTime: number) => {
     const duration = endTime - startTime;
     return `${Math.max(40, duration * $zoomLevel * 20)}px`;
   };
-  
+
   // Reactive function to force re-render when zoom changes
   $: console.log('🎤 VoiceSegmentTrack zoom updated:', $zoomLevel);
 </script>
 
 <div class="voice-segment-track">
-
   <div class="segments-container">
     <div class="segments-timeline" style="width: {Math.max(1000, duration * $zoomLevel * 20)}px;">
       {#each segments as segment}
@@ -45,8 +44,13 @@
             left: {getSegmentLeft(segment.startTime)};
             width: {getSegmentWidth(segment.startTime, segment.endTime)};
           "
-          on:contextmenu={(e) => handleSegmentRightClick(e, segment)}
+          on:contextmenu={e => handleSegmentRightClick(e, segment)}
+          role="button"
+          tabindex="0"
+          on:keydown={() => {}}
         >
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
           <VoiceSegmentClip
             {segment}
             isActive={currentTime >= segment.startTime && currentTime <= segment.endTime}
@@ -57,7 +61,6 @@
     </div>
   </div>
 </div>
-
 
 <style>
   .voice-segment-track {
@@ -86,5 +89,4 @@
     top: 8px;
     height: calc(100% - 16px);
   }
-
 </style>

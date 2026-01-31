@@ -136,7 +136,12 @@
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-md"
     transition:fade={{ duration: 200 }}
     on:click|self={close}
+    role="button"
+    tabindex="0"
+    on:keydown={e => e.key === 'Escape' && close()}
   >
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="w-full max-w-2xl relative"
       transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}

@@ -11,7 +11,7 @@
     'aria-label'?: string;
     'aria-hidden'?: boolean;
   }
-  
+
   let {
     icon,
     fontSize = 24,
@@ -22,11 +22,13 @@
     class: className = '',
     style = '',
     'aria-label': ariaLabel,
-    'aria-hidden': ariaHidden
+    'aria-hidden': ariaHidden,
   }: Props = $props();
-  
-  const normalizedFontSize = typeof fontSize === 'number' ? `${fontSize}px` : fontSize;
-  const fontVariationSettings = `'FILL' ${fill}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opticalSize}`;
+
+  const normalizedFontSize = $derived(typeof fontSize === 'number' ? `${fontSize}px` : fontSize);
+  const fontVariationSettings = $derived(
+    `'FILL' ${fill}, 'wght' ${weight}, 'GRAD' ${grade}, 'opsz' ${opticalSize}`
+  );
 </script>
 
 <span

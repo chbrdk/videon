@@ -46,7 +46,6 @@
     dashboard = false,
     onClick,
     class: className = '',
-    children, // Already in props destructuring but needs correct handling in render
     ...rest
   }: Props = $props();
 
