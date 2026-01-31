@@ -71,7 +71,7 @@
     z-index: 9999;
     opacity: 0;
   "
-  on:click|stopPropagation
+  onclick={e => e.stopPropagation()}
 >
   <MsqdxGlassCard noPadding={true} borderRadiusVariant="md" class="glass-menu">
     <div class="menu-items">
@@ -80,7 +80,10 @@
           class="menu-item"
           class:disabled={item.disabled}
           class:danger={item.danger}
-          on:click|stopPropagation={() => handleItemClick(item)}
+          onclick={e => {
+            e.stopPropagation();
+            handleItemClick(item);
+          }}
           disabled={item.disabled}
         >
           {#if item.icon}

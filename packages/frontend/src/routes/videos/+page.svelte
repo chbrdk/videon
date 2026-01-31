@@ -44,7 +44,7 @@ import { onMount, tick, onDestroy } from 'svelte';
   import MsqdxContextMenu from '$lib/components/msqdx-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
-  import { MsqdxButton, MaterialSymbol, MsqdxGlassMenu } from '$lib/components/ui';
+  import { MsqdxButton, MaterialSymbol } from '$lib/components/ui';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
