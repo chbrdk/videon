@@ -13,35 +13,34 @@
 
   const dispatch = createEventDispatcher();
 
-  let name = initialName;
-  let dialogElement;
-  let nameInput;
+  let name = $state(initialName);
+  let dialogElement = $state<HTMLDialogElement | undefined>();
+  let nameInput = $state<HTMLInputElement | undefined>();
 
-  $: if (open && dialogElement) {
-    dialogElement.showModal();
-    name = initialName;
-    setTimeout(() => {
-      if (nameInput) {
-        nameInput.focus();
-        nameInput.select();
-      }
-    }, 100);
-  }
-
-  $: if (!open && dialogElement) {
-    dialogElement.close();
-  }
+  // Handle dialog open/close
+  $effect(() => {
+    if (open && dialogElement) {
+      dialogElement.showModal();
+      name = initialName;
+      setTimeout(() => {
+        if (nameInput) {
+          nameInput.focus();
+          nameInput.select();
+        }
+      }, 100);
+    } else if (!open && dialogElement) {
+      dialogElement.close();
+    }
+  });
 
   function handleSubmit() {
     if (name.trim()) {
       dispatch('confirm', { name: name.trim() });
-      open = false;
     }
   }
 
   function handleCancel() {
     dispatch('cancel');
-    open = false;
   }
 
   function handleKeydown(event) {
@@ -55,8 +54,10 @@
   }
 
   // Derived values for display
-  $: displayTitle = title || (mode === 'create' ? _('folder.create') : _('folder.rename'));
-  $: displayLabel = label || _('folder.name');
+  let displayTitle = $derived(
+    title || (mode === 'create' ? _('folder.create') : _('folder.rename'))
+  );
+  let displayLabel = $derived(label || _('folder.name'));
 </script>
 
 <dialog bind:this={dialogElement} class="folder-dialog {className}" on:close={handleCancel}>

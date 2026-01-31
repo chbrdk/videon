@@ -18,25 +18,27 @@
 
   const dispatch = createEventDispatcher();
 
-  let collaborators: Collaborator[] = [];
-  let loading = false;
-  let inviteLoading = false;
-  let error: string | null = null;
-  let successMessage: string | null = null;
+  let collaborators = $state<Collaborator[]>([]);
+  let loading = $state(false);
+  let inviteLoading = $state(false);
+  let error = $state<string | null>(null);
+  let successMessage = $state<string | null>(null);
 
   // Invite Form
-  let email = '';
-  let role: 'VIEWER' | 'EDITOR' = 'VIEWER';
+  let email = $state('');
+  let role = $state<'VIEWER' | 'EDITOR'>('VIEWER');
 
   const roleOptions = [
     { value: 'VIEWER', label: 'Viewer' },
     { value: 'EDITOR', label: 'Editor' },
   ];
 
-  $: if (open && itemId) {
-    loadCollaborators();
-    resetForm();
-  }
+  $effect(() => {
+    if (open && itemId) {
+      loadCollaborators();
+      resetForm();
+    }
+  });
 
   function resetForm() {
     email = '';

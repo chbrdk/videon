@@ -18,17 +18,14 @@
   } = $props();
 
   const dispatch = createEventDispatcher();
-  let deleting = false;
+  let deleting = $state(false);
 
-  // Reset deleting state when modal opens/closes
-  $: if (open === false) {
-    deleting = false;
-  }
-
-  // Reset deleting state when modal opens with new item
-  $: if (open === true && item) {
-    deleting = false;
-  }
+  // Reset deleting state when modal opens/closes or item changes
+  $effect(() => {
+    if (open === false || (open === true && item)) {
+      deleting = false;
+    }
+  });
 
   function handleClose() {
     if (!deleting) {
