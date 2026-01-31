@@ -1,3 +1,4 @@
+<script lang="ts">
   import { viewMode } from '$lib/stores/folders.store';
   import { MaterialSymbol } from '$lib/components/ui';
 
