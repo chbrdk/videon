@@ -13,7 +13,7 @@ vi.mock('$app/environment', () => ({
   version: '1.0.0'
 }));
 
-// Mock SvelteKit stores
+// Mock SvelteKit stores (legacy)
 vi.mock('$app/stores', () => ({
   page: {
     subscribe: vi.fn(() => () => {}),
@@ -22,6 +22,21 @@ vi.mock('$app/stores', () => ({
   navigating: {
     subscribe: vi.fn(() => () => {})
   }
+}));
+
+// Mock SvelteKit state (Svelte 5 - $app/state)
+vi.mock('$app/state', () => ({
+  page: {
+    url: { pathname: '/', searchParams: new URLSearchParams() },
+    params: {},
+    route: { id: null },
+    data: {},
+    form: undefined,
+    error: null,
+    status: 200
+  },
+  navigating: { from: null, to: null, type: null, willUnload: null, delta: null, complete: null },
+  updated: { get current() { return false; }, check: vi.fn().mockResolvedValue(false) }
 }));
 
 // Mock window.matchMedia

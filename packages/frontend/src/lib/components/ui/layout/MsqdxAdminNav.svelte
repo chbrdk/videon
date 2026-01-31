@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { theme } from '$lib/stores/theme.store';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
@@ -37,7 +37,7 @@
   async function handleLogout() {
     try {
       await fetch(`${api.baseUrl}/auth/logout`, { method: 'POST' });
-      window.location.href = '/login';
+      window.location.href = `${base}/login`;
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -50,7 +50,7 @@
   }
 
   function isActive(path: string) {
-    const currentPath = $page.url.pathname;
+    const currentPath = page?.url?.pathname ?? '';
     const fullPath = `${base}${path}`;
     if (path === '/videos') {
       return currentPath === `${base}/videos` || currentPath === `${base}/videos/`;

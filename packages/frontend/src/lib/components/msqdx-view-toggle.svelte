@@ -7,14 +7,14 @@
 
 <div class="glass-button-group {className}">
   <button
-    class="glass-button rounded-full {$viewMode === 'grid' ? 'active' : ''}"
+    class="glass-button rounded-full {($viewMode ?? 'grid') === 'grid' ? 'active' : ''}"
     on:click={() => viewMode.set('grid')}
     title="Grid View"
   >
     <MaterialSymbol icon="grid_view" fontSize={20} />
   </button>
   <button
-    class="glass-button rounded-full {$viewMode === 'list' ? 'active' : ''}"
+    class="glass-button rounded-full {($viewMode ?? 'grid') === 'list' ? 'active' : ''}"
     on:click={() => viewMode.set('list')}
     title="List View"
   >

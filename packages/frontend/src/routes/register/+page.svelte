@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { api } from '$lib/config/environment';
 
   let name = '';
@@ -23,7 +24,7 @@
 
       if (response.ok) {
         // Auto login after register -> redirect home
-        window.location.href = '/';
+        window.location.href = `${base}/`;
       } else {
         error = data.message || 'Registration failed';
       }
@@ -46,7 +47,7 @@
       </h2>
       <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
         Or
-        <a href="/login" class="font-medium text-blue-600 hover:text-blue-500">
+        <a href={`${base}/login`} class="font-medium text-blue-600 hover:text-blue-500">
           sign in to existing account
         </a>
       </p>

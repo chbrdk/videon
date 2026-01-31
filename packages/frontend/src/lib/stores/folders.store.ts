@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { FoldersApi } from '$lib/api/folders';
 import type { VideoResponse, Folder, BreadcrumbItem, SearchResults, ContextMenuItem } from '$lib/types';
 
@@ -85,7 +85,7 @@ export async function updateFolder(id: string, name: string) {
     });
 
     // Refresh current folder contents
-    await loadFolders($currentFolder?.id || null);
+    await loadFolders(get(currentFolder)?.id ?? null);
 
     return updatedFolder;
   } catch (err) {
@@ -105,7 +105,7 @@ export async function deleteFolder(id: string) {
     const result = await foldersApi.deleteFolder(id);
 
     // Refresh current folder contents
-    await loadFolders($currentFolder?.id || null);
+    await loadFolders(get(currentFolder)?.id ?? null);
 
     return result;
   } catch (err) {
@@ -128,7 +128,7 @@ export async function moveVideos(videoIds: string[], folderId: string | null) {
     selectedItems.set(new Set());
 
     // Refresh current folder contents
-    await loadFolders($currentFolder?.id || null);
+    await loadFolders(get(currentFolder)?.id ?? null);
   } catch (err) {
     error.set(err.message || 'Failed to move videos');
     console.error('Error moving videos:', err);
@@ -191,7 +191,7 @@ export function deselectAll() {
 }
 
 export function isSelected(id: string): boolean {
-  return $selectedItems.has(id);
+  return get(selectedItems).has(id);
 }
 
 // View mode helpers
@@ -205,8 +205,9 @@ export function navigateToFolder(folderId: string | null) {
 }
 
 export function navigateToParent() {
-  if ($currentFolder?.parentId) {
-    loadFolders($currentFolder.parentId);
+  const current = get(currentFolder);
+  if (current?.parentId) {
+    loadFolders(current.parentId);
   } else {
     loadFolders(); // Go to root
   }
@@ -263,7 +264,7 @@ export async function moveVideoToFolder(videoId: string, folderId: string | null
     await videosApi.moveVideo(videoId, folderId);
 
     // Refresh current folder contents
-    await loadFolders($currentFolder?.id || null);
+    await loadFolders(get(currentFolder)?.id ?? null);
 
     console.log(`Video ${videoId} moved to folder ${folderId || 'root'}`);
   } catch (err) {

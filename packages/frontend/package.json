@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "dev:no-auth": "VITE_DEV_BYPASS_AUTH=true vite dev",
     "build": "vite build --debug",
     "preview": "vite preview",
     "test": "vitest",

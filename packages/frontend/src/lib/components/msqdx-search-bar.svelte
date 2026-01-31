@@ -16,7 +16,7 @@
   function handleSearch() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      if ($searchQuery.trim()) {
+      if (($searchQuery ?? '').trim()) {
         searchAll($searchQuery);
       }
     }, 300);

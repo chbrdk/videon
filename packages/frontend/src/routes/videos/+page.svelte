@@ -1,8 +1,7 @@
 <script lang="ts">
 import { onMount, tick, onDestroy } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { goto, afterNavigate } from '$app/navigation';
   import { resolve, base } from '$app/paths';
-  import { page } from '$app/stores';
   import { 
     folders, 
     currentFolder, 
@@ -51,9 +50,17 @@ import { onMount, tick, onDestroy } from 'svelte';
 
   import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
 
-  // URL params
-  $: folderId = $page.url.searchParams.get('folder') || null;
-  $: searchQueryParam = $page.url.searchParams.get('q') || '';
+  // URL params - use window.location to avoid Svelte 5 page store null during hydration
+  let folderId: string | null = null;
+  let searchQueryParam = '';
+  function updateUrlParams() {
+    if (typeof window !== 'undefined') {
+      const params = new URL(window.location.href).searchParams;
+      folderId = params.get('folder') || null;
+      searchQueryParam = params.get('q') || '';
+    }
+  }
+  afterNavigate(updateUrlParams);
 
   // State
   let projects: Project[] = []; // Projects state
@@ -123,6 +130,7 @@ let scrollAnimationId: number | null = null;
   
   // Initialize
   onMount(async () => {
+    updateUrlParams();
     if (searchQueryParam) {
       searchQuery.set(searchQueryParam);
       searchAll(searchQueryParam);
@@ -130,41 +138,39 @@ let scrollAnimationId: number | null = null;
       loadFolders(folderId);
       // Fetch projects only at root level to avoid cluttering subfolders
       if (!folderId) {
-          try {
-            // Safe check for projectsApi before calling
-            if (projectsApi && typeof projectsApi.getProjects === 'function') {
-                projects = await projectsApi.getProjects();
-            }
-          } catch(e) {
-              console.error("Failed to load projects", e);
+        try {
+          if (projectsApi && typeof projectsApi.getProjects === 'function') {
+            projects = await projectsApi.getProjects();
           }
-      } else {
+        } catch {
           projects = [];
+        }
+      } else {
+        projects = [];
       }
     }
   });
 
   // React to folderId changes
   $: {
-    console.log('Folder ID changed:', folderId);
     loadFolders(folderId);
     // Update projects visibility based on folder
     if (!folderId) {
-         projectsApi.getProjects().then(p => projects = p).catch(e => console.error(e));
+      projectsApi.getProjects().then((p) => (projects = p)).catch(() => (projects = []));
     } else {
-        projects = [];
+      projects = [];
     }
   }
 
   // Handle search query changes from URL
-  $: if (searchQueryParam && searchQueryParam !== $searchQuery) {
+  $: if (searchQueryParam && searchQueryParam !== ($searchQuery ?? '')) {
     searchQuery.set(searchQueryParam);
     searchAll(searchQueryParam);
   }
 
-  // Get current folder contents
-  $: currentContents = $searchQuery ? ($searchResults || { folders: [], videos: [], projects: [] }) : { folders: $folders || [], videos: $videosInFolder || [] };
-  $: displayedProjects = $searchQuery ? ($searchResults?.projects || []) : projects;
+  // Get current folder contents (null-safe for Svelte 5 hydration)
+  $: currentContents = ($searchQuery ?? '') ? ($searchResults ?? { folders: [], videos: [], projects: [] }) : { folders: $folders ?? [], videos: $videosInFolder ?? [] };
+  $: displayedProjects = ($searchQuery ?? '') ? ($searchResults?.projects ?? []) : projects;
   
   $: allItems = [
     ...(displayedProjects || []).map(project => ({ ...project, id: project.id, type: 'project' as const })),
@@ -184,14 +190,6 @@ let scrollAnimationId: number | null = null;
   }
 
   $: revealedVideoIds = new Set((currentContents?.videos || []).slice(0, revealedCount).map((video) => video?.id).filter(Boolean));
-
-  $: if (revealMode && totalVideos > 0 && revealedCount < totalVideos && !revealTimer) {
-    startAutoReveal();
-  }
-
-  $: if ((!revealMode || totalVideos === 0) && revealTimer) {
-    stopAutoReveal();
-  }
 
   $: if (revealMode && totalVideos > 0 && revealedCount < totalVideos && !revealTimer) {
     startAutoReveal();
@@ -262,17 +260,17 @@ let scrollAnimationId: number | null = null;
   // Video handlers
   function handleVideoClick(videoId: string) {
     console.log('Navigating to video:', videoId);
-    goto(`${base}/videos/${videoId}`);
+    goto(`${base ?? ''}/videos/${videoId}`);
   }
 
   function handleFolderClick(folder: any) {
     console.log('Navigating to folder:', folder.id);
-    goto(`${base}/videos?folder=${folder.id}`);
+    goto(`${base ?? ''}/videos?folder=${folder.id}`);
   }
 
   function handleProjectClick(project: any) {
     console.log('Navigating to project:', project.id);
-    goto(`${base}/projects/${project.id}`);
+    goto(`${base ?? ''}/projects/${project.id}`);
   }
 
   function toggleRevealMode() {
@@ -551,8 +549,8 @@ let scrollAnimationId: number | null = null;
   }
 
   function formatDate(dateString) {
-    const currentLocaleValue = $currentLocale === 'en' ? 'en-US' : 'de-DE';
-    const dateFormat = $currentLocale === 'en' ? 'en-US' : 'de-DE';
+    const currentLocaleValue = ($currentLocale ?? 'de') === 'en' ? 'en-US' : 'de-DE';
+    const dateFormat = ($currentLocale ?? 'de') === 'en' ? 'en-US' : 'de-DE';
     return new Date(dateString).toLocaleDateString(dateFormat, {
       year: 'numeric',
       month: 'short',
@@ -584,7 +582,7 @@ let scrollAnimationId: number | null = null;
       font-size: 2.5rem;
       text-transform: lowercase;
       letter-spacing: -2px;
-      color: {$theme === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
+      color: {($theme ?? 'dark') === 'dark' ? MSQDX_COLORS.dark.textPrimary : 'rgb(15, 23, 42)'};
       display: block;
       font-weight: 800;
       margin: 0px;
@@ -622,17 +620,17 @@ let scrollAnimationId: number | null = null;
   </div>
 
   <!-- Selection Toolbar -->
-  {#if $selectedItems.size > 0}
+  {#if ($selectedItems ?? new Set()).size > 0}
     <div class="glass-card p-4">
       <div class="flex items-center justify-between">
         <span class="text-gray-700 dark:text-white/80">
-          {$selectedItems.size} {_('selection.selected')}
+          {($selectedItems ?? new Set()).size} {_('selection.selected')}
         </span>
         <div class="flex items-center gap-2">
           <MsqdxButton 
             variant="outlined"
             glass={true}
-            on:click={() => moveVideos(Array.from($selectedItems), null)}
+            on:click={() => moveVideos(Array.from($selectedItems ?? new Set()), null)}
           >
             {_('actions.move')}
           </MsqdxButton>
@@ -707,7 +705,7 @@ let scrollAnimationId: number | null = null;
     </div>
   {:else}
     <!-- Content -->
-    {#if $viewMode === 'grid'}
+    {#if ($viewMode ?? 'grid') === 'grid'}
       <div 
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 {draggedVideo && !dragOverFolder ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}"
         role="application"
@@ -718,7 +716,7 @@ let scrollAnimationId: number | null = null;
         <MsqdxAddItemCard on:click={() => unifiedDialogOpen = true} />
 
         <!-- Parent folder (if not root) -->
-        {#if $currentFolder}
+        {#if $currentFolder != null}
           <div 
             role="button"
             tabindex="0"
@@ -776,7 +774,7 @@ let scrollAnimationId: number | null = null;
           >
             <MsqdxFolderCard 
               {folder} 
-              selected={$selectedItems.has(folder.id)}
+              selected={($selectedItems ?? new Set()).has(folder.id)}
               onSelect={toggleSelection}
               onContextMenu={(e) => handleContextMenu(e, { ...folder, type: 'folder' })}
               on:rename={handleRenameFolderClick}
@@ -839,7 +837,7 @@ let scrollAnimationId: number | null = null;
                 >
                 <input 
                     type="checkbox" 
-                    checked={$selectedItems.has(item.id)}
+                    checked={($selectedItems ?? new Set()).has(item.id)}
                     on:change={() => toggleSelection(item.id)}
                     class="w-4 h-4"
                 />

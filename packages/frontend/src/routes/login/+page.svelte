@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { api } from '$lib/config/environment';
 
   let email = '';
@@ -22,7 +23,7 @@
 
       if (response.ok) {
         // Force reload to update auth state in layout
-        window.location.href = '/';
+        window.location.href = `${base}/`;
       } else {
         error = data.message || 'Login failed';
       }
@@ -45,7 +46,7 @@
       </h2>
       <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
         Or
-        <a href="/register" class="font-medium text-blue-600 hover:text-blue-500">
+        <a href={`${base}/register`} class="font-medium text-blue-600 hover:text-blue-500">
           create a new account
         </a>
       </p>

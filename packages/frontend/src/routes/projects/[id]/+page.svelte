@@ -75,7 +75,7 @@
   let exporting = false;
   let currentExportFormat: 'premiere' | 'srt' | null = null;
   
-  $: projectId = $page.params.id;
+  $: projectId = $page?.params?.id ?? '';
   
   onMount(async () => {
     if (projectId) {
@@ -319,7 +319,7 @@
   }
   
   // Get current scene info
-  $: currentScene = project?.scenes.find(scene => 
+  $: currentScene = project?.scenes?.find(scene => 
     scene.videoId === currentVideoId && scene.startTime === currentSceneStartTime
   );
   

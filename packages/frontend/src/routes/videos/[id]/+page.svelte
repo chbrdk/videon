@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { base, resolve } from '$app/paths';
   import { selectedVideo, videoScenes, loadVideoDetails, refreshVideo } from '$lib/stores/videos.store';
@@ -52,7 +52,7 @@
   // Delete button hover state
   let deleteButtonHovered = false;
 
-  $: videoId = $page.params.id;
+  let videoId = $derived(page?.params?.id ?? '');
   
   // Close dropdowns when clicking outside
   function handleClickOutside(event: MouseEvent) {
@@ -61,7 +61,7 @@
   }
 
   onMount(async () => {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (currentVideoId) {
       logger.info('Loading video details', { videoId: currentVideoId });
       try {
@@ -88,7 +88,7 @@
   });
 
   async function loadQwenVLStatus() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     try {
@@ -107,14 +107,17 @@
     }
   }
 
-  // Reactive statement to update audio clips when scenes are loaded
-  $: if ($videoScenes && $videoScenes.length > 0) {
-    console.log('🎵 Scenes loaded, updating audio clips with scene data:', $videoScenes.length);
-    updateAudioClipsWithScenes($videoScenes);
-  }
+  // Reactive: update audio clips when scenes are loaded (Svelte 5 $effect)
+  $effect(() => {
+    const scenes = $videoScenes;
+    if (scenes && scenes.length > 0) {
+      console.log('🎵 Scenes loaded, updating audio clips with scene data:', scenes.length);
+      updateAudioClipsWithScenes(scenes);
+    }
+  });
 
   async function loadVisionData() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     logger.info('Loading vision data', { videoId: currentVideoId });
@@ -133,7 +136,7 @@
   }
 
   async function handleRefresh() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     refreshing = true;
@@ -147,7 +150,7 @@
   }
 
   async function loadTranscription() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     console.log('🔍 Loading transcription for video:', currentVideoId);
@@ -167,7 +170,7 @@
   }
 
   async function triggerTranscription() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     logger.info('Triggering transcription', { videoId: currentVideoId });
@@ -189,7 +192,7 @@
   }
 
   async function triggerAudioSeparation() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     logger.info('Triggering audio separation', { videoId: currentVideoId });
@@ -205,7 +208,7 @@
   }
 
   async function triggerSpleeterSeparation() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     logger.info('Triggering Spleeter audio separation', { videoId: currentVideoId });
@@ -221,7 +224,7 @@
   }
 
   async function pollAudioSeparationStatus() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     let attempts = 0;
@@ -251,7 +254,7 @@
   }
 
   async function triggerSaliencyAnalysis() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     logger.info('Triggering saliency analysis', { videoId: currentVideoId });
@@ -269,7 +272,7 @@
   }
 
   async function pollSaliencyStatus() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     let attempts = 0;
@@ -321,7 +324,7 @@
   }
 
   async function handleReframe(event: CustomEvent<ReframeOptions>) {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     const options = event.detail;
@@ -372,7 +375,7 @@
   }
 
   async function loadSaliencyStatus() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     try {
@@ -385,7 +388,7 @@
   }
 
   async function loadReframedVideos() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     loadingReframedVideos = true;
@@ -408,7 +411,7 @@
   }
 
   async function triggerVisionAnalysis() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     try {
@@ -424,7 +427,7 @@
   }
 
   async function triggerQwenVLAnalysis() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     analyzingQwenVL = true;
@@ -445,7 +448,7 @@
   }
 
   async function pollQwenVLStatus() {
-    const currentVideoId = $page.params.id;
+    const currentVideoId = page?.params?.id;
     if (!currentVideoId) return;
     
     let attempts = 0;
@@ -827,7 +830,7 @@
         transcriptionSegments={transcriptionData ? JSON.parse(transcriptionData.segments) : []}
         videoDuration={$selectedVideo?.duration || 0}
         originalVideoDuration={$selectedVideo?.duration || 0}
-        videoId={$page.params.id || ''}
+        videoId={videoId}
         isProject={false}
         showVideoControls={true}
         videoLabel={$currentLocale === 'en' ? 'Original Video' : 'Original Video'}

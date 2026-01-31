@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import '../app.css';
   import { loadVideos } from '$lib/stores/videos.store';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { userStore } from '$lib/stores/user.store';
   import { theme } from '$lib/stores/theme.store';
   import { initI18n } from '$lib/i18n';
@@ -9,6 +10,7 @@
   import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
   import { goto } from '$app/navigation';
+  import { base } from '$app/paths';
   import { api } from '$lib/config/environment';
 
   // Svelte 5 Props
@@ -19,33 +21,48 @@
   let isAuthenticated = $state(false);
   let isPublicRoute = $state(false); 
 
-  // Reactive Route Check
+  // Reactive Route Check (page from $app/state is reactive object, not store)
   $effect(() => {
-    if ($page.url) {
-      const path = $page.url.pathname;
-      isPublicRoute = ['/login', '/register'].some(r => path === r || path.startsWith(`${r}/`));
+    const p = page;
+    if (p?.url?.pathname != null) {
+      const path = p.url.pathname;
+      // Base-aware: /videon/login or /login both match
+      isPublicRoute = ['/login', '/register'].some(
+        (r) => path === r || path === `${r}/` || path.endsWith(r) || path.endsWith(`${r}/`)
+      );
     }
   });
 
-  // Initialization & Auth
-  $effect(() => {
-    // Initialize services
+  // One-time init and auth on mount (avoids $effect re-run loops)
+  onMount(() => {
     theme.init();
     initI18n();
-    
-    // Auth Check
     checkAuth();
+  });
 
-    // Data Loading
-    if ($page.params && !$page.params.id) {
-       loadVideos();
+  // Data Loading (when authenticated)
+  $effect(() => {
+    const p = page;
+    if (isAuthenticated && !isCheckingAuth && p?.params != null && !p.params.id) {
+      loadVideos().catch(() => {});
     }
   });
 
   async function checkAuth() { 
+    const devBypass = import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+    if (devBypass) {
+      isAuthenticated = true;
+      isCheckingAuth = false;
+      userStore.set({ id: 'dev-user', email: 'dev@local', name: 'Dev User', role: 'USER' });
+      if (isPublicRoute) goto(`${base ?? ''}/`);
+      return;
+    }
     try {
       const baseUrl = api.baseUrl || '/api'; 
-      const res = await fetch(`${baseUrl}/auth/me`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(`${baseUrl}/auth/me`, { signal: controller.signal });
+      clearTimeout(timeoutId);
       const authData = await res.json();
       isAuthenticated = authData.isAuthenticated;
       if (isAuthenticated && authData.user) {
@@ -56,11 +73,10 @@
       isAuthenticated = false;
     } finally {
       isCheckingAuth = false;
-      // Redirect Logic
       if (!isAuthenticated && !isPublicRoute) {
-        window.location.href = '/login';
+        window.location.href = `${base ?? ''}/login`;
       } else if (isAuthenticated && isPublicRoute) {
-        goto('/');
+        goto(`${base ?? ''}/`);
       }
     }
   }

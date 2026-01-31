@@ -39,10 +39,10 @@
       weight={MSQDX_ICONS.weights.regular}
       style="margin-right: 0.35rem;"
     />
-    {$currentLocale === 'en' ? 'Root' : 'Hauptordner'}
+    {($currentLocale ?? 'de') === 'en' ? 'Root' : 'Hauptordner'}
   </a>
 
-  {#each $breadcrumbs || [] as crumb}
+  {#each ($breadcrumbs ?? []) as crumb}
     <MaterialSymbol
       icon="chevron_right"
       fontSize={MSQDX_ICONS.sizes.sm}

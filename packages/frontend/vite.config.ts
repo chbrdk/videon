@@ -23,6 +23,11 @@ export default defineConfig({
     setupFiles: ['src/test-setup.ts']
   },
   build: {
-    sourcemap: false
+    sourcemap: true,
+    // Debug: set VITE_DEBUG_BUILD=1 to disable minify and see actual property names in errors
+    ...(process.env.VITE_DEBUG_BUILD === '1' ? { minify: false } : {})
+  },
+  optimizeDeps: {
+    exclude: ['@sveltejs/kit']
   }
 });

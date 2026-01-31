@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { base } from '$app/paths';
   import { api } from '$lib/config/environment';
   import { _, currentLocale, type Locale } from '$lib/i18n';
   import { MaterialSymbol, MsqdxFormField } from '$lib/components/ui';
@@ -73,7 +74,7 @@
 
   async function handleLogout() {
     await fetch(`${api.baseUrl}/auth/logout`, { method: 'POST' });
-    window.location.href = '/login';
+    window.location.href = `${base}/login`;
   }
 
   async function handleSave() {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { theme } from '$lib/stores/theme.store';
   import {
     MSQDX_COLORS,
@@ -41,7 +41,7 @@
   }
 
   function getPageTitle() {
-    const pathname = $page.url.pathname;
+    const pathname = page?.url?.pathname ?? '';
     const pathMap: Record<string, string> = {
       '/videos': 'Videos',
       '/search': 'Suche',
@@ -65,7 +65,7 @@
   }
 
   function getPageIcon() {
-    const pathname = $page.url.pathname;
+    const pathname = page?.url?.pathname ?? '';
     const iconMap: Record<string, string> = {
       '/videos': 'video_file',
       '/search': 'search',
