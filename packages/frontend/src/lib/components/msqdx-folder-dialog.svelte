@@ -60,7 +60,7 @@
   let displayLabel = $derived(label || _('folder.name'));
 </script>
 
-<dialog bind:this={dialogElement} class="folder-dialog {className}" on:close={handleCancel}>
+<dialog bind:this={dialogElement} class="folder-dialog {className}" onclose={handleCancel}>
   <div class="dialog-content glass-card">
     <h2 class="dialog-title">
       {displayTitle}
