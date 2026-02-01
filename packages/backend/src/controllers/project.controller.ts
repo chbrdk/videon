@@ -211,8 +211,14 @@ export class ProjectController {
 
       res.json(project);
     } catch (error: unknown) {
-      logger.error('Get project error:', error);
-      res.status(500).json({ error: 'Failed to fetch project' });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : '';
+      logger.error('Get project error:', { error: errorMessage, stack: errorStack });
+      res.status(500).json({
+        error: 'Failed to fetch project',
+        message: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
+      });
     }
   }
 
