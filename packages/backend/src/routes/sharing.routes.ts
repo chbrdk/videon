@@ -11,8 +11,12 @@ router.post('/projects/:projectId/share', sharingController.shareProject);
 router.post('/videos/:videoId/share', sharingController.shareVideo);
 router.get('/shared-with-me', sharingController.getSharedWithMe);
 
+// Collaborators
+router.get('/projects/:projectId/collaborators', sharingController.getProjectCollaborators);
+router.get('/videos/:videoId/collaborators', sharingController.getVideoCollaborators);
+
 // Revocation
 router.delete('/projects/:projectId/share', sharingController.removeProjectShare);
-// router.delete('/videos/:videoId/share', sharingController.removeVideoShare); // Implement later if needed
+router.delete('/videos/:videoId/share', sharingController.removeVideoShare);
 
 export const sharingRouter = router;

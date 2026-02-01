@@ -167,4 +167,44 @@ export class SharingService {
             throw error;
         }
     }
+
+    async getProjectCollaborators(projectId: string) {
+        try {
+            const shares = await prisma.projectShare.findMany({
+                where: { projectId },
+                include: { user: { select: { id: true, name: true, email: true } } }
+            });
+            return shares.map(s => ({
+                id: s.id,
+                userId: s.userId,
+                name: s.user.name,
+                email: s.user.email,
+                role: s.role,
+                createdAt: s.createdAt
+            }));
+        } catch (error) {
+            logger.error('Error fetching project collaborators:', error);
+            throw error;
+        }
+    }
+
+    async getVideoCollaborators(videoId: string) {
+        try {
+            const shares = await prisma.videoShare.findMany({
+                where: { videoId },
+                include: { user: { select: { id: true, name: true, email: true } } }
+            });
+            return shares.map(s => ({
+                id: s.id,
+                userId: s.userId,
+                name: s.user.name,
+                email: s.user.email,
+                role: s.role,
+                createdAt: s.createdAt
+            }));
+        } catch (error) {
+            logger.error('Error fetching video collaborators:', error);
+            throw error;
+        }
+    }
 }

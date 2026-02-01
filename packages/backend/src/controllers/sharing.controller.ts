@@ -72,4 +72,40 @@ export class SharingController {
             res.status(500).json({ error: (error as Error).message });
         }
     }
+
+    async removeVideoShare(req: Request, res: Response) {
+        try {
+            const { videoId } = req.params;
+            const targetUserId = req.body.userId;
+
+            if (!targetUserId) {
+                return res.status(400).json({ error: 'Target userId required' });
+            }
+
+            await sharingService.removeVideoShare(videoId, targetUserId);
+            res.json({ success: true });
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async getProjectCollaborators(req: Request, res: Response) {
+        try {
+            const { projectId } = req.params;
+            const collaborators = await sharingService.getProjectCollaborators(projectId);
+            res.json(collaborators);
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
+
+    async getVideoCollaborators(req: Request, res: Response) {
+        try {
+            const { videoId } = req.params;
+            const collaborators = await sharingService.getVideoCollaborators(videoId);
+            res.json(collaborators);
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+        }
+    }
 }
