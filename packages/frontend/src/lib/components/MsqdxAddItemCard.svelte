@@ -1,30 +1,24 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol, MsqdxGlassCard } from '$lib/components/ui';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
 
   const dispatch = createEventDispatcher();
 </script>
 
-<div
-  class="msqdx-glass-card group hoverable no-padding flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95"
-  role="button"
-  tabindex="0"
+<MsqdxGlassCard
+  hoverable
+  noPadding={true}
+  borderRadiusVariant="xxl"
   on:click={() => dispatch('click')}
-  on:keydown={e => e.key === 'Enter' && dispatch('click')}
   style="
-    --blur: var(--msqdx-glass-blur);
-    --opacity: 0.05;
-    --border-radius: 40px;
-    --padding: 0;
-    --background-color: transparent;
     --border-color: var(--msqdx-color-brand-orange); 
     border-style: dashed !important;
     min-height: 200px;
     font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
   "
 >
-  <div class="flex flex-col items-center justify-center p-8 gap-4 text-center">
+  <div class="flex flex-col items-center justify-center p-8 gap-4 text-center h-full">
     <div
       class="w-16 h-16 rounded-full flex items-center justify-center group-hover:scale-110 transition-all duration-300"
       style="
@@ -55,31 +49,4 @@
       </p>
     </div>
   </div>
-</div>
-
-<style>
-  .msqdx-glass-card {
-    position: relative;
-    overflow: hidden;
-    transition: all var(--msqdx-transition-slow);
-    display: flex;
-    flex-direction: column;
-    border-radius: var(--border-radius);
-    padding: var(--padding);
-    background-color: var(--background-color);
-    backdrop-filter: blur(var(--blur));
-    -webkit-backdrop-filter: blur(var(--blur));
-    border: 1px dashed var(--border-color); /* Dashed border overridden inline but good to have here too */
-  }
-
-  /* Reusing styles from other cards to ensure consistency if global styles apply */
-  .msqdx-glass-card.no-padding {
-    padding: 0 !important;
-    border-radius: 40px !important;
-  }
-
-  .msqdx-glass-card.hoverable:hover {
-    background-color: rgba(255, 255, 255, 0.08); /* Slightly lighter on hover */
-    border-color: var(--msqdx-color-brand-orange);
-  }
-</style>
+</MsqdxGlassCard>

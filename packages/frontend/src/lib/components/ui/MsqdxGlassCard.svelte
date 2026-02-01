@@ -150,17 +150,19 @@
     z-index: 1;
   }
 
-  /* Responsive adjustments - matching ECHON behavior */
+  .msqdx-glass-card.no-padding {
+    padding: 0 !important;
+  }
+
+  /* Responsive adjustments - matching ECHON behavior but respecting props */
   @media (min-width: 768px) {
-    .msqdx-glass-card:not([data-radius-variant]):not(.no-padding) {
-      /* Override border-radius for desktop: lg (24px) instead of xxl (40px) */
-      /* Only if not explicitly set via borderRadiusVariant and not no-padding */
-      border-radius: var(--msqdx-radius-lg) !important;
+    .msqdx-glass-card:not(.no-padding):not([data-radius-variant]) {
+      /* Only default to lg if no specific radius is requested */
+      border-radius: var(--msqdx-radius-lg);
     }
 
-    .msqdx-glass-card:not(.no-padding):not([style*='padding: 0']) {
-      /* Override padding for desktop: lg (24px) instead of md (16px) */
-      padding: var(--msqdx-spacing-lg) !important;
+    .msqdx-glass-card:not(.no-padding):not(.no-padding) {
+      /* Base padding remains consistent unless noPadding is true */
     }
   }
 </style>
