@@ -146,6 +146,14 @@
     <MaterialSymbol icon="content_cut" fontSize={20} />
   </button>
 
+  <button
+    class="control-btn"
+    on:click={() => dispatch('share')}
+    title={_('controls.share') ?? 'Share'}
+  >
+    <MaterialSymbol icon="share" fontSize={20} />
+  </button>
+
   <!-- Divider -->
   <div class="control-divider"></div>
 

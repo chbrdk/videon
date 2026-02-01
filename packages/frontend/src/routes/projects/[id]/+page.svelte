@@ -852,19 +852,6 @@
         {/if}
       </MsqdxButton>
 
-      <!-- Share Button -->
-      <MsqdxButton
-        variant="primary"
-        glass={true}
-        on:click={() => (shareDialogOpen = true)}
-        class="flex items-center gap-2"
-      >
-        <MaterialSymbol icon="share" fontSize={18} />
-        <MsqdxTypography variant="body2" weight="medium">
-          {$currentLocale === 'en' ? 'Share' : 'Teilen'}
-        </MsqdxTypography>
-      </MsqdxButton>
-
       {#if transcriptionSegments.length > 0}
         <MsqdxButton
           glass={true}
@@ -921,6 +908,7 @@
         on:undo={handleUndo}
         on:redo={handleRedo}
         on:split={handleSplit}
+        on:share={() => (shareDialogOpen = true)}
         on:addScene={handleAddScene}
         on:search={handleSearchEvent}
         on:searchInput={handleSearchInput}

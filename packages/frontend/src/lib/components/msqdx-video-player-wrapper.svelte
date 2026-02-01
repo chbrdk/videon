@@ -5,9 +5,9 @@
   import CentralVideoControls from './central-video-controls.svelte';
   import { audioStemPlayer } from '$lib/services/audio-stem-player.service';
   import { currentLocale } from '$lib/i18n';
-  
+
   const dispatch = createEventDispatcher();
-  
+
   // Props
   export let videoSrc: string;
   export let posterSrc: string = '';
@@ -26,7 +26,7 @@
   export let searchQuery: string = '';
   export let searchResults: any[] = [];
   export let searching: boolean = false;
-  
+
   // Video State
   let videoPlayer: HTMLVideoElement;
   let audioTracks: any[] = [];
@@ -35,10 +35,10 @@
   let isPlaying = false;
   let currentTime = 0;
   let duration = 0;
-  
+
   async function handleVideoPlay() {
     isPlaying = true;
-    
+
     // Use audio stem player for synchronized playback
     try {
       await audioStemPlayer.play();
@@ -46,33 +46,33 @@
     } catch (error) {
       console.error('❌ Failed to start audio stem player:', error);
     }
-    
+
     dispatch('videoPlay');
   }
-  
+
   function handleVideoPause() {
     isPlaying = false;
-    
+
     // Pause audio stem player
     audioStemPlayer.pause();
     console.log('🎵 Audio stem player paused');
-    
+
     dispatch('videoPause');
   }
-  
+
   function handleVideoSeek() {
     // Seek audio stem player to match video
     audioStemPlayer.seekTo(videoPlayer.currentTime);
     console.log('🎵 Audio stem player seeked to:', videoPlayer.currentTime);
-    
+
     dispatch('videoSeek', { time: videoPlayer.currentTime });
   }
-  
+
   function registerAudioTrack(event: CustomEvent) {
     audioTracks.push(event.detail);
     dispatch('audioTrackRegister', event.detail);
   }
-  
+
   function unregisterAudioTrack(event: CustomEvent) {
     audioTracks = audioTracks.filter(t => t !== event.detail);
     dispatch('audioTrackUnregister', event.detail);
@@ -106,11 +106,11 @@
 
   function handlePrevious() {
     // Find previous scene
-    const currentScene = scenes.find(scene => 
-      videoPlayer.currentTime >= scene.startTime && 
-      videoPlayer.currentTime <= scene.endTime
+    const currentScene = scenes.find(
+      scene =>
+        videoPlayer.currentTime >= scene.startTime && videoPlayer.currentTime <= scene.endTime
     );
-    
+
     if (currentScene) {
       const currentIndex = scenes.indexOf(currentScene);
       if (currentIndex > 0) {
@@ -123,11 +123,11 @@
 
   function handleNext() {
     // Find current scene
-    const currentScene = scenes.find(scene => 
-      videoPlayer.currentTime >= scene.startTime && 
-      videoPlayer.currentTime <= scene.endTime
+    const currentScene = scenes.find(
+      scene =>
+        videoPlayer.currentTime >= scene.startTime && videoPlayer.currentTime <= scene.endTime
     );
-    
+
     if (currentScene) {
       const currentIndex = scenes.indexOf(currentScene);
       if (currentIndex < scenes.length - 1) {
@@ -194,7 +194,7 @@
   function handleCloseSearchModal() {
     dispatch('closeSearchModal');
   }
-  
+
   onMount(() => {
     if (videoPlayer) {
       videoPlayer.addEventListener('play', handleVideoPlay);
@@ -206,7 +206,7 @@
       });
     }
   });
-  
+
   onDestroy(() => {
     if (videoPlayer) {
       videoPlayer.removeEventListener('play', handleVideoPlay);
@@ -214,7 +214,7 @@
       videoPlayer.removeEventListener('seeked', handleVideoSeek);
       videoPlayer.removeEventListener('timeupdate', handleTimeUpdate);
     }
-    
+
     // Clean up audio stem player
     audioStemPlayer.destroy();
   });
@@ -229,7 +229,9 @@
     poster={posterSrc}
     on:timeupdate
   >
-{$currentLocale === 'en' ? 'Your browser does not support the video element.' : 'Ihr Browser unterstützt das Video-Element nicht.'}
+    {$currentLocale === 'en'
+      ? 'Your browser does not support the video element.'
+      : 'Ihr Browser unterstützt das Video-Element nicht.'}
   </video>
 </div>
 
@@ -241,14 +243,17 @@
     {duration}
     {videoMuted}
     bind:videoAudioLevel
-    canGoBack={scenes.length > 0 && scenes.findIndex(scene => 
-      videoPlayer?.currentTime >= scene.startTime && 
-      videoPlayer?.currentTime <= scene.endTime
-    ) > 0}
-    canGoForward={scenes.length > 0 && scenes.findIndex(scene => 
-      videoPlayer?.currentTime >= scene.startTime && 
-      videoPlayer?.currentTime <= scene.endTime
-    ) < scenes.length - 1}
+    canGoBack={scenes.length > 0 &&
+      scenes.findIndex(
+        scene =>
+          videoPlayer?.currentTime >= scene.startTime && videoPlayer?.currentTime <= scene.endTime
+      ) > 0}
+    canGoForward={scenes.length > 0 &&
+      scenes.findIndex(
+        scene =>
+          videoPlayer?.currentTime >= scene.startTime && videoPlayer?.currentTime <= scene.endTime
+      ) <
+        scenes.length - 1}
     {canUndo}
     {canRedo}
     {canSplit}
@@ -265,6 +270,7 @@
     on:undo={handleUndo}
     on:redo={handleRedo}
     on:split={handleSplit}
+    on:share={() => dispatch('share')}
     on:addScene={handleAddScene}
     on:search={handleSearch}
     on:searchInput={handleSearchInput}
@@ -274,8 +280,11 @@
 {/if}
 
 <!-- Timeline Container -->
-            <div class="timeline-container glass-effect rounded-b-375" style="position: relative; z-index: {showSearchModal ? -1 : 1};">
-  <MsqdxUnifiedTimeline 
+<div
+  class="timeline-container glass-effect rounded-b-375"
+  style="position: relative; z-index: {showSearchModal ? -1 : 1};"
+>
+  <MsqdxUnifiedTimeline
     {scenes}
     {transcriptionSegments}
     videoElement={videoPlayer}
@@ -285,9 +294,9 @@
     {isProject}
     on:seekTo
     on:sceneClick
-                on:sceneResize
-                on:sceneResizeEnd
-                on:sceneReorder
+    on:sceneResize
+    on:sceneResizeEnd
+    on:sceneReorder
     on:deleteScene
     on:audioTrackRegister={registerAudioTrack}
     on:audioTrackUnregister={unregisterAudioTrack}
@@ -303,40 +312,40 @@
     aspect-ratio: 16/9;
     width: 100%;
   }
-  
+
   .timeline-container {
     padding: 0 !important;
     margin-top: 0 !important;
   }
-  
+
   .rounded-t-375 {
     border-top-left-radius: var(--msqdx-radius-xxl);
     border-top-right-radius: var(--msqdx-radius-xxl);
   }
-  
+
   .rounded-b-375 {
     border-bottom-left-radius: var(--msqdx-radius-xxl);
     border-bottom-right-radius: var(--msqdx-radius-xxl);
   }
-  
+
   @media (max-width: 768px) {
     .rounded-t-375 {
       border-top-left-radius: var(--msqdx-radius-lg);
       border-top-right-radius: var(--msqdx-radius-lg);
     }
-    
+
     .rounded-b-375 {
       border-bottom-left-radius: var(--msqdx-radius-lg);
       border-bottom-right-radius: var(--msqdx-radius-lg);
     }
   }
-  
+
   @media (max-width: 640px) {
     .rounded-t-375 {
       border-top-left-radius: var(--msqdx-radius-md);
       border-top-right-radius: var(--msqdx-radius-md);
     }
-    
+
     .rounded-b-375 {
       border-bottom-left-radius: var(--msqdx-radius-md);
       border-bottom-right-radius: var(--msqdx-radius-md);

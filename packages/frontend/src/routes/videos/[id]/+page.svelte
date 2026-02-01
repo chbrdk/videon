@@ -26,6 +26,7 @@
   import ReframedVideoCard from '$lib/components/ReframedVideoCard.svelte';
   import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
+  import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
   import type { ReframedVideo, ReframeOptions } from '$lib/api/saliency';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -57,6 +58,7 @@
   // Dropdown states
   let servicesOpen = false;
   let exportOpen = false;
+  let shareDialogOpen = false;
 
   // Delete button hover state
   let deleteButtonHovered = false;
@@ -1004,6 +1006,7 @@
         on:seekTo={e => {
           // Seek handling is now managed by the wrapper component
         }}
+        on:share={() => (shareDialogOpen = true)}
         on:audioTrackRegister={e => registerAudioTrack(e.detail)}
         on:audioTrackUnregister={e => unregisterAudioTrack(e.detail)}
       />
@@ -1214,6 +1217,15 @@
   on:reframe={handleReframe}
   on:close={() => (showReframeModal = false)}
 />
+
+{#if $selectedVideo}
+  <MsqdxShareDialog
+    bind:open={shareDialogOpen}
+    itemId={$selectedVideo.id}
+    itemType="video"
+    itemName={$selectedVideo.name || $selectedVideo.originalName}
+  />
+{/if}
 
 <style>
   .dropdown-menu {
