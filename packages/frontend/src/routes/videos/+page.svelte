@@ -43,6 +43,7 @@
   import MsqdxSearchBar from '$lib/components/msqdx-search-bar.svelte';
   import MsqdxFolderCard from '$lib/components/msqdx-folder-card.svelte';
   import MsqdxVideoCard from '$lib/components/msqdx-video-card.svelte';
+  import MsqdxProjectCard from '$lib/components/MsqdxProjectCard.svelte';
   import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
@@ -721,76 +722,15 @@
 
         <!-- Projects -->
         {#each projects as project (project.id)}
-          <div
-            class="msqdx-glass-card cursor-pointer transition-transform hover:scale-105 relative group"
-            on:click={() => goto(`${base}/projects/${project.id}`)}
-            style="
-               --blur: var(--msqdx-glass-blur);
-               --background-color: var(--msqdx-color-dark-paper);
-               --border-color: var(--msqdx-color-dark-border);
-               border-radius: 40px;
-             "
-          >
-            <!-- Project Menu -->
-            <div
-              class="absolute top-2 right-2 z-10 pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <div class="relative">
-                <button
-                  class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  on:mousedown|stopPropagation={e => handleProjectMenuToggle(e, project)}
-                  on:click|stopPropagation
-                >
-                  <MaterialSymbol icon="more_vert" fontSize={20} />
-                </button>
-
-                {#if activeMenuProjectId === project.id}
-                  <MsqdxRadialContextMenu
-                    x={projectMenuX}
-                    y={projectMenuY}
-                    items={[
-                      { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
-                      { label: 'Share', icon: 'share', action: () => handleShareProject(project) },
-                      {
-                        label: 'Delete',
-                        icon: 'delete',
-                        action: () => handleDeleteProject(project),
-                      },
-                    ]}
-                    onClose={() => (activeMenuProjectId = null)}
-                  />
-                {/if}
-              </div>
-            </div>
-
-            <div class="flex flex-col items-center justify-center p-6 h-full text-center gap-3">
-              <div
-                class="w-12 h-12 rounded-full flex items-center justify-center"
-                style="background-color: {MSQDX_COLORS.tints.purple};"
-              >
-                <MaterialSymbol
-                  icon="movie_edit"
-                  fontSize={24}
-                  style="color: {MSQDX_COLORS.brand.purple};"
-                />
-              </div>
-              <h3
-                class="font-semibold leading-tight"
-                style="
-                      color: {MSQDX_COLORS.dark.textPrimary};
-                      font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};
-                    "
-              >
-                {project.name}
-              </h3>
-              <span
-                class="text-xs"
-                style="
-                      color: {MSQDX_COLORS.dark.textSecondary};
-                      font-family: {MSQDX_TYPOGRAPHY.fontFamily.mono};
-                    ">{project.scenes?.length || 0} Scenes</span
-              >
-            </div>
+          <div class="project-card-wrapper">
+            <MsqdxProjectCard
+              {project}
+              selected={$selectedItems.has(project.id)}
+              on:select={() => goto(`${base}/projects/${project.id}`)}
+              on:rename={() => handleRenameProject(project)}
+              on:share={() => handleShareProject(project)}
+              on:delete={() => handleDeleteProject(project)}
+            />
           </div>
         {/each}
 

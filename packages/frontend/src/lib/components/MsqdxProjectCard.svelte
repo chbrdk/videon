@@ -1,36 +1,33 @@
-<script>
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import { MsqdxBaseItemCard } from '$lib/components/ui';
   import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
-  import { createEventDispatcher } from 'svelte';
 
-  export let folder;
+  export let project;
   export let selected = false;
-  export let className = '';
 
   const dispatch = createEventDispatcher();
+
   let showMenu = false;
   let menuX = 0;
   let menuY = 0;
 
-  function handleMenuToggle(event) {
+  function handleMenuToggle(event: CustomEvent<{ x: number; y: number }>) {
     menuX = event.detail.x;
     menuY = event.detail.y;
     showMenu = !showMenu;
   }
 
   function handleClick() {
-    goto(resolve(`/videos?folder=${folder.id}`));
+    dispatch('select', project);
   }
 </script>
 
 <MsqdxBaseItemCard
-  title={folder.name}
-  subtitle="{folder.videoCount} {folder.videoCount === 1 ? 'Video' : 'Videos'}"
-  type="folder"
+  title={project.name || 'Untitled Project'}
+  subtitle="Project"
+  type="project"
   {selected}
-  {className}
   on:click={handleClick}
   on:menuToggle={handleMenuToggle}
 >
@@ -43,12 +40,17 @@
           {
             label: 'Rename',
             icon: 'edit',
-            action: () => dispatch('rename', folder),
+            action: () => dispatch('rename', project),
+          },
+          {
+            label: 'Share',
+            icon: 'share',
+            action: () => dispatch('share', project),
           },
           {
             label: 'Delete',
             icon: 'delete',
-            action: () => dispatch('delete', folder),
+            action: () => dispatch('delete', project),
           },
         ]}
         onClose={() => (showMenu = false)}
