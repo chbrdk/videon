@@ -263,10 +263,12 @@ export class VideosController {
 
       res.json(videos);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error fetching videos:', error);
       res.status(500).json({
         error: 'Fetch failed',
-        message: (error as Error).message,
+        message: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
       });
     }
   }
@@ -287,10 +289,12 @@ export class VideosController {
 
       res.json(video);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error(`Error fetching video ${req.params.id}:`, error);
       res.status(500).json({
         error: 'Fetch failed',
-        message: 'Failed to fetch video',
+        message: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
       });
     }
   }
