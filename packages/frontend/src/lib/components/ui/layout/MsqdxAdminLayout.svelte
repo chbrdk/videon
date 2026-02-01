@@ -45,20 +45,24 @@
     const pathname = $page.url.pathname;
     const pathMap: Record<string, string> = {
       '/videos': 'Videos',
+      '/videos/shared': 'Shared',
       '/search': 'Suche',
       '/ai-creator': 'KI Creator',
       '/projects': 'Projekte',
       '/upload': 'Hochladen',
       '/settings': 'Settings',
+      '/admin/users': 'Users',
     };
 
     if (pathMap[pathname]) {
       return pathMap[pathname];
     }
 
-    for (const [path, label] of Object.entries(pathMap)) {
-      if (pathname?.startsWith(path) && path !== '/videos') {
-        return label;
+    // Sort by length descending to match most specific path first
+    const sortedPaths = Object.keys(pathMap).sort((a, b) => b.length - a.length);
+    for (const path of sortedPaths) {
+      if (pathname?.startsWith(path)) {
+        return pathMap[path];
       }
     }
 
@@ -69,11 +73,13 @@
     const pathname = $page.url.pathname;
     const iconMap: Record<string, string> = {
       '/videos': 'video_file',
+      '/videos/shared': 'share',
       '/search': 'search',
       '/ai-creator': 'auto_awesome',
       '/projects': 'folder',
       '/upload': 'upload_file',
       '/settings': 'settings',
+      '/admin/users': 'group',
     };
 
     if (iconMap[pathname]) {
@@ -82,7 +88,7 @@
 
     const sortedPaths = Object.keys(iconMap).sort((a, b) => b.length - a.length);
     for (const path of sortedPaths) {
-      if (pathname?.startsWith(path) && path !== '/videos') {
+      if (pathname?.startsWith(path)) {
         return iconMap[path];
       }
     }
