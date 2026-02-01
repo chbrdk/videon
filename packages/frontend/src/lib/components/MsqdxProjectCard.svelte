@@ -18,8 +18,9 @@
     showMenu = !showMenu;
   }
 
-  function handleClick() {
+  function handleClick(event: MouseEvent) {
     dispatch('select', project);
+    dispatch('click', event);
   }
 </script>
 

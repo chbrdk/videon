@@ -27,13 +27,12 @@
     showMenu = !showMenu;
   }
 
-  function handleClick() {
-    const videoPath = `${base}/videos/${video.id}`;
-    if (typeof window !== 'undefined') {
-      window.location.href = videoPath;
-      return;
-    }
+  import { goto } from '$app/navigation';
+
+  function handleClick(event: MouseEvent) {
     dispatch('select', { id: video.id });
+    // Also dispatch as click for components that listen to on:click
+    dispatch('click', event);
   }
 
   onMount(() => {

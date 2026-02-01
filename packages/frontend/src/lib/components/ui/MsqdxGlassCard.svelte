@@ -100,6 +100,8 @@
     "
   on:mouseenter={() => (isHovered = true)}
   on:mouseleave={() => (isHovered = false)}
+  on:click
+  on:keydown
   role={hoverable ? 'button' : undefined}
   tabindex={hoverable ? 0 : undefined}
   {...$$restProps}
