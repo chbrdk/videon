@@ -2,7 +2,8 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { fade, scale, fly } from 'svelte/transition';
   import { backOut, elasticOut } from 'svelte/easing';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol, MsqdxButton } from '$lib/components/ui';
+  import { MSQDX_COLORS } from '$lib/design-tokens';
 
   export let x: number;
   export let y: number;
@@ -16,8 +17,8 @@
 
   const dispatch = createEventDispatcher();
 
-  // Configuration for radial layout
-  const radius = 120; // Radius of the arc in pixels
+  // Configuration for radial layout - Reduced radius as requested
+  const radius = 80;
   const itemSize = 48;
   const triggerSize = 56;
 
@@ -45,11 +46,11 @@
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, true);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('keydown', handleEscape);
       // Clean up portal
       if (menuElement && menuElement.parentNode === document.body) {
@@ -116,16 +117,23 @@
 
 <div class="radial-menu-overlay" bind:this={menuElement} style="left: {x}px; top: {y}px;">
   {#if isOpen}
-    <!-- Trigger / Close Button -->
-    <button
-      class="trigger-btn"
-      on:click={handleClose}
+    <!-- Trigger / Close Button - Using Brand Component -->
+    <div
+      class="trigger-wrapper"
       transition:scale={{ duration: 300, easing: elasticOut }}
       style="width: {triggerSize}px; height: {triggerSize}px; margin-left: -{triggerSize /
         2}px; margin-top: -{triggerSize / 2}px;"
     >
-      <MaterialSymbol icon="close" fontSize={28} />
-    </button>
+      <MsqdxButton
+        class="brand-close-btn"
+        on:click={handleClose}
+        variant="contained"
+        style="width: 100%; height: 100%; padding: 0; min-width: unset; background: {MSQDX_COLORS
+          .brand.orange};"
+      >
+        <MaterialSymbol icon="close" fontSize={28} color="white" />
+      </MsqdxButton>
+    </div>
 
     <!-- Menu Items -->
     {#each items as item, i}
@@ -140,18 +148,20 @@
           easing: backOut,
         }}
       >
-        <button
-          class="item-btn"
-          class:disabled={item.disabled}
+        <MsqdxButton
+          class="brand-item-btn"
+          disabled={item.disabled}
           on:click={() => handleItemClick(item)}
+          variant="outlined"
           title={item.label}
-          style="width: {itemSize}px; height: {itemSize}px;"
+          style="width: {itemSize}px; height: {itemSize}px; padding: 0; min-width: unset; background: white; border: 2px solid {MSQDX_COLORS
+            .brand.orange};"
         >
-          <MaterialSymbol icon={item.icon} fontSize={24} />
+          <MaterialSymbol icon={item.icon} fontSize={24} color={MSQDX_COLORS.brand.orange} />
 
           <!-- Tooltip label -->
           <span class="item-tooltip">{item.label}</span>
-        </button>
+        </MsqdxButton>
       </div>
     {/each}
   {/if}
@@ -168,28 +178,23 @@
     pointer-events: auto;
   }
 
-  /* Central Trigger Button */
-  .trigger-btn {
+  /* Wrapper for Trigger/Close Button to handle sizing and centering */
+  .trigger-wrapper {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #d32f2f; /* Deeper red like in the image */
-    color: white;
-    border: 3px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow:
-      0 10px 20px rgba(0, 0, 0, 0.4),
-      0 6px 6px rgba(0, 0, 0, 0.3),
-      inset 0 2px 4px rgba(255, 255, 255, 0.4);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 10;
   }
 
-  .trigger-btn:hover {
-    transform: scale(1.1) rotate(90deg);
-    background: #b71c1c;
+  :global(.brand-close-btn) {
+    border-radius: 50% !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  :global(.brand-close-btn:hover) {
+    transform: scale(1.1) rotate(90deg) !important;
   }
 
   /* Individual Menu Items */
@@ -199,40 +204,24 @@
     z-index: 5;
   }
 
-  .item-btn {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #2d2d2d; /* Dark gray like the image */
-    color: white;
-    border: 3px solid white; /* Thick white border like the image */
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow:
-      0 8px 15px rgba(0, 0, 0, 0.4),
-      0 4px 4px rgba(0, 0, 0, 0.2),
-      inset 0 1px 3px rgba(255, 255, 255, 0.1);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  :global(.brand-item-btn) {
+    border-radius: 50% !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
   }
 
-  .item-btn:hover:not(.disabled) {
-    transform: scale(1.15);
-    background: #1a1a1a;
-    border-color: #ffffff;
-    box-shadow:
-      0 12px 25px rgba(0, 0, 0, 0.5),
-      0 8px 8px rgba(0, 0, 0, 0.3);
+  :global(.brand-item-btn:hover:not(.disabled)) {
+    transform: scale(1.15) !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
   }
 
-  .item-btn:hover .item-tooltip {
+  :global(.brand-item-btn:hover .item-tooltip) {
     opacity: 1;
     transform: translateX(-50%) translateY(-10px);
-  }
-
-  .item-btn.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 
   /* Tooltip Label */
@@ -251,11 +240,12 @@
     opacity: 0;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 20;
   }
 
   /* Responsive adjustments */
   @media (max-width: 768px) {
-    .item-btn {
+    :global(.brand-item-btn) {
       width: 40px !important;
       height: 40px !important;
     }
