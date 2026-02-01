@@ -117,6 +117,7 @@
   subtitle="Video"
   type="video"
   {thumbnailUrl}
+  shared={!!video.sharedRole}
   on:click={handleClick}
   on:menuToggle={handleMenuToggle}
   {...$$restProps}

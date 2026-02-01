@@ -28,6 +28,7 @@
   subtitle="Project"
   type="project"
   {selected}
+  shared={!!project.sharedRole}
   on:click={handleClick}
   on:menuToggle={handleMenuToggle}
   {...$$restProps}

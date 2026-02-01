@@ -10,6 +10,7 @@
   export let icon: string = '';
   export let selected = false;
   export let hoverable = true;
+  export let shared = false;
   export let className = '';
 
   const dispatch = createEventDispatcher();
@@ -96,6 +97,12 @@
       <div class="overlay-info">
         <slot name="overlay" />
       </div>
+
+      {#if shared}
+        <div class="share-badge" title="Shared with me">
+          <MaterialSymbol icon="share" fontSize={16} />
+        </div>
+      {/if}
     </div>
 
     <!-- Info Area (Bottom) -->
@@ -195,6 +202,23 @@
     bottom: 12px;
     right: 12px;
     z-index: 2;
+  }
+
+  .share-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--msqdx-color-brand-orange);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
   }
 
   .info-area {
