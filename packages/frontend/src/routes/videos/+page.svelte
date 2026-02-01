@@ -43,7 +43,7 @@
   import MsqdxSearchBar from '$lib/components/msqdx-search-bar.svelte';
   import MsqdxFolderCard from '$lib/components/msqdx-folder-card.svelte';
   import MsqdxVideoCard from '$lib/components/msqdx-video-card.svelte';
-  import MsqdxContextMenu from '$lib/components/msqdx-context-menu.svelte';
+  import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
   import { MsqdxButton, MaterialSymbol, MsqdxGlassMenu } from '$lib/components/ui';
@@ -930,9 +930,9 @@
   {/if}
 </div>
 
-<!-- Context Menu -->
+<!-- Radial Context Menu -->
 {#if contextMenu.show}
-  <MsqdxContextMenu
+  <MsqdxRadialContextMenu
     x={contextMenu.x}
     y={contextMenu.y}
     items={contextMenu.items}
