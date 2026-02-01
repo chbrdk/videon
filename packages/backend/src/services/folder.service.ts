@@ -388,113 +388,30 @@ export class FolderService {
     try {
       const where: any = { folderId: folderId || null };
       if (!isAdmin && userId) {
-        where.userId = userId;
+        if (folderId === null) {
+          where.OR = [
+            { userId, folderId: null },
+            { videoShares: { some: { userId } } }
+          ];
+          delete where.folderId;
+        } else {
+          where.OR = [
+            { userId, folderId },
+            { folderId, videoShares: { some: { userId } } }
+          ];
+          delete where.folderId;
+        }
       } else if (!isAdmin && !userId) {
-        // If no user context and not admin, return empty? Or public?
-        // Assuming Strict Mode:
-        return [];
-      }
 
-      const videos = await prisma.video.findMany({
-        where,
-        orderBy: { uploadedAt: 'desc' }
-      });
-
-      return videos.map(video => ({
-        id: video.id,
-        filename: video.filename,
-        originalName: video.originalName,
-        duration: video.duration || undefined,
-        fileSize: video.fileSize,
-        mimeType: video.mimeType,
-        status: video.status,
-        uploadedAt: video.uploadedAt.toISOString(),
-        analyzedAt: video.analyzedAt?.toISOString()
-      }));
-    } catch (error) {
-      logger.error(`Error fetching videos for folder ${folderId}:`, error as Error);
-      throw new Error('Failed to fetch videos');
-    }
-  }
-
-  async getBreadcrumbs(folderId: string | null): Promise<BreadcrumbItem[]> {
-    try {
-      const breadcrumbs: BreadcrumbItem[] = [];
-      let currentId = folderId;
-
-      while (currentId) {
-        const folder = await prisma.folder.findUnique({
-          where: { id: currentId },
-          select: { id: true, name: true, path: true, parentId: true }
+        const videos = await prisma.video.findMany({
+          where,
+          include: {
+            videoShares: userId ? { where: { userId } } : false
+          },
+          orderBy: { uploadedAt: 'desc' }
         });
 
-        if (!folder) break;
-
-        breadcrumbs.unshift({
-          id: folder.id,
-          name: folder.name,
-          path: folder.path
-        });
-
-        currentId = folder.parentId;
-      }
-
-      return breadcrumbs;
-    } catch (error) {
-      logger.error(`Error fetching breadcrumbs for folder ${folderId}:`, error as Error);
-      throw new Error('Failed to fetch breadcrumbs');
-    }
-  }
-
-  async searchAll(query: string): Promise<SearchResults> {
-    try {
-      const searchTerm = `%${query}%`;
-
-      // Search folders
-      const folders = await prisma.folder.findMany({
-        where: {
-          name: {
-            contains: searchTerm
-          }
-        },
-        include: {
-          _count: {
-            select: { videos: true }
-          }
-        },
-        orderBy: { name: 'asc' }
-      });
-
-      // Search videos
-      const videos = await prisma.video.findMany({
-        where: {
-          OR: [
-            {
-              originalName: {
-                contains: searchTerm
-              }
-            },
-            {
-              filename: {
-                contains: searchTerm
-              }
-            }
-          ]
-        },
-        orderBy: { uploadedAt: 'desc' }
-      });
-
-      return {
-        folders: folders.map(folder => ({
-          id: folder.id,
-          name: folder.name,
-          parentId: folder.parentId,
-          path: folder.path,
-          videoCount: folder._count.videos,
-          createdAt: folder.createdAt.toISOString(),
-          updatedAt: folder.updatedAt.toISOString()
-        })),
-        videos: videos.map(video => ({
+        return videos.map(video => ({
           id: video.id,
           filename: video.filename,
           originalName: video.originalName,
@@ -503,12 +420,107 @@ export class FolderService {
           mimeType: video.mimeType,
           status: video.status,
           uploadedAt: video.uploadedAt.toISOString(),
-          analyzedAt: video.analyzedAt?.toISOString()
-        }))
-      };
-    } catch (error) {
-      logger.error(`Error searching for "${query}":`, error as Error);
-      throw new Error('Failed to search');
+          analyzedAt: video.analyzedAt?.toISOString(),
+          sharedRole: (video as any).videoShares?.[0]?.role as 'VIEWER' | 'EDITOR'
+        }));
+      } catch (error) {
+        logger.error(`Error fetching videos for folder ${folderId}:`, error as Error);
+        throw new Error('Failed to fetch videos');
+      }
+    }
+
+  async getBreadcrumbs(folderId: string | null): Promise < BreadcrumbItem[] > {
+      try {
+        const breadcrumbs: BreadcrumbItem[] = [];
+        let currentId = folderId;
+
+        while(currentId) {
+          const folder = await prisma.folder.findUnique({
+            where: { id: currentId },
+            select: { id: true, name: true, path: true, parentId: true }
+          });
+
+          if (!folder) break;
+
+          breadcrumbs.unshift({
+            id: folder.id,
+            name: folder.name,
+            path: folder.path
+          });
+
+          currentId = folder.parentId;
+        }
+
+      return breadcrumbs;
+      } catch(error) {
+        logger.error(`Error fetching breadcrumbs for folder ${folderId}:`, error as Error);
+        throw new Error('Failed to fetch breadcrumbs');
+      }
+    }
+
+  async searchAll(query: string): Promise < SearchResults > {
+      try {
+        const searchTerm = `%${query}%`;
+
+        // Search folders
+        const folders = await prisma.folder.findMany({
+          where: {
+            name: {
+              contains: searchTerm
+            }
+          },
+          include: {
+            _count: {
+              select: { videos: true }
+            }
+          },
+          orderBy: { name: 'asc' }
+        });
+
+        // Search videos
+        const videos = await prisma.video.findMany({
+          where: {
+            OR: [
+              {
+                originalName: {
+                  contains: searchTerm
+                }
+              },
+              {
+                filename: {
+                  contains: searchTerm
+                }
+              }
+            ]
+          },
+          orderBy: { uploadedAt: 'desc' }
+        });
+
+        return {
+          folders: folders.map(folder => ({
+            id: folder.id,
+            name: folder.name,
+            parentId: folder.parentId,
+            path: folder.path,
+            videoCount: folder._count.videos,
+            createdAt: folder.createdAt.toISOString(),
+            updatedAt: folder.updatedAt.toISOString()
+          })),
+          videos: videos.map(video => ({
+            id: video.id,
+            filename: video.filename,
+            originalName: video.originalName,
+            duration: video.duration || undefined,
+            fileSize: video.fileSize,
+            mimeType: video.mimeType,
+            status: video.status,
+            uploadedAt: video.uploadedAt.toISOString(),
+            analyzedAt: video.analyzedAt?.toISOString()
+          }))
+        };
+      } catch(error) {
+        logger.error(`Error searching for "${query}":`, error as Error);
+        throw new Error('Failed to search');
+      }
     }
   }
-}

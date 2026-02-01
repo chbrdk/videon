@@ -61,6 +61,7 @@
 
   $: navItems = [
     { label: 'Videos', path: '/videos', icon: 'video_file' },
+    { label: 'Shared', path: '/videos/shared', icon: 'share' },
     { label: 'Suche', path: '/search', icon: 'search' },
     { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
     ...($userStore?.role === 'ADMIN'

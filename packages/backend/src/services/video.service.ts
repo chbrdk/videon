@@ -39,10 +39,22 @@ export class VideoService {
     try {
       const where: any = { folderId: folderId || null };
       if (!isAdmin && userId) {
-        where.OR = [
-          { userId: userId },
-          { videoShares: { some: { userId: userId } } }
-        ];
+        if (folderId === null) {
+          // In root view, show owned root videos OR ANY shared videos (regardless of their folder)
+          where.OR = [
+            { userId, folderId: null },
+            { videoShares: { some: { userId } } }
+          ];
+          // Remove top-level folderId: null constraint since we handled it in OR
+          delete where.folderId;
+        } else {
+          // In a specific folder, show owned videos OR shared videos in THAT folder
+          where.OR = [
+            { userId, folderId },
+            { folderId, videoShares: { some: { userId } } }
+          ];
+          delete where.folderId;
+        }
       } else if (!isAdmin && !userId) {
         return [];
       }
