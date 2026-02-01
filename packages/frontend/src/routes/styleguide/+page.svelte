@@ -822,7 +822,8 @@
               <MsqdxTypography variant="body2" style="margin-bottom: 1rem; opacity: 0.7;"
                 >Bestätigungs-Modal zum Löschen von Videos.</MsqdxTypography
               >
-              <MsqdxButton onclick={() => (deleteModalOpen = true)}>Delete Modal öffnen</MsqdxButton
+              <MsqdxButton on:click={() => (deleteModalOpen = true)}
+                >Delete Modal öffnen</MsqdxButton
               >
               <MsqdxDeleteModal
                 bind:open={deleteModalOpen}
@@ -856,7 +857,7 @@
               <MsqdxTypography variant="body2" style="margin-bottom: 1rem; opacity: 0.7;"
                 >Dialog zum Erstellen und Verwalten von Ordnern.</MsqdxTypography
               >
-              <MsqdxButton onclick={() => (folderDialogOpen = true)}
+              <MsqdxButton on:click={() => (folderDialogOpen = true)}
                 >Folder Dialog öffnen</MsqdxButton
               >
               <MsqdxFolderDialog
@@ -876,7 +877,7 @@
               <MsqdxTypography variant="body2" style="margin-bottom: 1rem; opacity: 0.7;"
                 >Modal zum Ersetzen von Stimmen in Videos.</MsqdxTypography
               >
-              <MsqdxButton onclick={() => (reVoiceModalOpen = true)}
+              <MsqdxButton on:click={() => (reVoiceModalOpen = true)}
                 >ReVoice Modal öffnen</MsqdxButton
               >
               <ReVoiceModal
@@ -893,7 +894,7 @@
               <MsqdxTypography variant="body2" style="margin-bottom: 1rem; opacity: 0.7;"
                 >Modal zum Neurahmen von Videos.</MsqdxTypography
               >
-              <MsqdxButton onclick={() => (reframeModalOpen = true)}
+              <MsqdxButton on:click={() => (reframeModalOpen = true)}
                 >Reframe Modal öffnen</MsqdxButton
               >
               <ReframeModal
@@ -910,7 +911,7 @@
               <MsqdxTypography variant="body2" style="margin-bottom: 1rem; opacity: 0.7;"
                 >Modal zum Klonen von Stimmen.</MsqdxTypography
               >
-              <MsqdxButton onclick={() => (voiceCloneModalOpen = true)}
+              <MsqdxButton on:click={() => (voiceCloneModalOpen = true)}
                 >Voice Clone Modal öffnen</MsqdxButton
               >
               <VoiceCloneModal

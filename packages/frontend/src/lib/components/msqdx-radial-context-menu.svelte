@@ -17,7 +17,7 @@
 
   const dispatch = createEventDispatcher();
 
-  // Configuration for radial layout - Reduced radius as requested
+  // Configuration for radial layout
   const radius = 70;
   const itemSize = 38;
   const triggerSize = 44;
@@ -28,27 +28,34 @@
   let visibleItems: Array<any> = [];
 
   onMount(() => {
-    // Portaling: Move the element to document.body to avoid transform/overflow issues
+    // Portaling: Move the element to document.body
     if (menuElement && typeof document !== 'undefined') {
       document.body.appendChild(menuElement);
     }
 
-    // Staggered open
-    isOpen = true;
-
-    // Sequential add for items
-    items.forEach((item, i) => {
-      setTimeout(() => {
-        if (isOpen && !isClosing) {
-          visibleItems = [...visibleItems, { ...item, originalIndex: i }];
-        }
-      }, i * 60);
-    });
+    // Small delay to ensure mount
+    setTimeout(() => {
+      isOpen = true;
+      // Sequential add for items
+      items.forEach((item, i) => {
+        setTimeout(() => {
+          if (isOpen && !isClosing) {
+            visibleItems = [...visibleItems, { ...item, originalIndex: i }];
+          }
+        }, i * 50);
+      });
+    }, 10);
 
     function handleClickOutside(event: MouseEvent) {
-      if (menuElement && !menuElement.contains(event.target as Node)) {
-        handleClose();
+      if (isClosing) return;
+
+      const target = event.target as Node;
+      // If we clicked something inside the menu, let the relative click handler handle it
+      if (menuElement && menuElement.contains(target)) {
+        return;
       }
+
+      handleClose();
     }
 
     function handleEscape(event: KeyboardEvent) {
@@ -57,11 +64,12 @@
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside, true);
+    // Non-capturing to avoid interfering with component clicks
+    document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
       // Clean up portal
       if (menuElement && menuElement.parentNode === document.body) {
@@ -76,17 +84,17 @@
 
     // Sequential remove for items
     const count = visibleItems.length;
-    for (let i = 0; i < count; i++) {
-      setTimeout(() => {
-        visibleItems = visibleItems.slice(0, -1);
-        if (visibleItems.length === 0) {
-          isOpen = false;
-          setTimeout(onClose, 200);
-        }
-      }, i * 40);
-    }
-
-    if (count === 0) {
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          visibleItems = visibleItems.slice(0, -1);
+          if (visibleItems.length === 0) {
+            isOpen = false;
+            setTimeout(onClose, 200);
+          }
+        }, i * 30);
+      }
+    } else {
       isOpen = false;
       onClose();
     }
@@ -94,14 +102,15 @@
 
   function handleItemClick(item: any) {
     if (!item.disabled && !isClosing) {
+      // Execute the action (e.g., dispatch rename/delete)
       item.action();
+      // Start closing animation
       handleClose();
     }
   }
 
   // Calculate position for each item
   function getItemPosition(index: number, total: number) {
-    // Detect screen quadrants for better arc direction
     const isNearRight =
       typeof window !== 'undefined' && x > window.innerWidth - radius - itemSize - 40;
     const isNearBottom =
@@ -109,22 +118,20 @@
     const isNearLeft = typeof window !== 'undefined' && x < radius + itemSize + 40;
     const isNearTop = typeof window !== 'undefined' && y < radius + itemSize + 40;
 
-    // Normal arc: Top-Right (-90 to 0)
     let start = -Math.PI / 2;
     let sweep = Math.PI / 2;
 
-    // If we have many items, use a larger sweep
     if (total > 4) sweep = Math.PI * 0.7;
 
     if (isNearRight) {
       start = -Math.PI / 2;
       sweep = -Math.PI / 2;
-      if (isNearBottom) start = -Math.PI; // Bottom-right: Up and Left
+      if (isNearBottom) start = -Math.PI;
     } else if (isNearBottom) {
-      start = -Math.PI; // Bottom: Go up and right
+      start = -Math.PI;
       sweep = Math.PI / 2;
     } else if (isNearLeft && isNearTop) {
-      start = 0; // Top-left: Go down and right
+      start = 0;
       sweep = Math.PI / 2;
     }
 
@@ -145,7 +152,7 @@
 
 <div class="radial-menu-overlay" bind:this={menuElement} style="left: {x}px; top: {y}px;">
   {#if isOpen}
-    <!-- Trigger / Close Button - Using Brand Component with White Background -->
+    <!-- Trigger / Close Button -->
     <div
       class="trigger-wrapper"
       transition:scale={{ duration: 250, easing: elasticOut }}
@@ -198,7 +205,7 @@
 <style>
   .radial-menu-overlay {
     position: fixed;
-    z-index: 9999;
+    z-index: 10000; /* Higher than dialogs if needed, though portaling handles it */
     pointer-events: none;
   }
 
@@ -206,7 +213,6 @@
     pointer-events: auto;
   }
 
-  /* Wrapper for Trigger/Close Button to handle sizing and centering */
   .trigger-wrapper {
     position: absolute;
     display: flex;
@@ -226,7 +232,6 @@
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2) !important;
   }
 
-  /* Individual Menu Items */
   .item-wrapper {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -253,26 +258,27 @@
     transform: translateX(-50%) translateY(-10px);
   }
 
-  /* Tooltip Label */
+  /* Tooltip Label - Adjusted to Light Theme as requested */
   .item-tooltip {
     position: absolute;
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%) translateY(0);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background: white;
+    color: var(--msqdx-color-brand-orange, #ff6a3b);
+    border: 1px solid var(--msqdx-color-brand-orange, #ff6a3b);
+    padding: 4px 10px;
+    border-radius: 8px;
     font-size: 11px;
+    font-weight: 600;
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 20;
   }
 
-  /* Responsive adjustments */
   @media (max-width: 768px) {
     :global(.brand-item-btn) {
       width: 32px !important;

@@ -119,13 +119,13 @@
       </div>
 
       <div class="flex gap-3 justify-end">
-        <MsqdxButton variant="outlined" glass={true} disabled={deleting} onclick={handleClose}>
+        <MsqdxButton variant="outlined" glass={true} disabled={deleting} on:click={handleClose}>
           {_('actions.cancel')}
         </MsqdxButton>
         <MsqdxButton
           variant="contained"
           disabled={deleting}
-          onclick={handleDelete}
+          on:click={handleDelete}
           style="background-color: var(--msqdx-color-status-error); border-color: var(--msqdx-color-status-error); color: var(--msqdx-color-brand-white);"
         >
           {deleting ? _('delete.deleting') : _('delete.finalConfirm')}

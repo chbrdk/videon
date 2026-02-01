@@ -51,7 +51,7 @@
   {#if $searchQuery}
     <button
       class="clear-button"
-      onclick={() => searchQuery.set('')}
+      on:click={() => searchQuery.set('')}
       title={_('search.clear')}
       style="
       width: {MSQDX_ICONS.sizes.lg}px;

@@ -11,7 +11,7 @@
   export let label: string;
   /** The onclick event handler */
   export let onclick: (() => void) | undefined = undefined;
-  
+
   $: mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
   $: style = backgroundColor ? `background-color: ${backgroundColor}` : '';
 </script>
@@ -19,8 +19,8 @@
 <button
   type="button"
   class={['storybook-button', `storybook-button--${size}`, mode].join(' ')}
-  style={style}
-  onclick={onclick}
+  {style}
+  on:click={onclick}
 >
   {label}
 </button>

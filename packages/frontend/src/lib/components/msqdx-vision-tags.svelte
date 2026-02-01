@@ -178,7 +178,7 @@
           <div class="qwen-section">
             <button
               class="qwen-section-header"
-              onclick={() => (summaryExpanded = !summaryExpanded)}
+              on:click={() => (summaryExpanded = !summaryExpanded)}
             >
               <MaterialSymbol
                 icon={summaryExpanded ? 'expand_more' : 'chevron_right'}
@@ -201,7 +201,7 @@
           <div class="qwen-section">
             <button
               class="qwen-section-header"
-              onclick={() => (detailsExpanded = !detailsExpanded)}
+              on:click={() => (detailsExpanded = !detailsExpanded)}
             >
               <MaterialSymbol
                 icon={detailsExpanded ? 'expand_more' : 'chevron_right'}
