@@ -42,7 +42,10 @@
   }
 
   function getPageTitle() {
-    const pathname = $page.url.pathname;
+    let pathname = $page.url.pathname;
+    if (base && pathname.startsWith(base)) {
+      pathname = pathname.slice(base.length) || '/';
+    }
     const pathMap: Record<string, string> = {
       '/videos': 'Videos',
       '/videos/shared': 'Shared',
@@ -70,7 +73,10 @@
   }
 
   function getPageIcon() {
-    const pathname = $page.url.pathname;
+    let pathname = $page.url.pathname;
+    if (base && pathname.startsWith(base)) {
+      pathname = pathname.slice(base.length) || '/';
+    }
     const iconMap: Record<string, string> = {
       '/videos': 'video_file',
       '/videos/shared': 'share',
