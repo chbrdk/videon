@@ -67,9 +67,11 @@
   class="msqdx-base-card {className} {selected ? 'selected' : ''}"
   on:click={handleClick}
   on:contextmenu={handleMenuToggle}
+  {...$$restProps}
   style="
     --border-color: {selected ? MSQDX_COLORS.brand.green : 'rgba(255, 255, 255, 0.1)'};
     --card-bg: {selected ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'};
+    {$$restProps.style || ''}
   "
 >
   <div class="card-inner">

@@ -119,6 +119,7 @@
   {thumbnailUrl}
   on:click={handleClick}
   on:menuToggle={handleMenuToggle}
+  {...$$restProps}
 >
   <div slot="overlay">
     <MsqdxChip variant="glass" color={getStatusColor(video.status)}>

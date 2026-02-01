@@ -33,6 +33,7 @@
   {className}
   on:click={handleClick}
   on:menuToggle={handleMenuToggle}
+  {...$$restProps}
 >
   <div slot="overlay">
     {#if showMenu}

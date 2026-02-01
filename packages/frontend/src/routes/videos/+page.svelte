@@ -722,51 +722,44 @@
 
         <!-- Projects -->
         {#each projects as project (project.id)}
-          <div class="project-card-wrapper">
-            <MsqdxProjectCard
-              {project}
-              selected={$selectedItems.has(project.id)}
-              on:select={() => goto(`${base}/projects/${project.id}`)}
-              on:rename={() => handleRenameProject(project)}
-              on:share={() => handleShareProject(project)}
-              on:delete={() => handleDeleteProject(project)}
-            />
-          </div>
+          <MsqdxProjectCard
+            {project}
+            selected={$selectedItems.has(project.id)}
+            on:select={() => goto(`${base}/projects/${project.id}`)}
+            on:rename={() => handleRenameProject(project)}
+            on:share={() => handleShareProject(project)}
+            on:delete={() => handleDeleteProject(project)}
+          />
         {/each}
 
         <!-- Folders -->
         {#each currentContents.folders as folder (folder.id)}
-          <div
-            class="glass-card cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id ===
+          <MsqdxFolderCard
+            {folder}
+            class="cursor-pointer transition-transform hover:scale-105 {dragOverFolder?.id ===
             folder.id
               ? 'ring-2 ring-blue-400'
               : ''}"
+            selected={$selectedItems.has(folder.id)}
+            onSelect={toggleSelection}
+            onContextMenu={e => handleContextMenu(e, { ...folder, type: 'folder' })}
+            on:rename={handleRenameFolderClick}
+            on:delete={handleDeleteFolderClick}
             on:dragover={e => handleFolderDragOver(e, folder)}
             on:dragleave={handleFolderDragLeave}
             on:drop={e => handleFolderDrop(e, folder)}
-          >
-            <MsqdxFolderCard
-              {folder}
-              selected={$selectedItems.has(folder.id)}
-              onSelect={toggleSelection}
-              onContextMenu={e => handleContextMenu(e, { ...folder, type: 'folder' })}
-              on:rename={handleRenameFolderClick}
-              on:delete={handleDeleteFolderClick}
-            />
-          </div>
+          />
         {/each}
 
         <!-- Videos -->
         {#each currentContents.videos as video (video.id)}
-          <div class="video-card-wrapper">
-            <MsqdxVideoCard
-              {video}
-              on:select={() => handleVideoClick(video.id)}
-              on:delete={handleDeleteVideo}
-              on:rename={handleRenameVideo}
-              on:share={e => handleShareVideo(e.detail)}
-            />
-          </div>
+          <MsqdxVideoCard
+            {video}
+            on:select={() => handleVideoClick(video.id)}
+            on:delete={handleDeleteVideo}
+            on:rename={handleRenameVideo}
+            on:share={e => handleShareVideo(e.detail)}
+          />
         {/each}
       </div>
     {:else}
@@ -1005,11 +998,6 @@
     color: rgba(255, 255, 255, 0.6);
   }
 
-  .video-card-wrapper {
-    position: relative;
-    transition: opacity 0.9s ease;
-  }
-
   .list-item {
     transition: opacity 0.9s ease;
   }
@@ -1028,7 +1016,6 @@
     color: rgba(17, 24, 39, 0.6);
   }
 
-  :global(html.light) .video-card-wrapper,
   :global(html.light) .list-item {
     transition: opacity 0.9s ease;
   }
