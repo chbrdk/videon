@@ -146,6 +146,7 @@
               </div>
               <div class="w-32">
                 <MsqdxSelect
+                  label="Role"
                   options={roleOptions}
                   bind:value={role}
                   disabled={inviteLoading}

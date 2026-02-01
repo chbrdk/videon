@@ -23,7 +23,7 @@
     [key: string]: any;
   }
 
-  export let label: string;
+  export let label = '';
   export let options: Option[];
   export let helperText: string | undefined = undefined;
   export let value: string | number | undefined = undefined;
@@ -87,14 +87,14 @@
 <div class="msqdx-select-wrapper {className}" class:full-width={fullWidth}>
   <label
     class="msqdx-select-label"
-    for={id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`}
+    for={id || `select-${(label || '').toLowerCase().replace(/\s+/g, '-')}`}
   >
     {label}
   </label>
 
   <div class="msqdx-select-container" class:error class:focused={isFocused} class:disabled>
     <select
-      id={id || `select-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      id={id || `select-${(label || '').toLowerCase().replace(/\s+/g, '-')}`}
       class="msqdx-select"
       value={internalValue}
       {disabled}
