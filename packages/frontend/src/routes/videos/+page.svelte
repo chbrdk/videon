@@ -46,7 +46,7 @@
   import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import MsqdxFolderDialog from '$lib/components/msqdx-folder-dialog.svelte';
   import MsqdxDeleteModal from '$lib/components/msqdx-delete-modal.svelte';
-  import { MsqdxButton, MaterialSymbol, MsqdxGlassMenu } from '$lib/components/ui';
+  import { MsqdxButton, MaterialSymbol } from '$lib/components/ui';
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
@@ -73,6 +73,14 @@
 
   let unifiedDialogOpen = false;
   let activeMenuProjectId: string | null = null;
+  let projectMenuX = 0;
+  let projectMenuY = 0;
+
+  function handleProjectMenuToggle(event: MouseEvent, project: any) {
+    projectMenuX = event.clientX;
+    projectMenuY = event.clientY;
+    activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id;
+  }
 
   // Handlers for card events
   function handleRenameFolderClick(event) {
@@ -726,27 +734,25 @@
               <div class="relative">
                 <button
                   class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  on:click|stopPropagation={() =>
-                    (activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id)}
+                  on:click|stopPropagation={e => handleProjectMenuToggle(e, project)}
                 >
                   <MaterialSymbol icon="more_vert" fontSize={20} />
                 </button>
 
                 {#if activeMenuProjectId === project.id}
-                  <MsqdxGlassMenu
-                    align="right"
+                  <MsqdxRadialContextMenu
+                    x={projectMenuX}
+                    y={projectMenuY}
                     items={[
-                      { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
                       { label: 'Rename', icon: 'edit', action: () => handleRenameProject(project) },
                       { label: 'Share', icon: 'share', action: () => handleShareProject(project) },
                       {
                         label: 'Delete',
                         icon: 'delete',
-                        danger: true,
                         action: () => handleDeleteProject(project),
                       },
                     ]}
-                    on:close={() => (activeMenuProjectId = null)}
+                    onClose={() => (activeMenuProjectId = null)}
                   />
                 {/if}
               </div>
@@ -810,12 +816,10 @@
           <div class="video-card-wrapper">
             <MsqdxVideoCard
               {video}
-              on:select={e => {
-                console.log('Video card select event:', e.detail);
-                handleVideoClick(e.detail.id);
-              }}
-              on:rename={handleRenameVideo}
+              on:select={() => handleVideoClick(video.id)}
               on:delete={handleDeleteVideo}
+              on:rename={handleRenameVideo}
+              on:share={e => handleShareVideo(e.detail)}
             />
           </div>
         {/each}

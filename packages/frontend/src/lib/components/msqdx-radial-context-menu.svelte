@@ -18,8 +18,6 @@
 
   // Configuration for radial layout
   const radius = 120; // Radius of the arc in pixels
-  const startAngle = -Math.PI / 2; // Start from top (-90 degrees)
-  const arcLength = Math.PI; // 180 degree arc
   const itemSize = 48;
   const triggerSize = 56;
 
@@ -67,15 +65,41 @@
 
   // Calculate position for each item
   function getItemPosition(index: number, total: number) {
-    // If only 1 item, put it at the center/top
+    // Detect screen quadrants for better arc direction
+    const isNearRight =
+      typeof window !== 'undefined' && x > window.innerWidth - radius - itemSize - 40;
+    const isNearBottom =
+      typeof window !== 'undefined' && y > window.innerHeight - radius - itemSize - 40;
+    const isNearLeft = typeof window !== 'undefined' && x < radius + itemSize + 40;
+    const isNearTop = typeof window !== 'undefined' && y < radius + itemSize + 40;
+
+    // Normal arc: Top-Right (-90 to 0)
+    let start = -Math.PI / 2;
+    let sweep = Math.PI / 2;
+
+    // If we have many items, use a larger sweep
+    if (total > 4) sweep = Math.PI * 0.7;
+
+    if (isNearRight) {
+      start = -Math.PI / 2;
+      sweep = -Math.PI / 2;
+      if (isNearBottom) start = -Math.PI; // Bottom-right: Up and Left
+    } else if (isNearBottom) {
+      start = -Math.PI; // Bottom: Go up and right
+      sweep = Math.PI / 2;
+    } else if (isNearLeft && isNearTop) {
+      start = 0; // Top-left: Go down and right
+      sweep = Math.PI / 2;
+    }
+
     if (total === 1) {
       return {
-        x: x + 0,
-        y: y - radius,
+        x: x + Math.cos(start + sweep / 2) * radius,
+        y: y + Math.sin(start + sweep / 2) * radius,
       };
     }
 
-    const angle = startAngle + (index / (total - 1)) * arcLength;
+    const angle = start + (index / (total - 1)) * sweep;
     return {
       x: x + Math.cos(angle) * radius,
       y: y + Math.sin(angle) * radius,

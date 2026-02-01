@@ -1,7 +1,8 @@
 <script>
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { MsqdxGlassCard, MsqdxGlassMenu, MaterialSymbol } from '$lib/components/ui';
+  import { MsqdxGlassCard, MaterialSymbol } from '$lib/components/ui';
+  import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import { createEventDispatcher } from 'svelte';
 
   export let folder;
@@ -12,6 +13,14 @@
 
   const dispatch = createEventDispatcher();
   let showMenu = false;
+  let menuX = 0;
+  let menuY = 0;
+
+  function handleMenuToggle(event) {
+    menuX = event.clientX;
+    menuY = event.clientY;
+    showMenu = !showMenu;
+  }
 
   function handleClick() {
     goto(resolve(`/videos?folder=${folder.id}`));
@@ -41,14 +50,15 @@
       <div class="relative">
         <button
           class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors bg-transparent"
-          on:click|stopPropagation={() => (showMenu = !showMenu)}
+          on:click|stopPropagation={handleMenuToggle}
         >
           <MaterialSymbol icon="more_vert" fontSize={20} />
         </button>
 
         {#if showMenu}
-          <MsqdxGlassMenu
-            align="right"
+          <MsqdxRadialContextMenu
+            x={menuX}
+            y={menuY}
             items={[
               {
                 label: 'Rename',
@@ -58,11 +68,10 @@
               {
                 label: 'Delete',
                 icon: 'delete',
-                danger: true,
                 action: () => dispatch('delete', folder),
               },
             ]}
-            on:close={() => (showMenu = false)}
+            onClose={() => (showMenu = false)}
           />
         {/if}
       </div>

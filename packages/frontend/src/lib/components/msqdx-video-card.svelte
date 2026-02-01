@@ -4,7 +4,7 @@
   import { _ } from '$lib/i18n';
   import { getVideoUrl } from '$lib/config/environment';
   import { MsqdxChip } from '$lib/components/ui';
-  import { MsqdxGlassMenu } from '$lib/components/ui';
+  import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import { base } from '$app/paths';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -12,12 +12,21 @@
 
   const dispatch = createEventDispatcher<{
     select: { id: string };
-    delete: { id: string };
-    rename: { id: string };
+    delete: Video;
+    rename: Video;
+    share: Video;
   }>();
 
   let thumbnailUrl = '';
   let showMenu = false;
+  let menuX = 0;
+  let menuY = 0;
+
+  function handleMenuToggle(event: MouseEvent) {
+    menuX = event.clientX;
+    menuY = event.clientY;
+    showMenu = !showMenu;
+  }
 
   function handleClick(event?: Event) {
     const videoPath = `${base}/videos/${video.id}`;
@@ -153,14 +162,15 @@
       <div class="relative">
         <button
           class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] bg-black/20 hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors backdrop-blur-sm"
-          on:click|stopPropagation={() => (showMenu = !showMenu)}
+          on:click|stopPropagation={handleMenuToggle}
         >
           <MaterialSymbol icon="more_vert" fontSize={20} />
         </button>
 
         {#if showMenu}
-          <MsqdxGlassMenu
-            align="right"
+          <MsqdxRadialContextMenu
+            x={menuX}
+            y={menuY}
             items={[
               {
                 label: _('actions.rename'),
@@ -168,13 +178,17 @@
                 action: () => dispatch('rename', video),
               },
               {
+                label: _('actions.share'),
+                icon: 'share',
+                action: () => dispatch('share', video),
+              },
+              {
                 label: _('actions.delete'),
                 icon: 'delete',
-                danger: true,
                 action: () => dispatch('delete', video),
               },
             ]}
-            on:close={() => (showMenu = false)}
+            onClose={() => (showMenu = false)}
           />
         {/if}
       </div>
