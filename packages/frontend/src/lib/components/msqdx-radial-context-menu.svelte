@@ -18,12 +18,14 @@
   const dispatch = createEventDispatcher();
 
   // Configuration for radial layout - Reduced radius as requested
-  const radius = 80;
-  const itemSize = 48;
-  const triggerSize = 56;
+  const radius = 70;
+  const itemSize = 38;
+  const triggerSize = 44;
 
   let isOpen = false;
+  let isClosing = false;
   let menuElement: HTMLElement;
+  let visibleItems: Array<any> = [];
 
   onMount(() => {
     // Portaling: Move the element to document.body to avoid transform/overflow issues
@@ -33,6 +35,15 @@
 
     // Staggered open
     isOpen = true;
+
+    // Sequential add for items
+    items.forEach((item, i) => {
+      setTimeout(() => {
+        if (isOpen && !isClosing) {
+          visibleItems = [...visibleItems, { ...item, originalIndex: i }];
+        }
+      }, i * 60);
+    });
 
     function handleClickOutside(event: MouseEvent) {
       if (menuElement && !menuElement.contains(event.target as Node)) {
@@ -60,12 +71,29 @@
   });
 
   function handleClose() {
-    isOpen = false;
-    setTimeout(onClose, 300); // Wait for transition
+    if (isClosing) return;
+    isClosing = true;
+
+    // Sequential remove for items
+    const count = visibleItems.length;
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        visibleItems = visibleItems.slice(0, -1);
+        if (visibleItems.length === 0) {
+          isOpen = false;
+          setTimeout(onClose, 200);
+        }
+      }, i * 40);
+    }
+
+    if (count === 0) {
+      isOpen = false;
+      onClose();
+    }
   }
 
   function handleItemClick(item: any) {
-    if (!item.disabled) {
+    if (!item.disabled && !isClosing) {
       item.action();
       handleClose();
     }
@@ -117,34 +145,34 @@
 
 <div class="radial-menu-overlay" bind:this={menuElement} style="left: {x}px; top: {y}px;">
   {#if isOpen}
-    <!-- Trigger / Close Button - Using Brand Component -->
+    <!-- Trigger / Close Button - Using Brand Component with White Background -->
     <div
       class="trigger-wrapper"
-      transition:scale={{ duration: 300, easing: elasticOut }}
+      transition:scale={{ duration: 250, easing: elasticOut }}
       style="width: {triggerSize}px; height: {triggerSize}px; margin-left: -{triggerSize /
         2}px; margin-top: -{triggerSize / 2}px;"
     >
       <MsqdxButton
         class="brand-close-btn"
         on:click={handleClose}
-        variant="contained"
-        style="width: 100%; height: 100%; padding: 0; min-width: unset; background: {MSQDX_COLORS
+        variant="outlined"
+        style="width: 100%; height: 100%; padding: 0; min-width: unset; background: white; border: 2px solid {MSQDX_COLORS
           .brand.orange};"
       >
-        <MaterialSymbol icon="close" fontSize={28} color="white" />
+        <MaterialSymbol icon="close" fontSize={24} color={MSQDX_COLORS.brand.orange} />
       </MsqdxButton>
     </div>
 
     <!-- Menu Items -->
-    {#each items as item, i}
-      {@const pos = getItemPosition(i, items.length)}
+    {#each visibleItems as item (item.originalIndex)}
+      {@const pos = getItemPosition(item.originalIndex, items.length)}
       <div
         class="item-wrapper"
         style="left: {pos.x - x}px; top: {pos.y - y}px;"
         transition:fly={{
-          x: -(pos.x - x),
-          y: -(pos.y - y),
-          duration: 400 + i * 50,
+          x: -(pos.x - x) * 0.5,
+          y: -(pos.y - y) * 0.5,
+          duration: 300,
           easing: backOut,
         }}
       >
@@ -157,7 +185,7 @@
           style="width: {itemSize}px; height: {itemSize}px; padding: 0; min-width: unset; background: white; border: 2px solid {MSQDX_COLORS
             .brand.orange};"
         >
-          <MaterialSymbol icon={item.icon} fontSize={24} color={MSQDX_COLORS.brand.orange} />
+          <MaterialSymbol icon={item.icon} fontSize={20} color={MSQDX_COLORS.brand.orange} />
 
           <!-- Tooltip label -->
           <span class="item-tooltip">{item.label}</span>
@@ -190,11 +218,12 @@
   :global(.brand-close-btn) {
     border-radius: 50% !important;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
   }
 
   :global(.brand-close-btn:hover) {
     transform: scale(1.1) rotate(90deg) !important;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2) !important;
   }
 
   /* Individual Menu Items */
@@ -207,7 +236,7 @@
   :global(.brand-item-btn) {
     border-radius: 50% !important;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -215,8 +244,8 @@
   }
 
   :global(.brand-item-btn:hover:not(.disabled)) {
-    transform: scale(1.15) !important;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
   }
 
   :global(.brand-item-btn:hover .item-tooltip) {
@@ -246,8 +275,8 @@
   /* Responsive adjustments */
   @media (max-width: 768px) {
     :global(.brand-item-btn) {
-      width: 40px !important;
-      height: 40px !important;
+      width: 32px !important;
+      height: 32px !important;
     }
   }
 </style>
