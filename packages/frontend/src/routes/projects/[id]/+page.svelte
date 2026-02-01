@@ -31,6 +31,7 @@
   import MsqdxVisionTags from '$lib/components/msqdx-vision-tags.svelte';
   import MsqdxButton from '$lib/components/ui/MsqdxButton.svelte';
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
+  import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
 
   // Icons
   import { MaterialSymbol } from '$lib/components/ui';
@@ -97,6 +98,9 @@
   // Export functionality
   let exporting = false;
   let currentExportFormat: 'premiere' | 'srt' | null = null;
+
+  // Sharing functionality
+  let shareDialogOpen = false;
 
   $: projectId = $page.params.id;
 
@@ -848,6 +852,19 @@
         {/if}
       </MsqdxButton>
 
+      <!-- Share Button -->
+      <MsqdxButton
+        variant="primary"
+        glass={true}
+        on:click={() => (shareDialogOpen = true)}
+        class="flex items-center gap-2"
+      >
+        <MaterialSymbol icon="share" fontSize={18} />
+        <MsqdxTypography variant="body2" weight="medium">
+          {$currentLocale === 'en' ? 'Share' : 'Teilen'}
+        </MsqdxTypography>
+      </MsqdxButton>
+
       {#if transcriptionSegments.length > 0}
         <MsqdxButton
           glass={true}
@@ -923,6 +940,15 @@
     </div>
   {/if}
 </div>
+
+{#if project}
+  <MsqdxShareDialog
+    bind:open={shareDialogOpen}
+    itemId={project.id}
+    itemType="project"
+    itemName={project.name}
+  />
+{/if}
 
 <style>
   @media (max-width: 768px) {

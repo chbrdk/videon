@@ -50,7 +50,7 @@
 
   import MsqdxAddItemCard from '$lib/components/MsqdxAddItemCard.svelte';
   import MsqdxUnifiedCreateDialog from '$lib/components/MsqdxUnifiedCreateDialog.svelte';
-  import ShareDialog from '$lib/components/sharing/ShareDialog.svelte';
+  import MsqdxShareDialog from '$lib/components/sharing/MsqdxShareDialog.svelte';
 
   // URL params
   $: folderId = $page.url.searchParams.get('folder') || null;
@@ -971,10 +971,11 @@
 />
 
 {#if shareDialog.open}
-  <ShareDialog
-    isOpen={shareDialog.open}
-    projectId={shareDialog.type === 'project' ? shareDialog.item.id : undefined}
-    videoId={shareDialog.type === 'video' ? shareDialog.item.id : undefined}
+  <MsqdxShareDialog
+    bind:open={shareDialog.open}
+    itemId={shareDialog.item.id}
+    itemType={shareDialog.type}
+    itemName={shareDialog.item.name || shareDialog.item.originalName}
     on:close={() => (shareDialog = { ...shareDialog, open: false })}
   />
 {/if}
