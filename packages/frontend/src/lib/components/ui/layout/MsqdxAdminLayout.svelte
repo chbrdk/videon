@@ -47,14 +47,14 @@
       pathname = pathname.slice(base.length) || '/';
     }
     const pathMap: Record<string, string> = {
-      '/videos': 'Videos',
-      '/videos/shared': 'Shared',
-      '/search': 'Suche',
-      '/ai-creator': 'KI Creator',
-      '/projects': 'Projekte',
-      '/upload': 'Hochladen',
-      '/settings': 'Settings',
-      '/admin/users': 'Users',
+      '/videos': 'videos',
+      '/videos/shared': 'shared',
+      '/search': 'suche',
+      '/ai-creator': 'ki creator',
+      '/projects': 'projekte',
+      '/upload': 'hochladen',
+      '/settings': 'settings',
+      '/admin/users': 'users',
     };
 
     if (pathMap[pathname]) {
@@ -307,7 +307,6 @@
             style="
               font-size: {MSQDX_TYPOGRAPHY.fontSize['4xl']};
               text-transform: lowercase;
-              margin-top: -15px;
               letter-spacing: -2px;
               color: {currentTheme === 'dark'
               ? MSQDX_COLORS.dark.textPrimary
@@ -315,6 +314,7 @@
               display: {isMobile ? 'none' : 'block'};
               font-weight: 800;
               margin: 0;
+              padding-top: 4px;
             "
           >
             {pageTitle}
