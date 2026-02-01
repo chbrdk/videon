@@ -23,3 +23,4 @@ export { default as MsqdxGlassChip } from './MsqdxGlassChip.svelte';
 export { default as MsqdxGlassSettingsCard } from './MsqdxGlassSettingsCard.svelte';
 export { default as MsqdxGlassMenu } from './MsqdxGlassMenu.svelte';
 export { default as MsqdxAutocomplete } from './MsqdxAutocomplete.svelte';
+export { default as MsqdxSpinner } from './MsqdxSpinner.svelte';
