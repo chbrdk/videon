@@ -2,9 +2,15 @@
   import { createEventDispatcher } from 'svelte';
   import { fade, scale } from 'svelte/transition';
   import { quintOut } from 'svelte/easing';
-  import { MaterialSymbol, MsqdxFormField, MsqdxButton, MsqdxSelect } from '$lib/components/ui';
-  import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
-  import MsqdxSpinner from '$lib/components/ui/MsqdxSpinner.svelte';
+  import { userApi } from '$lib/api/users';
+  import {
+    MaterialSymbol,
+    MsqdxButton,
+    MsqdxSelect,
+    MsqdxAutocomplete,
+    MsqdxGlassCard, // Consolidated from separate import
+    MsqdxSpinner, // Consolidated from separate import
+  } from '$lib/components/ui';
   import { _ } from '$lib/i18n';
   import { MSQDX_COLORS } from '$lib/design-tokens';
   import { sharingApi, type Collaborator } from '$lib/api/sharing';
@@ -16,19 +22,48 @@
 
   const dispatch = createEventDispatcher();
 
+  enum ShareRole {
+    VIEWER = 'VIEWER',
+    EDITOR = 'EDITOR',
+  }
+
   let collaborators: Collaborator[] = [];
   let loading = false;
   let inviteLoading = false;
   let error: string | null = null;
   let successMessage: string | null = null;
 
-  // Invite Form
+  // Invite state
   let email = '';
-  let role: 'VIEWER' | 'EDITOR' = 'VIEWER';
+  let role: ShareRole = ShareRole.VIEWER;
+  let searchResults: any[] = [];
+  let isSearching = false;
+
+  async function handleSearch(event: CustomEvent<string>) {
+    const query = event.detail;
+    if (query.length < 1) {
+      searchResults = [];
+      return;
+    }
+
+    isSearching = true;
+    try {
+      searchResults = await userApi.searchUsers(query);
+    } catch (err) {
+      console.error('Search failed:', err);
+    } finally {
+      isSearching = false;
+    }
+  }
+
+  function handleSelectUser(event: CustomEvent<any>) {
+    const user = event.detail;
+    email = user.email;
+  }
 
   const roleOptions = [
-    { value: 'VIEWER', label: 'Viewer' },
-    { value: 'EDITOR', label: 'Editor' },
+    { value: ShareRole.VIEWER, label: 'Viewer' },
+    { value: ShareRole.EDITOR, label: 'Editor' },
   ];
 
   $: if (open && itemId) {
@@ -38,7 +73,7 @@
 
   function resetForm() {
     email = '';
-    role = 'VIEWER';
+    role = ShareRole.VIEWER;
     error = null;
     successMessage = null;
   }
@@ -136,11 +171,15 @@
           <!-- Invite Section -->
           <div class="space-y-4">
             <div class="flex gap-3 items-end">
-              <div class="flex-1">
-                <MsqdxFormField
-                  label="Email Address"
-                  placeholder="user@example.com"
+              <div class="flex-1 min-w-0">
+                <MsqdxAutocomplete
+                  label="Find Person"
+                  placeholder="Enter name or email..."
                   bind:value={email}
+                  items={searchResults}
+                  loading={isSearching}
+                  on:input={handleSearch}
+                  on:select={handleSelectUser}
                   disabled={inviteLoading}
                 />
               </div>

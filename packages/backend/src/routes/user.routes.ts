@@ -13,9 +13,12 @@ const isAdmin = (req: any, res: any, next: any) => {
     return res.status(403).json({ error: 'Access denied. Admin rights required.' });
 };
 
-// Apply auth and admin check to all routes
-router.use(isAuthenticated, isAdmin);
+// Basic authenticated routes
+router.use(isAuthenticated);
+router.get('/search', (req, res) => userController.searchUsers(req, res));
 
+// Admin-only routes
+router.use(isAdmin);
 router.get('/', (req, res) => userController.getAllUsers(req, res));
 router.post('/', (req, res) => userController.createUser(req, res));
 router.delete('/:id', (req, res) => userController.deleteUser(req, res));

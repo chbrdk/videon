@@ -99,4 +99,34 @@ export class UserController {
             res.status(500).json({ error: 'Failed to delete user' });
         }
     }
+
+    async searchUsers(req: Request, res: Response) {
+        try {
+            const query = req.query.q as string;
+
+            if (!query || query.length < 1) {
+                return res.json([]);
+            }
+
+            const users = await prisma.user.findMany({
+                where: {
+                    OR: [
+                        { name: { contains: query, mode: 'insensitive' } },
+                        { email: { contains: query, mode: 'insensitive' } }
+                    ]
+                },
+                take: 10,
+                select: {
+                    id: true,
+                    email: true,
+                    name: true
+                }
+            });
+
+            res.json(users);
+        } catch (error) {
+            logger.error('Error searching users:', error);
+            res.status(500).json({ error: 'Failed to search users' });
+        }
+    }
 }
