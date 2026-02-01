@@ -23,8 +23,12 @@
   let menuY = 0;
 
   function handleMenuToggle(event: MouseEvent) {
-    menuX = event.clientX;
-    menuY = event.clientY;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      menuX = event.clientX;
+      menuY = event.clientY;
+    }
     showMenu = !showMenu;
   }
 
@@ -162,7 +166,8 @@
       <div class="relative">
         <button
           class="flex items-center justify-center w-8 h-8 rounded-full border border-[var(--msqdx-color-brand-orange)] text-[var(--msqdx-color-brand-orange)] bg-black/20 hover:bg-[var(--msqdx-color-brand-orange)] hover:text-white transition-colors backdrop-blur-sm"
-          on:click|stopPropagation={handleMenuToggle}
+          on:mousedown|stopPropagation={handleMenuToggle}
+          on:click|stopPropagation
         >
           <MaterialSymbol icon="more_vert" fontSize={20} />
         </button>

@@ -25,10 +25,13 @@
   let menuElement: HTMLElement;
 
   onMount(() => {
+    // Portaling: Move the element to document.body to avoid transform/overflow issues
+    if (menuElement && typeof document !== 'undefined') {
+      document.body.appendChild(menuElement);
+    }
+
     // Staggered open
-    setTimeout(() => {
-      isOpen = true;
-    }, 10);
+    isOpen = true;
 
     function handleClickOutside(event: MouseEvent) {
       if (menuElement && !menuElement.contains(event.target as Node)) {
@@ -48,6 +51,10 @@
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
+      // Clean up portal
+      if (menuElement && menuElement.parentNode === document.body) {
+        document.body.removeChild(menuElement);
+      }
     };
   });
 

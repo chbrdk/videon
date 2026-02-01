@@ -77,8 +77,12 @@
   let projectMenuY = 0;
 
   function handleProjectMenuToggle(event: MouseEvent, project: any) {
-    projectMenuX = event.clientX;
-    projectMenuY = event.clientY;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      projectMenuX = event.clientX;
+      projectMenuY = event.clientY;
+    }
     activeMenuProjectId = activeMenuProjectId === project.id ? null : project.id;
   }
 
@@ -734,7 +738,8 @@
               <div class="relative">
                 <button
                   class="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  on:click|stopPropagation={e => handleProjectMenuToggle(e, project)}
+                  on:mousedown|stopPropagation={e => handleProjectMenuToggle(e, project)}
+                  on:click|stopPropagation
                 >
                   <MaterialSymbol icon="more_vert" fontSize={20} />
                 </button>
