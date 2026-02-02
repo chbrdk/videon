@@ -274,9 +274,16 @@ export class VideosController {
 
   // Chunked upload handler
   async handleChunk(req: Request, res: Response) {
+    const startTime = Date.now();
     try {
       const { uploadId, chunkIndex, totalChunks, filename } = req.body;
       const file = req.file;
+
+      logger.info(`📥 Chunk ${chunkIndex}/${totalChunks} received for ${uploadId}`, {
+        filename,
+        size: file?.size,
+        mimetype: file?.mimetype
+      });
 
       if (!file) {
         return res.status(400).json({ error: 'No chunk file uploaded' });
@@ -289,28 +296,34 @@ export class VideosController {
         fs.mkdirSync(tempDir, { recursive: true });
       }
 
+      // 1. Move/Save the chunk
       const chunkPath = path.join(tempDir, `chunk_${chunkIndex}`);
-      // Move chunk to temp dir
       fs.renameSync(file.path, chunkPath);
 
+      // 2. Performance Check: Quick response if not finished
       const uploadedChunks = fs.readdirSync(tempDir).filter(f => f.startsWith('chunk_')).length;
       const isComplete = uploadedChunks === parseInt(totalChunks);
 
+      const processingTime = Date.now() - startTime;
+      logger.info(`⏱️ Chunk ${chunkIndex} processed in ${processingTime}ms`);
+
       if (isComplete) {
-        logger.info(`✅ All chunks received for upload ${uploadId}. Starting background reassembly...`);
+        logger.info(`✅ All chunks received for upload ${uploadId}. Total chunks: ${totalChunks}. Initiating background reassembly.`);
 
         // Respond immediately to avoid timeout during reassembly
         res.status(202).json({
           message: 'All chunks received. Reassembling and processing started.',
-          uploadId
+          uploadId,
+          totalChunks: parseInt(totalChunks)
         });
 
-        // Background Reassembly
+        // Background Reassembly (Moved to background to ensure response is sent first)
         setTimeout(async () => {
+          const reassemblyStart = Date.now();
           try {
             const finalPath = path.join(videosStoragePath, filename);
 
-            // Assemble chunks
+            // Reassemble using append for efficiency
             const writeStream = fs.createWriteStream(finalPath);
             for (let i = 0; i < totalChunks; i++) {
               const chunkFile = path.join(tempDir, `chunk_${i}`);
@@ -318,6 +331,8 @@ export class VideosController {
                 const chunkBuffer = fs.readFileSync(chunkFile);
                 writeStream.write(chunkBuffer);
                 fs.unlinkSync(chunkFile); // Remove chunk after writing
+              } else {
+                logger.warn(`⚠️ Missing chunk ${i} during reassembly for ${uploadId}`);
               }
             }
             writeStream.end();
@@ -326,6 +341,9 @@ export class VideosController {
               writeStream.on('finish', resolve);
               writeStream.on('error', reject);
             });
+
+            const reassemblyTime = Date.now() - reassemblyStart;
+            logger.info(`✅ Reassembly for ${filename} finished in ${reassemblyTime}ms`);
 
             // Clean up temp dir
             if (fs.existsSync(tempDir)) {
@@ -344,24 +362,32 @@ export class VideosController {
 
             // Update status to analyzing
             await videoService.updateVideoStatus(video.id, 'ANALYZING');
-            await videoService.createAnalysisLog(video.id, 'INFO', 'Chunked upload reassembled, processing started');
+            await videoService.createAnalysisLog(video.id, 'INFO', `Chunked upload reassembled in ${reassemblyTime}ms, processing started`);
 
             // Trigger background processes
             this.triggerBackgroundProcesses(video, finalPath, filename);
-            logger.info(`✅ Background reassembly and processing initiated for ${filename}`);
           } catch (bgError) {
-            logger.error(`❌ Background reassembly failed for ${filename}`, bgError);
+            logger.error(`❌ Background reassembly failed for ${filename}`, {
+              error: bgError instanceof Error ? bgError.message : String(bgError),
+              uploadId
+            });
           }
         }, 100);
       } else {
         res.status(200).json({
           message: `Chunk ${chunkIndex} received`,
           receivedChunks: uploadedChunks,
-          totalChunks: parseInt(totalChunks)
+          totalChunks: parseInt(totalChunks),
+          time: processingTime
         });
       }
     } catch (error) {
-      logger.error('Chunk upload failed', error);
+      const processingTime = Date.now() - startTime;
+      logger.error('Chunk upload failed', {
+        error: (error as Error).message,
+        timeSpent: processingTime,
+        uploadId: req.body?.uploadId
+      });
       res.status(500).json({
         error: 'Chunk upload failed',
         message: (error as Error).message
