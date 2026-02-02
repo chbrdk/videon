@@ -5,12 +5,12 @@ import logger from '../utils/logger';
 export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    logger.warn('Validation errors', { 
-      path: req.path, 
-      method: req.method, 
-      errors: errors.array() 
+    logger.warn('Validation errors', {
+      path: req.path,
+      method: req.method,
+      errors: errors.array()
     });
-    
+
     return res.status(400).json({
       error: 'Validation failed',
       details: errors.array().map(err => ({
@@ -29,17 +29,17 @@ export const validateVideoUpload = [
     if (!req.file) {
       throw new Error('Video file is required');
     }
-    
+
     const allowedMimeTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
     if (!allowedMimeTypes.includes(req.file.mimetype)) {
       throw new Error('Invalid file type. Only MP4, AVI, and MOV files are allowed');
     }
-    
-    const maxSize = 1024 * 1024 * 1024; // 1GB
+
+    const maxSize = 50 * 1024 * 1024 * 1024; // 50GB
     if (req.file.size > maxSize) {
-      throw new Error('File size too large. Maximum size is 1GB');
+      throw new Error('File size too large. Maximum size is 50GB');
     }
-    
+
     return true;
   }),
   handleValidationErrors
