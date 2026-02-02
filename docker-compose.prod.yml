@@ -47,9 +47,10 @@ services:
       REDIS_URL: redis://redis:6379
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANALYZER_SERVICE_URL: http://analyzer:8001
-      AUDIO_SEPARATION_SERVICE_URL: http://audio-separation-service:8003
-      AUDIO_SERVICE_URL: http://audio-service:5679
-      SALIENCY_SERVICE_URL: http://saliency-service:8002
+      # Unified Video AI Hub services (all on port 8001)
+      AUDIO_SEPARATION_SERVICE_URL: http://analyzer:8001
+      AUDIO_SERVICE_URL: http://analyzer:8001
+      SALIENCY_SERVICE_URL: http://analyzer:8001
       VISION_SERVICE_URL: "" # Disabled in production (macOS required)
       # Qwen VL is disabled in production unless a suitable replacement is configured
       QWEN_VL_SERVICE_URL: ${QWEN_VL_SERVICE_URL}
@@ -130,85 +131,6 @@ services:
     restart: always
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8001/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Saliency Service
-  saliency-service:
-    build:
-      context: .
-      dockerfile: packages/saliency-service/Dockerfile
-    container_name: prismvid-saliency-service
-    environment:
-      PYTHONPATH: /app/src
-      LOG_LEVEL: INFO
-      BACKEND_URL: http://backend:4001
-      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
-    volumes:
-      - app_data:/app/storage
-      # Models should ideally be built into the image or volume mounted if large
-    networks:
-      - prismvid-network
-    depends_on:
-      backend:
-        condition: service_started
-      postgres:
-        condition: service_healthy
-    restart: always
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8002/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Audio Separation Service
-  audio-separation-service:
-    build:
-      context: .
-      dockerfile: packages/audio-separation-service/Dockerfile
-    container_name: prismvid-audio-separation-service
-    environment:
-      PYTHONPATH: /app/src
-      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
-      ANALYZER_SERVICE_URL: http://analyzer:8001
-      STORAGE_PATH: /app/storage
-    volumes:
-      - app_data:/app/storage
-    networks:
-      - prismvid-network
-    depends_on:
-      analyzer:
-        condition: service_started
-      postgres:
-        condition: service_healthy
-    restart: always
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8003/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Audio Service
-  audio-service:
-    build:
-      context: .
-      dockerfile: packages/audio-service/Dockerfile
-    container_name: prismvid-audio-service
-    environment:
-      PYTHONPATH: /app/src
-      DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
-      STORAGE_PATH: /app/storage
-    volumes:
-      - app_data:/app/storage
-    networks:
-      - prismvid-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: always
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5679/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
