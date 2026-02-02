@@ -118,7 +118,7 @@ class VideosApi {
   }
 
   async uploadVideoChunked(file: File, onProgress?: (progress: number) => void): Promise<UploadResponse> {
-    const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks (more resilient to timeouts)
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     const uploadId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
     let response: any = null;

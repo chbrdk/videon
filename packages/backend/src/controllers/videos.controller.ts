@@ -297,45 +297,62 @@ export class VideosController {
       const isComplete = uploadedChunks === parseInt(totalChunks);
 
       if (isComplete) {
-        logger.info(`✅ All chunks received for upload ${uploadId}. Reassembling...`);
-        const finalPath = path.join(videosStoragePath, filename);
+        logger.info(`✅ All chunks received for upload ${uploadId}. Starting background reassembly...`);
 
-        // Assemble chunks
-        const writeStream = fs.createWriteStream(finalPath);
-        for (let i = 0; i < totalChunks; i++) {
-          const chunkFile = path.join(tempDir, `chunk_${i}`);
-          const chunkBuffer = fs.readFileSync(chunkFile);
-          writeStream.write(chunkBuffer);
-          fs.unlinkSync(chunkFile); // Remove chunk after writing
-        }
-        writeStream.end();
-
-        await new Promise((resolve) => writeStream.on('finish', resolve));
-
-        // Clean up temp dir
-        fs.rmdirSync(tempDir);
-
-        // Create video record
-        const user = (req as any).user;
-        const video = await videoService.createVideo({
-          filename: filename,
-          originalName: filename,
-          fileSize: fs.statSync(finalPath).size,
-          mimeType: 'video/mp4',
-          userId: user?.id
+        // Respond immediately to avoid timeout during reassembly
+        res.status(202).json({
+          message: 'All chunks received. Reassembling and processing started.',
+          uploadId
         });
 
-        // Update status to analyzing
-        await videoService.updateVideoStatus(video.id, 'ANALYZING');
-        await videoService.createAnalysisLog(video.id, 'INFO', 'Chunked upload reassembled, processing started');
+        // Background Reassembly
+        setTimeout(async () => {
+          try {
+            const finalPath = path.join(videosStoragePath, filename);
 
-        // Trigger background processes
-        this.triggerBackgroundProcesses(video, finalPath, filename);
+            // Assemble chunks
+            const writeStream = fs.createWriteStream(finalPath);
+            for (let i = 0; i < totalChunks; i++) {
+              const chunkFile = path.join(tempDir, `chunk_${i}`);
+              if (fs.existsSync(chunkFile)) {
+                const chunkBuffer = fs.readFileSync(chunkFile);
+                writeStream.write(chunkBuffer);
+                fs.unlinkSync(chunkFile); // Remove chunk after writing
+              }
+            }
+            writeStream.end();
 
-        res.status(201).json({
-          message: 'Video reassembled and processing started',
-          video,
-        });
+            await new Promise((resolve, reject) => {
+              writeStream.on('finish', resolve);
+              writeStream.on('error', reject);
+            });
+
+            // Clean up temp dir
+            if (fs.existsSync(tempDir)) {
+              fs.rmdirSync(tempDir);
+            }
+
+            // Create video record
+            const user = (req as any).user;
+            const video = await videoService.createVideo({
+              filename: filename,
+              originalName: filename,
+              fileSize: fs.statSync(finalPath).size,
+              mimeType: 'video/mp4',
+              userId: user?.id
+            });
+
+            // Update status to analyzing
+            await videoService.updateVideoStatus(video.id, 'ANALYZING');
+            await videoService.createAnalysisLog(video.id, 'INFO', 'Chunked upload reassembled, processing started');
+
+            // Trigger background processes
+            this.triggerBackgroundProcesses(video, finalPath, filename);
+            logger.info(`✅ Background reassembly and processing initiated for ${filename}`);
+          } catch (bgError) {
+            logger.error(`❌ Background reassembly failed for ${filename}`, bgError);
+          }
+        }, 100);
       } else {
         res.status(200).json({
           message: `Chunk ${chunkIndex} received`,
