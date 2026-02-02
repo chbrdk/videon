@@ -233,9 +233,11 @@ export class VideosController {
         video,
       });
 
-      // BACKGROUND PROCESSES
-      (async () => {
+      // BACKGROUND PROCESSES - Use setTimeout to ensure response is sent first
+      setTimeout(async () => {
         try {
+          logger.info(`🧵 Starting background processing for video ${video.id}`);
+
           // 1. STORION Upload (if enabled)
           if (config.storage.type === 'storion') {
             try {
@@ -247,11 +249,18 @@ export class VideosController {
                 video.id
               );
 
-              // Update video filename with STORION ID
-              await videoService.updateVideo(video.id, { filename: storionFileId });
-              logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
+              if (storionFileId) {
+                // Update video filename with STORION ID
+                await videoService.updateVideo(video.id, { filename: storionFileId });
+                logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
+              } else {
+                throw new Error('STORION upload returned empty file ID');
+              }
             } catch (storionError) {
               logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
+                error: storionError instanceof Error ? storionError.message : String(storionError)
+              });
+              await videoService.createAnalysisLog(video.id, 'ERROR', 'Background STORION upload failed', {
                 error: storionError instanceof Error ? storionError.message : String(storionError)
               });
             }
@@ -277,8 +286,15 @@ export class VideosController {
 
         } catch (bgError) {
           logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
+          try {
+            await videoService.createAnalysisLog(video.id, 'ERROR', 'Fatal background process error', {
+              error: bgError instanceof Error ? bgError.message : String(bgError)
+            });
+          } catch (logError) {
+            logger.error('Failed to log background error to DB', logError);
+          }
         }
-      })();
+      }, 100);
 
     } catch (error) {
       logger.error('Error uploading video:', error);

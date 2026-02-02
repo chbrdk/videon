@@ -365,7 +365,7 @@ export class VideoService {
     }
   }
 
-  async updateVideo(videoId: string, data: { originalName?: string; description?: string }, userId?: string, isAdmin: boolean = false) {
+  async updateVideo(videoId: string, data: { filename?: string; originalName?: string; description?: string; status?: string }, userId?: string, isAdmin: boolean = false) {
     try {
       logger.info(`Updating video ${videoId}`, data);
 
@@ -379,8 +379,10 @@ export class VideoService {
       const updatedVideo = await prisma.video.update({
         where: { id: videoId },
         data: {
+          filename: data.filename,
           originalName: data.originalName,
-          // description: data.description // Assuming description might be added later to schema if not present
+          status: data.status as any,
+          // description: data.description 
         },
         include: { folder: true }
       });
