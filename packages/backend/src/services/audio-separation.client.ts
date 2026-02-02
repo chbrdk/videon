@@ -7,11 +7,11 @@ import logger from '../utils/logger';
 
 export class AudioSeparationClient {
   private baseUrl: string;
-  
+
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || process.env.AUDIO_SEPARATION_SERVICE_URL || 'http://localhost:8003';
+    this.baseUrl = baseUrl || process.env.AUDIO_SEPARATION_SERVICE_URL || 'http://localhost:8001';
   }
-  
+
   /**
    * Prüft die Gesundheit des Audio Separation Services
    */
@@ -26,43 +26,43 @@ export class AudioSeparationClient {
       return false;
     }
   }
-  
+
   /**
    * Startet Audio-Trennung mit Spleeter über Analyzer Service
    */
   async separateWithSpleeter(videoId: string, videoPath: string): Promise<void> {
     try {
       logger.info(`🎵 Starting Spleeter audio separation for video ${videoId}`);
-      
+
       await axios.post(
         `${this.baseUrl}/separate-audio`,
         {
           videoId: videoId,
           videoPath: videoPath
         },
-        { 
+        {
           timeout: 600000, // 10 Minuten Timeout
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
-      
+
       logger.info(`✅ Spleeter audio separation started for video ${videoId}`);
-      
+
     } catch (error) {
       logger.error(`❌ Spleeter audio separation failed for video ${videoId}:`, error);
       throw error;
     }
   }
-  
+
   /**
    * Startet Audio-Trennung mit Demucs über Analyzer Service
    */
   async separateWithDemucs(videoId: string, videoPath: string): Promise<void> {
     try {
       logger.info(`🎵 Starting Demucs audio separation for video ${videoId}`);
-      
+
       // Für jetzt verwenden wir den gleichen Endpoint wie Spleeter
       // In Zukunft könnte der Analyzer Service verschiedene Methoden unterstützen
       await axios.post(
@@ -72,22 +72,22 @@ export class AudioSeparationClient {
           videoPath: videoPath,
           method: 'demucs' // Optional parameter
         },
-        { 
+        {
           timeout: 600000, // 10 Minuten Timeout
           headers: {
             'Content-Type': 'application/json'
           }
         }
       );
-      
+
       logger.info(`✅ Demucs audio separation started for video ${videoId}`);
-      
+
     } catch (error) {
       logger.error(`❌ Demucs audio separation failed for video ${videoId}:`, error);
       throw error;
     }
   }
-  
+
   /**
    * Gibt verfügbare Trennung-Methoden zurück
    */

@@ -313,3 +313,109 @@ class DatabaseClient:
         except Exception as e:
             logger.error(f"❌ Failed to save audio stem for video {video_id}: {e}")
             raise
+    async def create_saliency_analysis(self, video_id: str, scene_id: Optional[str], data_path: str, 
+                                     heatmap_path: Optional[str], roi_data: str, frame_count: int, 
+                                     sample_rate: int, model_version: str, processing_time: float) -> Optional[str]:
+        """Create a new saliency analysis record"""
+        try:
+            analysis_id = str(uuid.uuid4())
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
+                    cursor.execute(
+                        '''
+                        INSERT INTO saliency_analyses (id, "videoId", "sceneId", "dataPath", "heatmapPath", 
+                                                      "roiData", "frameCount", "sampleRate", "modelVersion", 
+                                                      "processingTime", "createdAt")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                        ''',
+                        (analysis_id, video_id, scene_id, data_path, heatmap_path, 
+                         roi_data, frame_count, sample_rate, model_version, processing_time)
+                    )
+                    conn.commit()
+                    logger.info(f"Created saliency analysis {analysis_id} for video {video_id}")
+                    return analysis_id
+        except Exception as e:
+            logger.error(f"Failed to create saliency analysis for video {video_id}: {e}")
+            return None
+
+    async def get_saliency_analysis(self, video_id: str) -> Optional[Dict[str, Any]]:
+        """Get saliency analysis for a video"""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute('SET search_path TO videon, public')
+                    cursor.execute(
+                        'SELECT * FROM saliency_analyses WHERE "videoId" = %s AND "sceneId" IS NULL',
+                        (video_id,)
+                    )
+                    result = cursor.fetchone()
+                    return dict(result) if result else None
+        except Exception as e:
+            logger.error(f"Failed to get saliency analysis for {video_id}: {e}")
+            return None
+
+    async def get_scene_saliency(self, scene_id: str) -> Optional[Dict[str, Any]]:
+        """Get saliency analysis for a scene"""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute('SET search_path TO videon, public')
+                    cursor.execute(
+                        'SELECT * FROM saliency_analyses WHERE "sceneId" = %s',
+                        (scene_id,)
+                    )
+                    result = cursor.fetchone()
+                    return dict(result) if result else None
+        except Exception as e:
+            logger.error(f"Failed to get saliency analysis for scene {scene_id}: {e}")
+            return None
+
+    async def create_reframed_video(self, video_id: str, saliency_id: str, aspect_ratio: str, 
+                                   output_path: str, file_size: int, duration: float,
+                                   custom_width: Optional[int] = None, custom_height: Optional[int] = None,
+                                   smoothing_factor: float = 0.3) -> Optional[str]:
+        """Create a new reframed video record"""
+        try:
+            reframed_id = str(uuid.uuid4())
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
+                    cursor.execute(
+                        '''
+                        INSERT INTO reframed_videos (id, "videoId", "saliencyId", "aspectRatio", 
+                                                   "customWidth", "customHeight", "smoothingFactor",
+                                                   "outputPath", "fileSize", duration, status, progress, "createdAt")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'COMPLETED', 1.0, NOW())
+                        ''',
+                        (reframed_id, video_id, saliency_id, aspect_ratio, 
+                         custom_width, custom_height, smoothing_factor, output_path, file_size, duration)
+                    )
+                    conn.commit()
+                    logger.info(f"Created reframed video {reframed_id}")
+                    return reframed_id
+        except Exception as e:
+            logger.error(f"Failed to create reframed video: {e}")
+            return None
+
+    async def update_reframed_video_status(self, reframed_id: str, status: str, progress: float = 1.0) -> bool:
+        """Update reframed video status"""
+        try:
+            with self.get_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('SET search_path TO videon, public')
+                    if status == 'COMPLETED':
+                        cursor.execute(
+                            'UPDATE reframed_videos SET status = %s, progress = %s, "completedAt" = NOW() WHERE id = %s',
+                            (status, progress, reframed_id)
+                        )
+                    else:
+                        cursor.execute(
+                            'UPDATE reframed_videos SET status = %s, progress = %s WHERE id = %s',
+                            (status, progress, reframed_id)
+                        )
+                    conn.commit()
+                    return True
+        except Exception as e:
+            logger.error(f"Failed to update reframed video status: {e}")
+            return False

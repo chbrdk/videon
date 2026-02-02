@@ -32,9 +32,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-sk-dummy-key-for-development}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
       ANALYZER_SERVICE_URL: http://analyzer:8001
-      AUDIO_SEPARATION_SERVICE_URL: http://audio-separation-service:8003
-      AUDIO_SERVICE_URL: http://audio-service:5679
-      SALIENCY_SERVICE_URL: http://saliency-service:8002
+      # Unified Video AI Hub services (all on port 8001)
+      AUDIO_SEPARATION_SERVICE_URL: http://analyzer:8001
+      AUDIO_SERVICE_URL: http://analyzer:8001
+      SALIENCY_SERVICE_URL: http://analyzer:8001
       VISION_SERVICE_URL: http://vision-service:8004
       QWEN_VL_SERVICE_URL: http://host.docker.internal:8081
       CORS_ORIGINS: http://localhost:3010,http://192.168.50.101:3010
@@ -106,105 +107,6 @@ services:
       - ion-network
       - echon-network
     restart: unless-stopped
-
-  # Saliency Service
-  saliency-service:
-    build:
-      context: ./packages/saliency-service
-      dockerfile: Dockerfile
-    container_name: videon-saliency-service
-    environment:
-      PYTHONPATH: /app/src
-      LOG_LEVEL: INFO
-      BACKEND_URL: http://backend:4001
-      # STORION Database
-      USE_STORION_DB: ${USE_STORION_DB:-true}
-      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
-      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
-      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
-    ports:
-      - "0.0.0.0:8005:8002"
-    volumes:
-      - ./storage:/app/storage
-      - ./packages/saliency-service/models:/app/models
-    networks:
-      - videon-network
-      - ion-network
-      - echon-network
-    depends_on:
-      backend:
-        condition: service_started
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8002/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Audio Separation Service
-  audio-separation-service:
-    build:
-      context: .
-      dockerfile: packages/audio-separation-service/Dockerfile
-    container_name: videon-audio-separation-service
-    environment:
-      PYTHONPATH: /app/src
-      # STORION Database
-      USE_STORION_DB: ${USE_STORION_DB:-true}
-      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
-      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
-      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
-      ANALYZER_SERVICE_URL: http://analyzer:8001
-      STORAGE_PATH: /app/storage
-    ports:
-      - "0.0.0.0:8006:8003"
-    volumes:
-      - ./storage:/app/storage
-    networks:
-      - videon-network
-      - ion-network
-      - echon-network
-    depends_on:
-      analyzer:
-        condition: service_started
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8003/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Audio Service
-  audio-service:
-    build:
-      context: .
-      dockerfile: packages/audio-service/Dockerfile
-    container_name: videon-audio-service
-    environment:
-      PYTHONPATH: /app/src
-      # STORION Database
-      USE_STORION_DB: ${USE_STORION_DB:-true}
-      STORION_DATABASE_URL: ${STORION_DATABASE_URL:-postgresql+psycopg://unison:unison@msqdx-unison-postgres-1:5432/storion}
-      # DATABASE_URL for Python services (psycopg2 doesn't support ?schema=, use search_path instead)
-      DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
-      STORAGE_PATH: /app/storage
-    ports:
-      - "0.0.0.0:5680:5679"
-    volumes:
-      - ./storage:/app/storage
-    networks:
-      - videon-network
-      - ion-network
-      - echon-network
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5679/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   # Storybook Service - Development Container
   storybook:
