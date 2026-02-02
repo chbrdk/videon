@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import { MsqdxBaseItemCard } from '$lib/components/ui';
   import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
+  import { _ } from '$lib/i18n';
 
   export let project;
   export let selected = false;
@@ -26,7 +27,7 @@
 
 <MsqdxBaseItemCard
   title={project.name || 'Untitled Project'}
-  subtitle="Project"
+  subtitle={_('project.type')}
   type="project"
   {selected}
   shared={!!project.sharedRole}
@@ -41,17 +42,17 @@
         y={menuY}
         items={[
           {
-            label: 'Rename',
+            label: _('actions.rename'),
             icon: 'edit',
             action: () => dispatch('rename', project),
           },
           {
-            label: 'Share',
+            label: _('actions.share'),
             icon: 'share',
             action: () => dispatch('share', project),
           },
           {
-            label: 'Delete',
+            label: _('actions.delete'),
             icon: 'delete',
             action: () => dispatch('delete', project),
           },

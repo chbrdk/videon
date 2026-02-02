@@ -3,6 +3,7 @@
 
   import { api } from '$lib/config/environment';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   let isExpanded = false;
   let services = {
@@ -129,11 +130,11 @@
   }
 
   function formatLastCheck(lastCheck: Date | null): string {
-    if (!lastCheck) return 'Never';
+    if (!lastCheck) return _('video.status.never');
     const now = new Date();
     const diff = Math.floor((now.getTime() - lastCheck.getTime()) / 1000);
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 60) return _('video.status.ago.seconds', { count: diff });
+    if (diff < 3600) return _('video.status.ago.minutes', { count: Math.floor(diff / 60) });
     return lastCheck.toLocaleTimeString();
   }
 
@@ -256,10 +257,10 @@
   <button
     on:click={toggleExpanded}
     class="glass-button flex items-center gap-2 px-3 py-2 rounded-full shadow-lg hover:scale-105 transition-all duration-200"
-    title="Service Status"
+    title={_('video.status.title')}
   >
     <div class="w-2 h-2 rounded-full {getStatusColor(services.backend.status)} bg-current"></div>
-    <span class="text-xs font-medium">Services</span>
+    <span class="text-xs font-medium">{_('video.status.services')}</span>
     <MaterialSymbol icon={isExpanded ? 'expand_more' : 'expand_less'} fontSize={16} />
   </button>
 
@@ -267,11 +268,13 @@
   {#if isExpanded}
     <div class="glass-card mt-2 p-4 min-w-64 animate-in slide-in-from-bottom-2 duration-200">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Service Status</h3>
+        <h3 class="text-sm font-semibold text-gray-900 dark:text-white">
+          {_('video.status.title')}
+        </h3>
         <button
           on:click={checkServiceHealth}
           class="glass-button p-1 rounded"
-          title="Refresh Status"
+          title={_('video.status.refresh')}
         >
           <MaterialSymbol icon="refresh" fontSize={16} />
         </button>
@@ -281,7 +284,9 @@
         <!-- Backend Service -->
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Backend</span>
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >{_('video.status.backend')}</span
+            >
             <span
               class="text-xs {getStatusColor(services.backend.status)} {services.backend.status ===
               'checking'
@@ -295,7 +300,7 @@
             on:click={() => restartService('backend')}
             disabled={isOperating('backend')}
             class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center"
-            title="Restart Backend"
+            title={_('video.status.actions.restart', { service: _('video.status.backend') })}
           >
             {#if isOperating('backend')}
               <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
@@ -308,7 +313,9 @@
         <!-- Analyzer Service -->
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Analyzer</span>
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >{_('video.status.analyzer')}</span
+            >
             <span
               class="text-xs {getStatusColor(services.analyzer.status)} {services.analyzer
                 .status === 'checking'
@@ -323,7 +330,7 @@
               on:click={() => stopService('analyzer')}
               disabled={isOperating('analyzer')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
-              title="Stop Analyzer"
+              title={_('video.status.actions.stop', { service: _('video.status.analyzer') })}
             >
               {#if isOperating('analyzer')}
                 <div class="animate-spin">⟳</div>
@@ -336,7 +343,7 @@
               on:click={() => startService('analyzer')}
               disabled={isOperating('analyzer')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
-              title="Start Analyzer"
+              title={_('video.status.actions.start', { service: _('video.status.analyzer') })}
             >
               {#if isOperating('analyzer')}
                 <div class="animate-spin">⟳</div>
@@ -350,7 +357,9 @@
         <!-- Saliency Service -->
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Saliency</span>
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >{_('video.status.saliency')}</span
+            >
             <span
               class="text-xs {getStatusColor(services.saliency.status)} {services.saliency
                 .status === 'checking'
@@ -365,7 +374,7 @@
               on:click={() => stopService('saliency')}
               disabled={isOperating('saliency')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
-              title="Stop Saliency"
+              title={_('video.status.actions.stop', { service: _('video.status.saliency') })}
             >
               {#if isOperating('saliency')}
                 <div class="animate-spin">⟳</div>
@@ -378,7 +387,7 @@
               on:click={() => startService('saliency')}
               disabled={isOperating('saliency')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
-              title="Start Saliency"
+              title={_('video.status.actions.start', { service: _('video.status.saliency') })}
             >
               {#if isOperating('saliency')}
                 <div class="animate-spin">⟳</div>
@@ -393,7 +402,7 @@
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2">
             <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
-              >Audio Separation</span
+              >{_('video.status.audioSeparation')}</span
             >
             <span
               class="text-xs {getStatusColor(services.audioSeparation.status)} {services
@@ -409,7 +418,7 @@
               on:click={() => stopService('audioSeparation')}
               disabled={isOperating('audioSeparation')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-red-400"
-              title="Stop Audio Separation"
+              title={_('video.status.actions.stop', { service: _('video.status.audioSeparation') })}
             >
               {#if isOperating('audioSeparation')}
                 <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
@@ -422,7 +431,9 @@
               on:click={() => startService('audioSeparation')}
               disabled={isOperating('audioSeparation')}
               class="glass-button p-1 text-xs w-6 h-6 flex items-center justify-center text-green-400"
-              title="Start Audio Separation"
+              title={_('video.status.actions.start', {
+                service: _('video.status.audioSeparation'),
+              })}
             >
               {#if isOperating('audioSeparation')}
                 <div class="animate-spin"><MaterialSymbol icon="refresh" fontSize={14} /></div>
@@ -436,7 +447,9 @@
         <!-- Frontend Service -->
         <div class="flex items-center justify-between py-1">
           <div class="flex items-center gap-2">
-            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Frontend</span>
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300"
+              >{_('video.status.frontend')}</span
+            >
             <span class="text-xs {getStatusColor(services.frontend.status)}">
               {getStatusIcon(services.frontend.status)}
             </span>
@@ -452,19 +465,19 @@
         <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
           <div class="flex items-center gap-1">
             <span class="text-green-400"><MaterialSymbol icon="check_circle" fontSize={12} /></span>
-            <span>Healthy</span>
+            <span>{_('video.status.healthy')}</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-red-400"><MaterialSymbol icon="cancel" fontSize={12} /></span>
-            <span>Error</span>
+            <span>{_('video.status.error')}</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-yellow-400"><MaterialSymbol icon="warning" fontSize={12} /></span>
-            <span>Unavailable</span>
+            <span>{_('video.status.unavailable')}</span>
           </div>
           <div class="flex items-center gap-1">
             <span class="text-blue-400"><MaterialSymbol icon="refresh" fontSize={12} /></span>
-            <span>Checking</span>
+            <span>{_('video.status.checking')}</span>
           </div>
         </div>
       </div>

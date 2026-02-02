@@ -1,6 +1,6 @@
-<script>
   import { viewMode } from '$lib/stores/folders.store';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   export let className = '';
 </script>
@@ -9,14 +9,14 @@
   <button
     class="glass-button rounded-full {$viewMode === 'grid' ? 'active' : ''}"
     on:click={() => viewMode.set('grid')}
-    title="Grid View"
+    title={_('controls.gridView')}
   >
     <MaterialSymbol icon="grid_view" fontSize={20} />
   </button>
   <button
     class="glass-button rounded-full {$viewMode === 'list' ? 'active' : ''}"
     on:click={() => viewMode.set('list')}
-    title="List View"
+    title={_('controls.listView')}
   >
     <MaterialSymbol icon="view_list" fontSize={20} />
   </button>

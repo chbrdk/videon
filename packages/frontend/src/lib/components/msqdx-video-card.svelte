@@ -62,8 +62,8 @@
   });
 
   function formatFileSize(bytes: number): string {
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    if (bytes === 0) return '0 Bytes';
+    const sizes = [_('units.bytes'), _('units.kb'), _('units.mb'), _('units.gb')];
+    if (bytes === 0) return '0 ' + _('units.bytes');
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   }
@@ -113,7 +113,7 @@
 
 <MsqdxBaseItemCard
   title={video.originalName}
-  subtitle="Video"
+  subtitle={_('video.type')}
   type="video"
   {thumbnailUrl}
   shared={!!video.sharedRole}

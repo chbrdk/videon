@@ -4,6 +4,7 @@
   import { theme } from '$lib/stores/theme.store';
   import MaterialSymbol from './MaterialSymbol.svelte';
   import MsqdxTypography from './MsqdxTypography.svelte';
+  import { _ } from '$lib/i18n';
 
   interface Step {
     label: string;
@@ -101,7 +102,7 @@
           >
             {step.label}
             {#if step.optional}
-              <span class="msqdx-step-optional">Optional</span>
+              <span class="msqdx-step-optional">{_('common.optional')}</span>
             {/if}
           </div>
           {#if step.description && orientation === 'vertical'}

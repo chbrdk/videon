@@ -1,5 +1,5 @@
-<script lang="ts">
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
   // Svelte 5 Props
   interface Props {
     objects?: Array<{ label: string; confidence: number }>;
@@ -138,7 +138,7 @@
 </script>
 
 <div class="vision-tags glass-card">
-  <h3>Vision Analysis</h3>
+  <h3>{_('video.summary')}</h3>
 
   {#if faces.length > 0}
     <div class="tag-group">
@@ -161,7 +161,7 @@
   {#if qwenVLDescription}
     <div class="ai-description qwen-vl">
       <div class="ai-header">
-        <span class="ai-label">Qwen VL Analyse:</span>
+        <span class="ai-label">{_('pages.upload.guidelineAnalysis')}:</span>
       </div>
 
       {#if parsedQwenVL && (parsedQwenVL.sceneInfo || parsedQwenVL.summary || parsedQwenVL.details.length > 0)}
@@ -185,7 +185,7 @@
                 fontSize={18}
                 class="text-green-300/80"
               />
-              <span class="section-title">Zusammenfassung</span>
+              <span class="section-title">{_('video.summary')}</span>
             </button>
 
             {#if summaryExpanded}
@@ -243,7 +243,7 @@
   {:else if aiDescription}
     <div class="ai-description">
       <div class="ai-header">
-        <span class="ai-label">AI Description:</span>
+        <span class="ai-label">{_('pages.upload.guidelineAnalysis')}:</span>
       </div>
       <p class="ai-text">{aiDescription}</p>
     </div>
@@ -251,7 +251,7 @@
 
   {#if faces.length === 0 && topObjects.length === 0 && topSceneClassification.length === 0 && topCustomObjects.length === 0 && !aiDescription}
     <div class="no-results">
-      <p>No objects or faces detected</p>
+      <p>{_('pages.videoGallery.emptyState.noResults')}</p>
     </div>
   {/if}
 </div>

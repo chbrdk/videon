@@ -18,6 +18,7 @@
   } from '$lib/stores/timeline.store';
   import { api } from '$lib/config/environment';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   const dispatch = createEventDispatcher();
 
@@ -137,7 +138,7 @@
   }
 
   function handleDeleteClip(clipId: string) {
-    if (confirm('Are you sure you want to delete this clip?')) {
+    if (confirm(_('delete.confirmDelete'))) {
       deleteClip(clipId);
     }
   }
@@ -168,10 +169,10 @@
 <div class="timeline-container" bind:this={timelineContainer}>
   <!-- Timeline Header -->
   <div class="timeline-header">
-    <h3 class="text-lg font-semibold text-white mb-2">Timeline Editor</h3>
+    <h3 class="text-lg font-semibold text-white mb-2">{_('timeline.editorTitle')}</h3>
     <div class="timeline-controls">
-      <button class="control-btn" on:click={() => dispatch('export')} title="Export Timeline">
-        Export
+      <button class="control-btn" on:click={() => dispatch('export')} title={_('export.exportXml')}>
+        {_('actions.save')}
       </button>
     </div>
   </div>
@@ -248,7 +249,8 @@
                   <div class="loading-spinner"></div>
                 </div>
                 <div class="clip-placeholder" style="display: none;">
-                  Scene {clip.order + 1}
+                  {_('timeline.scene')}
+                  {clip.order + 1}
                 </div>
               </div>
 
@@ -266,7 +268,7 @@
               <button
                 class="control-btn small"
                 on:click|stopPropagation={() => handleSplitClip(clip.id)}
-                title="Split Clip"
+                title={_('controls.splitTitle')}
               >
                 <div class="icon-16px"><MaterialSymbol icon="content_cut" fontSize={16} /></div>
               </button>
@@ -274,7 +276,7 @@
               <button
                 class="control-btn small"
                 on:click|stopPropagation={() => handleDeleteClip(clip.id)}
-                title="Delete Clip"
+                title={_('actions.delete')}
               >
                 <div class="icon-16px"><MaterialSymbol icon="delete" fontSize={16} /></div>
               </button>
@@ -288,7 +290,7 @@
   <!-- Timeline Footer -->
   <div class="timeline-footer">
     <div class="time-display">
-      Current: {formatTime($currentTime)} / {formatTime(videoDuration)}
+      {_('timeline.current')}: {formatTime($currentTime)} / {formatTime(videoDuration)}
     </div>
     <div class="zoom-controls">
       <button
@@ -307,8 +309,8 @@
 {#if splitModalOpen}
   <div class="modal-overlay" on:click={() => (splitModalOpen = false)}>
     <div class="modal" on:click|stopPropagation>
-      <h3>Split Clip</h3>
-      <p>Select the time to split this clip:</p>
+      <h3>{_('controls.splitTitle')}</h3>
+      <p>{_('timeline.selectSplitTime')}</p>
       <div class="split-controls">
         <input
           type="range"
@@ -320,8 +322,10 @@
         <span class="split-time">{formatTime(splitTime)}</span>
       </div>
       <div class="modal-actions">
-        <button class="btn-secondary" on:click={() => (splitModalOpen = false)}>Cancel</button>
-        <button class="btn-primary" on:click={confirmSplit}>Split</button>
+        <button class="btn-secondary" on:click={() => (splitModalOpen = false)}
+          >{_('actions.cancel')}</button
+        >
+        <button class="btn-primary" on:click={confirmSplit}>{_('controls.split')}</button>
       </div>
     </div>
   </div>

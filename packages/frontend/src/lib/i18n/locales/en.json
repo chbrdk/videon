@@ -93,7 +93,29 @@
       "analyzing": "Analyzing...",
       "analyzed": "Analyzed",
       "complete": "Complete",
-      "error": "Error"
+      "error": "Error",
+      "title": "Service Status",
+      "services": "Services",
+      "refresh": "Refresh Status",
+      "backend": "Backend",
+      "analyzer": "Analyzer",
+      "saliency": "Saliency",
+      "audioSeparation": "Audio Separation",
+      "frontend": "Frontend",
+      "healthy": "Healthy",
+      "unhealthy": "Unhealthy",
+      "unavailable": "Unavailable",
+      "checking": "Checking",
+      "never": "Never",
+      "ago": {
+        "seconds": "{count}s ago",
+        "minutes": "{count}m ago"
+      },
+      "actions": {
+        "restart": "Restart {service}",
+        "stop": "Stop {service}",
+        "start": "Start {service}"
+      }
     },
     "details": {
       "size": "Size:",
@@ -101,17 +123,22 @@
       "analyzed": "Analyzed:",
       "duration": "Duration:",
       "clickToOpen": "Click to open"
-    }
+    },
+    "type": "Video",
+    "transcription": "Transcription",
+    "summary": "Summary"
   },
   "folder": {
     "create": "Create Folder",
-    "rename": "Rename",
+    "rename": "Rename Folder",
     "delete": "Delete",
     "move": "Move to Folder",
+    "merge": "Merge",
     "parentFolder": "Back",
     "type": "Folder",
     "name": "Folder Name",
-    "namePlaceholder": "Enter folder name..."
+    "namePlaceholder": "Enter folder name...",
+    "items": "Folders"
   },
   "actions": {
     "select": "Select",
@@ -123,7 +150,17 @@
     "upload": "Upload",
     "retry": "Retry",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "view": "View",
+    "edit": "Edit",
+    "close": "Close",
+    "add": "Add",
+    "settings": "Settings",
+    "more": "More",
+    "merge": "Merge",
+    "restart": "Restart",
+    "stop": "Stop",
+    "start": "Start"
   },
   "selection": {
     "selected": "selected",
@@ -142,7 +179,6 @@
     "selectValidVideo": "Please select a valid video file",
     "fileTooLarge": "File is too large. Maximum: 1GB",
     "deleteConfirm": "Really delete folder \"{name}\"?",
-    "deleteError": "Error: {message}",
     "moveError": "Error moving: {message}"
   },
   "loading": {
@@ -177,11 +213,39 @@
     "pause": "Pause",
     "mute": "Mute",
     "unmute": "Unmute",
-    "undo": "Undo (Cmd+Z)",
-    "redo": "Redo (Cmd+Shift+Z)",
-    "split": "Split Scene at Playhead (S)",
+    "undo": "Undo",
+    "redo": "Redo",
+    "split": "Split",
+    "undoTitle": "Undo (Cmd+Z)",
+    "redoTitle": "Redo (Cmd+Shift+Z)",
+    "splitTitle": "Split Scene at Playhead (S)",
     "addScene": "Add Scene",
-    "volume": "Volume"
+    "volume": "Volume",
+    "gridView": "Grid View",
+    "listView": "List View",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "moveLeft": "Move Left",
+    "moveRight": "Move Right"
+  },
+  "trackConfig": {
+    "title": "Track Configuration",
+    "subtitle": "Manage timeline tracks",
+    "locked": "Track is locked",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "showTrack": "Show track",
+    "hideTrack": "Hide track",
+    "lockTrack": "Lock track",
+    "unlockTrack": "Unlock track",
+    "height": "Height",
+    "help": "💡 Tracks can be reordered, resized, and toggled on/off. Locked tracks cannot be modified."
+  },
+  "timeline": {
+    "editorTitle": "Timeline Editor",
+    "selectSplitTime": "Select the time to split this clip:",
+    "current": "Current",
+    "scene": "Scene"
   },
   "export": {
     "exportFailed": "Export failed",
@@ -191,6 +255,21 @@
     "exportXml": "XML Only",
     "exportSrt": "SRT",
     "exporting": "Exporting..."
+  },
+  "sharing": {
+    "title": "Share \"{name}\"",
+    "subtitle": "Invite people to collaborate on this {type}",
+    "findPerson": "Find Person",
+    "searchPlaceholder": "Enter name or email...",
+    "invite": "Invite",
+    "inviteSuccess": "Invitation sent successfully",
+    "whoHasAccess": "Who has access",
+    "noAccess": "No one else has access yet.",
+    "removeAccess": "Remove Access",
+    "roles": {
+      "viewer": "Viewer",
+      "editor": "Editor"
+    }
   },
   "audio": {
     "separating": "Separating...",
@@ -202,13 +281,42 @@
   "reframe": {
     "title": "Reframe Video",
     "deleteConfirm": "Really delete?",
-    "deleteFailed": "Failed to delete reframed video"
+    "deleteFailed": "Failed to delete reframed video",
+    "smoothingFactor": "Smoothing Factor:",
+    "processing": "Processing:",
+    "start": "Start Reframing",
+    "cancel": "Cancel",
+    "alertCustom": "Please enter both width and height for custom aspect ratio",
+    "custom": "Custom",
+    "smoothing": "Smoothing",
+    "noSmoothing": "No smoothing",
+    "lightSmoothing": "Light smoothing",
+    "mediumSmoothing": "Medium smoothing",
+    "heavySmoothing": "Heavy smoothing",
+    "aspectRatio": "Aspect Ratio",
+    "customDimensions": "Custom Dimensions",
+    "width": "Width",
+    "height": "Height",
+    "customHelp": "Enter width and height for custom aspect ratio",
+    "presets": {
+      "vertical": "9:16 (Vertical)",
+      "horizontal": "16:9 (Horizontal)",
+      "square": "1:1 (Square)",
+      "custom": "Custom"
+    },
+    "enterDimensions": "Please enter both width and height for custom aspect ratio",
+    "close": "Close"
   },
   "delete": {
     "deleteError": "Delete Error",
     "confirmDelete": "Really delete?",
     "videoTitle": "Delete Video",
     "videoConfirm": "Do you really want to delete this video?",
+    "folderTitle": "Delete Folder",
+    "folderConfirm": "Do you really want to delete this folder?",
+    "folderWarning": "All videos and subfolders inside will be moved to root.",
+    "projectTitle": "Delete Project",
+    "projectConfirm": "Do you really want to delete this project?",
     "warning": "This action cannot be undone.",
     "dataDeleted": "The following data will be deleted:",
     "data": {
@@ -243,6 +351,7 @@
     "searchPlaceholder": "Search..."
   },
   "project": {
+    "type": "Project",
     "currentScene": "Current Scene:",
     "noScenesAdded": "No scenes added yet",
     "exporting": "Exporting...",
@@ -336,35 +445,6 @@
     "applying": "Applying...",
     "previewing": "Generating preview..."
   },
-  "reframe": {
-    "title": "Reframe Video",
-    "aspectRatio": "Aspect Ratio",
-    "customDimensions": "Custom Dimensions",
-    "width": "Width",
-    "height": "Height",
-    "customHelp": "Enter width and height for custom aspect ratio",
-    "smoothingFactor": "Smoothing Factor:",
-    "processing": "Processing:",
-    "start": "Start Reframing",
-    "cancel": "Cancel",
-    "alertCustom": "Please enter both width and height for custom aspect ratio",
-    "custom": "Custom",
-    "smoothing": "Smoothing",
-    "noSmoothing": "No smoothing",
-    "lightSmoothing": "Light smoothing",
-    "mediumSmoothing": "Medium smoothing",
-    "heavySmoothing": "Heavy smoothing",
-    "presets": {
-      "vertical": "9:16 (Vertical)",
-      "horizontal": "16:9 (Horizontal)",
-      "square": "1:1 (Square)",
-      "custom": "Custom"
-    },
-    "deleteConfirm": "Really delete?",
-    "deleteFailed": "Failed to delete reframed video",
-    "enterDimensions": "Please enter both width and height for custom aspect ratio",
-    "close": "Close"
-  },
   "settings": {
     "title": "Settings",
     "email": "Email",
@@ -384,5 +464,25 @@
     "errorMatch": "Error: New passwords do not match",
     "errorLength": "Error: Password must be at least 6 characters",
     "errorGeneric": "An error occurred"
+  },
+  "admin": {
+    "users": {
+      "title": "Users",
+      "subtitle": "Manage user access and roles",
+      "noUsers": "No users found.",
+      "createNew": "Create New User",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "role": "Role",
+      "user": "User",
+      "admin": "Admin",
+      "deleteUser": "Delete User",
+      "namePlaceholder": "e.g. John Doe",
+      "emailPlaceholder": "john@example.com"
+    }
+  },
+  "common": {
+    "optional": "Optional"
   }
 }

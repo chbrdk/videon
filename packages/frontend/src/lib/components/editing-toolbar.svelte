@@ -2,6 +2,7 @@
   import { canUndo, canRedo, undo, redo } from '$lib/stores/edit-history.store';
   import { createEventDispatcher } from 'svelte';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   const dispatch = createEventDispatcher();
 
@@ -37,20 +38,20 @@
       class="toolbar-btn"
       on:click={handleUndo}
       disabled={!$canUndo}
-      title="Rückgängig (Cmd+Z)"
+      title={_('controls.undoTitle')}
     >
       <div class="icon-20px"><MaterialSymbol icon="undo" fontSize={20} /></div>
-      <span>Undo</span>
+      <span>{_('controls.undo')}</span>
     </button>
 
     <button
       class="toolbar-btn"
       on:click={handleRedo}
       disabled={!$canRedo}
-      title="Wiederholen (Cmd+Shift+Z)"
+      title={_('controls.redoTitle')}
     >
       <div class="icon-20px"><MaterialSymbol icon="redo" fontSize={20} /></div>
-      <span>Redo</span>
+      <span>{_('controls.redo')}</span>
     </button>
   </div>
 
@@ -62,10 +63,10 @@
       class="toolbar-btn"
       on:click={handleSplit}
       disabled={!canSplit}
-      title="Szene an Playhead teilen (S)"
+      title={_('controls.splitTitle')}
     >
       <div class="icon-20px"><MaterialSymbol icon="content_cut" fontSize={20} /></div>
-      <span>Split</span>
+      <span>{_('controls.split')}</span>
     </button>
   </div>
 </div>

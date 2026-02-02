@@ -1,6 +1,8 @@
 <script lang="ts">
   import { trackConfigs } from '$lib/stores/timeline.store';
+  import { trackConfigs } from '$lib/stores/timeline.store';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   function toggleTrackVisibility(trackId: string) {
     trackConfigs.update(tracks =>
@@ -55,8 +57,8 @@
 
 <div class="track-config-panel">
   <div class="panel-header">
-    <h4>Track Configuration</h4>
-    <p class="panel-subtitle">Manage timeline tracks</p>
+    <h4>{_('trackConfig.title')}</h4>
+    <p class="panel-subtitle">{_('trackConfig.subtitle')}</p>
   </div>
 
   <div class="tracks-list">
@@ -69,7 +71,7 @@
             >
             <span class="track-name">{track.label}</span>
             {#if track.locked}
-              <span class="lock-indicator" title="Track is locked"
+              <span class="lock-indicator" title={_('trackConfig.locked')}
                 ><MaterialSymbol icon="lock" fontSize={16} /></span
               >
             {/if}
@@ -81,7 +83,7 @@
               class="control-btn visibility-btn"
               class:active={track.visible}
               on:click={() => toggleTrackVisibility(track.id)}
-              title={track.visible ? 'Hide track' : 'Show track'}
+              title={track.visible ? _('trackConfig.hideTrack') : _('trackConfig.showTrack')}
             >
               <MaterialSymbol
                 icon={track.visible ? 'visibility' : 'visibility_off'}
@@ -94,7 +96,7 @@
               class="control-btn lock-btn"
               class:active={track.locked}
               on:click={() => toggleTrackLock(track.id)}
-              title={track.locked ? 'Unlock track' : 'Lock track'}
+              title={track.locked ? _('trackConfig.unlockTrack') : _('trackConfig.lockTrack')}
             >
               <MaterialSymbol icon={track.locked ? 'lock' : 'lock_open'} fontSize={18} />
             </button>
@@ -105,7 +107,7 @@
                 class="control-btn reorder-btn"
                 on:click={() => reorderTrack(track.id, 'up')}
                 disabled={track.order === 0}
-                title="Move up"
+                title={_('trackConfig.moveUp')}
               >
                 <MaterialSymbol icon="arrow_upward" fontSize={16} />
               </button>
@@ -113,7 +115,7 @@
                 class="control-btn reorder-btn"
                 on:click={() => reorderTrack(track.id, 'down')}
                 disabled={track.order === $trackConfigs.length - 1}
-                title="Move down"
+                title={_('trackConfig.moveDown')}
               >
                 <MaterialSymbol icon="arrow_downward" fontSize={16} />
               </button>
@@ -123,7 +125,7 @@
 
         <!-- Height Control -->
         <div class="track-height-control">
-          <label class="height-label">Height: {track.height}px</label>
+          <label class="height-label">{_('trackConfig.height')}: {track.height}px</label>
           <input
             type="range"
             min="30"
@@ -140,7 +142,7 @@
 
   <div class="panel-footer">
     <p class="help-text">
-      💡 Tracks can be reordered, resized, and toggled on/off. Locked tracks cannot be modified.
+      {_('trackConfig.help')}
     </p>
   </div>
 </div>

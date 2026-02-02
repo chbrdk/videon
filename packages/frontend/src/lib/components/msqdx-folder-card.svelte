@@ -4,6 +4,7 @@
   import { MsqdxBaseItemCard } from '$lib/components/ui';
   import MsqdxRadialContextMenu from '$lib/components/msqdx-radial-context-menu.svelte';
   import { createEventDispatcher } from 'svelte';
+  import { _ } from '$lib/i18n';
 
   export let folder;
   export let selected = false;
@@ -27,7 +28,7 @@
 
 <MsqdxBaseItemCard
   title={folder.name}
-  subtitle="{folder.videoCount} {folder.videoCount === 1 ? 'Video' : 'Videos'}"
+  subtitle="{folder.videoCount} {folder.videoCount === 1 ? _('video.type') : _('nav.videos')}"
   type="folder"
   {selected}
   {className}
@@ -42,12 +43,12 @@
         y={menuY}
         items={[
           {
-            label: 'Rename',
+            label: _('actions.rename'),
             icon: 'edit',
             action: () => dispatch('rename', folder),
           },
           {
-            label: 'Delete',
+            label: _('actions.delete'),
             icon: 'delete',
             action: () => dispatch('delete', folder),
           },

@@ -90,10 +90,32 @@
   "video": {
     "status": {
       "uploaded": "Hochgeladen",
-      "analyzing": "Analysiert...",
+      "analyzing": "Analysiere...",
       "analyzed": "Analysiert",
       "complete": "Abgeschlossen",
-      "error": "Fehler"
+      "error": "Fehler",
+      "title": "Dienststatus",
+      "services": "Dienste",
+      "refresh": "Status aktualisieren",
+      "backend": "Backend",
+      "analyzer": "Analyzer",
+      "saliency": "Saliency",
+      "audioSeparation": "Audio-Trennung",
+      "frontend": "Frontend",
+      "healthy": "Fehlerfrei",
+      "unhealthy": "Fehlerhaft",
+      "unavailable": "Nicht verfügbar",
+      "checking": "Prüfe...",
+      "never": "Nie",
+      "ago": {
+        "seconds": "vor {count}s",
+        "minutes": "vor {count}m"
+      },
+      "actions": {
+        "restart": "{service} neustarten",
+        "stop": "{service} stoppen",
+        "start": "{service} starten"
+      }
     },
     "details": {
       "size": "Größe:",
@@ -101,17 +123,22 @@
       "analyzed": "Analysiert:",
       "duration": "Dauer:",
       "clickToOpen": "Klicken zum Öffnen"
-    }
+    },
+    "type": "Video",
+    "transcription": "Transkription",
+    "summary": "Zusammenfassung"
   },
   "folder": {
     "create": "Ordner erstellen",
-    "rename": "Umbenennen",
+    "rename": "Ordner umbenennen",
     "delete": "Löschen",
     "move": "In Ordner verschieben",
+    "merge": "Zusammenfügen",
     "parentFolder": "Zurück",
     "type": "Ordner",
     "name": "Ordnername",
-    "namePlaceholder": "Ordnername eingeben..."
+    "namePlaceholder": "Ordnername eingeben...",
+    "items": "Ordner"
   },
   "actions": {
     "select": "Auswählen",
@@ -123,7 +150,17 @@
     "upload": "Hochladen",
     "retry": "Erneut versuchen",
     "cancel": "Abbrechen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "view": "Ansehen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "add": "Hinzufügen",
+    "settings": "Einstellungen",
+    "more": "Mehr",
+    "merge": "Zusammenfügen",
+    "restart": "Neustarten",
+    "stop": "Stoppen",
+    "start": "Starten"
   },
   "selection": {
     "selected": "ausgewählt",
@@ -142,7 +179,6 @@
     "selectValidVideo": "Bitte wählen Sie eine gültige Video-Datei aus",
     "fileTooLarge": "Die Datei ist zu groß. Maximum: 1GB",
     "deleteConfirm": "Ordner \"{name}\" wirklich löschen?",
-    "deleteError": "Fehler: {message}",
     "moveError": "Fehler beim Verschieben: {message}"
   },
   "loading": {
@@ -177,11 +213,39 @@
     "pause": "Pause",
     "mute": "Stummschalten",
     "unmute": "Stummschaltung aufheben",
-    "undo": "Rückgängig (Cmd+Z)",
-    "redo": "Wiederholen (Cmd+Shift+Z)",
-    "split": "Szene an Playhead teilen (S)",
+    "undo": "Rückgängig",
+    "redo": "Wiederholen",
+    "split": "Teilen",
+    "undoTitle": "Rückgängig (Cmd+Z)",
+    "redoTitle": "Wiederholen (Cmd+Shift+Z)",
+    "splitTitle": "Szene an Playhead teilen (S)",
     "addScene": "Szene hinzufügen",
-    "volume": "Lautstärke"
+    "volume": "Lautstärke",
+    "gridView": "Gitteransicht",
+    "listView": "Listenansicht",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "moveLeft": "Nach links verschieben",
+    "moveRight": "Nach rechts verschieben"
+  },
+  "trackConfig": {
+    "title": "Track-Konfiguration",
+    "subtitle": "Timeline-Tracks verwalten",
+    "locked": "Track ist gesperrt",
+    "moveUp": "Nach oben verschieben",
+    "moveDown": "Nach unten verschieben",
+    "showTrack": "Track anzeigen",
+    "hideTrack": "Track ausblenden",
+    "lockTrack": "Track sperren",
+    "unlockTrack": "Track entsperren",
+    "height": "Höhe",
+    "help": "💡 Tracks können neu sortiert, in der Größe verändert und ein-/ausgeschaltet werden. Gesperrte Tracks können nicht verändert werden."
+  },
+  "timeline": {
+    "editorTitle": "Timeline-Editor",
+    "selectSplitTime": "Wählen Sie den Zeitpunkt zum Teilen des Clips:",
+    "current": "Aktuell",
+    "scene": "Szene"
   },
   "export": {
     "exportFailed": "Export fehlgeschlagen",
@@ -191,6 +255,21 @@
     "exportXml": "Nur XML",
     "exportSrt": "SRT",
     "exporting": "Exportiere..."
+  },
+  "sharing": {
+    "title": "\"{name}\" teilen",
+    "subtitle": "Laden Sie Personen zur Zusammenarbeit an diesem {type} ein",
+    "findPerson": "Person finden",
+    "searchPlaceholder": "Name oder E-Mail eingeben...",
+    "invite": "Einladen",
+    "inviteSuccess": "Einladung erfolgreich gesendet",
+    "whoHasAccess": "Wer hat Zugriff",
+    "noAccess": "Bisher hat niemand sonst Zugriff.",
+    "removeAccess": "Zugriff entfernen",
+    "roles": {
+      "viewer": "Betrachter",
+      "editor": "Bearbeiter"
+    }
   },
   "audio": {
     "separating": "Trenne...",
@@ -202,13 +281,42 @@
   "reframe": {
     "title": "Video umrahmen",
     "deleteConfirm": "Wirklich löschen?",
-    "deleteFailed": "Fehler beim Löschen des reframed Videos"
+    "deleteFailed": "Fehler beim Löschen des reframed Videos",
+    "smoothingFactor": "Glättungsfaktor:",
+    "processing": "Verarbeitung:",
+    "start": "Starten",
+    "cancel": "Abbrechen",
+    "alertCustom": "Bitte geben Sie Breite und Höhe für benutzerdefiniertes Seitenverhältnis ein",
+    "custom": "Benutzerdefiniert",
+    "smoothing": "Glättung",
+    "noSmoothing": "Keine Glättung",
+    "lightSmoothing": "Leichte Glättung",
+    "mediumSmoothing": "Mittlere Glättung",
+    "heavySmoothing": "Starke Glättung",
+    "aspectRatio": "Seitenverhältnis",
+    "customDimensions": "Benutzerdefinierte Abmessungen",
+    "width": "Breite",
+    "height": "Höhe",
+    "customHelp": "Breite und Höhe für benutzerdefiniertes Seitenverhältnis eingeben",
+    "presets": {
+      "vertical": "9:16 (Hochformat)",
+      "horizontal": "16:9 (Querformat)",
+      "square": "1:1 (Quadratisch)",
+      "custom": "Benutzerdefiniert"
+    },
+    "enterDimensions": "Bitte geben Sie Breite und Höhe ein",
+    "close": "Schließen"
   },
   "delete": {
-    "deleteError": "Fehler beim Löschen",
+    "deleteError": "Fehler beim Laden",
     "confirmDelete": "Wirklich löschen?",
     "videoTitle": "Video löschen",
     "videoConfirm": "Möchten Sie dieses Video wirklich löschen?",
+    "folderTitle": "Ordner löschen",
+    "folderConfirm": "Möchten Sie diesen Ordner wirklich löschen?",
+    "folderWarning": "Alle enthaltenen Videos und Unterordner werden in das Hauptverzeichnis verschoben.",
+    "projectTitle": "Projekt löschen",
+    "projectConfirm": "Möchten Sie dieses Projekt wirklich löschen?",
     "warning": "Diese Aktion kann nicht rückgängig gemacht werden.",
     "dataDeleted": "Folgende Daten werden gelöscht:",
     "data": {
@@ -216,7 +324,7 @@
       "scenes": "Alle Szenen und Keyframes",
       "transcripts": "Transkriptionen (falls vorhanden)",
       "logs": "Analyse-Logs",
-      "db": "Alle Datenbankeinträge"
+      "db": "Alle database entries"
     },
     "deleting": "Wird gelöscht...",
     "finalConfirm": "Endgültig löschen"
@@ -243,6 +351,7 @@
     "searchPlaceholder": "Suchen..."
   },
   "project": {
+    "type": "Projekt",
     "currentScene": "Aktuelle Szene:",
     "noScenesAdded": "Noch keine Szenen hinzugefügt",
     "exporting": "Exportiere...",
@@ -302,7 +411,6 @@
     "alertFailed": "Fehler beim Klonen der Stimme: ",
     "uploadAudio": "Audio hochladen",
     "selectFile": "Datei auswählen...",
-    "clone": "Stimme klonen",
     "cloning": "Klone Stimme...",
     "success": "Voice Clone erstellt!",
     "error": "Fehler beim Klonen"
@@ -318,7 +426,7 @@
     "stability": "Stabilität:",
     "similarity": "Ähnlichkeitsverstärkung:",
     "style": "Stil:",
-    "useSpeakerBoost": "Speaker Boost verwenden (bessere Klarheit)",
+    "useSpeakerBoost": "Use Speaker Boost verwenden (bessere Klarheit)",
     "playingPreview": "Vorschau läuft...",
     "stop": "Stoppen",
     "generate": "Neu-Vertontes Audio generieren",
@@ -336,35 +444,6 @@
     "cancel": "Abbrechen",
     "applying": "Wende an...",
     "previewing": "Generiere Vorschau..."
-  },
-  "reframe": {
-    "title": "Video umrahmen",
-    "aspectRatio": "Seitenverhältnis",
-    "customDimensions": "Benutzerdefinierte Abmessungen",
-    "width": "Breite",
-    "height": "Höhe",
-    "customHelp": "Breite und Höhe für benutzerdefiniertes Seitenverhältnis eingeben",
-    "smoothingFactor": "Glättungsfaktor:",
-    "processing": "Verarbeitung:",
-    "start": "Starten",
-    "cancel": "Abbrechen",
-    "alertCustom": "Bitte geben Sie Breite und Höhe für benutzerdefiniertes Seitenverhältnis ein",
-    "custom": "Benutzerdefiniert",
-    "smoothing": "Glättung",
-    "noSmoothing": "Keine Glättung",
-    "lightSmoothing": "Leichte Glättung",
-    "mediumSmoothing": "Mittlere Glättung",
-    "heavySmoothing": "Starke Glättung",
-    "presets": {
-      "vertical": "9:16 (Hochformat)",
-      "horizontal": "16:9 (Querformat)",
-      "square": "1:1 (Quadratisch)",
-      "custom": "Benutzerdefiniert"
-    },
-    "deleteConfirm": "Wirklich löschen?",
-    "deleteFailed": "Fehler beim Löschen des reframed Videos",
-    "enterDimensions": "Bitte geben Sie Breite und Höhe ein",
-    "close": "Schließen"
   },
   "settings": {
     "title": "Einstellungen",
@@ -385,5 +464,25 @@
     "errorMatch": "Fehler: Neue Passwörter stimmen nicht überein",
     "errorLength": "Fehler: Passwort muss mindestens 6 Zeichen lang sein",
     "errorGeneric": "Ein Fehler ist aufgetreten"
+  },
+  "admin": {
+    "users": {
+      "title": "Benutzer",
+      "subtitle": "Zugriff und Rollen verwalten",
+      "noUsers": "Keine Benutzer gefunden.",
+      "createNew": "Neuen Benutzer erstellen",
+      "fullName": "Vollständiger Name",
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "role": "Rolle",
+      "user": "Benutzer",
+      "admin": "Administrator",
+      "deleteUser": "Benutzer löschen",
+      "namePlaceholder": "z.B. Max Mustermann",
+      "emailPlaceholder": "max@beispiel.de"
+    }
+  },
+  "common": {
+    "optional": "Optional"
   }
 }

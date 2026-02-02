@@ -6,6 +6,7 @@
   import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
   import { MSQDX_COLORS, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import MsqdxSpinner from '$lib/components/ui/MsqdxSpinner.svelte';
+  import { _ } from '$lib/i18n';
 
   let users: any[] = [];
   let loading = true;
@@ -40,8 +41,7 @@
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.'))
-      return;
+    if (!confirm(_('delete.confirmDelete'))) return;
     try {
       const res = await fetch(`${api.baseUrl}/users/${id}`, { method: 'DELETE' });
       if (res.ok) {
@@ -97,14 +97,14 @@
           .fontWeight.bold}; font-size: {MSQDX_TYPOGRAPHY.fontSize['xl']}; color: {MSQDX_COLORS.dark
           .textPrimary};"
       >
-        User Management
+        {_('admin.users.title')}
       </h2>
-      <p style="color: {MSQDX_COLORS.dark.textSecondary};">Manage user access and roles</p>
+      <p style="color: {MSQDX_COLORS.dark.textSecondary};">{_('admin.users.subtitle')}</p>
     </div>
     <MsqdxButton variant="primary" on:click={() => (showCreateDialog = true)}>
       <div class="flex items-center gap-2">
         <MaterialSymbol icon="person_add" fontSize={20} />
-        Add User
+        {_('actions.add')}
       </div>
     </MsqdxButton>
   </div>
@@ -142,14 +142,14 @@
                 : 'rgba(255, 255, 255, 0.7)'};
                  "
             >
-              {user.role}
+              {user.role === 'ADMIN' ? _('admin.users.admin') : _('admin.users.user')}
             </div>
           </div>
 
           <div class="flex gap-2">
             <button
               class="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-red-400 transition-colors"
-              title="Delete User"
+              title={_('admin.users.deleteUser')}
               on:click={() => handleDelete(user.id)}
             >
               <MaterialSymbol icon="delete" fontSize={20} />
@@ -159,7 +159,7 @@
       {/each}
 
       {#if users.length === 0}
-        <div class="text-center p-8 text-white/50">No users found.</div>
+        <div class="text-center p-8 text-white/50">{_('admin.users.noUsers')}</div>
       {/if}
     </div>
   {/if}
@@ -176,7 +176,7 @@
     >
       <div class="w-full max-w-md cursor-default">
         <MsqdxGlassCard variant="default" borderRadiusVariant="xl" className="p-6 space-y-4">
-          <h3 class="text-xl font-bold text-white mb-4">Create New User</h3>
+          <h3 class="text-xl font-bold text-white mb-4">{_('admin.users.createNew')}</h3>
 
           {#if error}
             <div class="p-3 bg-red-500/20 border border-red-500 text-red-100 rounded text-sm mb-4">
@@ -186,23 +186,23 @@
 
           <form on:submit|preventDefault={handleCreate} class="space-y-4">
             <MsqdxFormField
-              label="Full Name"
+              label={_('admin.users.fullName')}
               type="text"
               required
               bind:value={newUser.name}
-              placeholder="e.g. John Doe"
+              placeholder={_('admin.users.namePlaceholder')}
             />
 
             <MsqdxFormField
-              label="Email Address"
+              label={_('admin.users.email')}
               type="email"
               required
               bind:value={newUser.email}
-              placeholder="john@example.com"
+              placeholder={_('admin.users.emailPlaceholder')}
             />
 
             <MsqdxFormField
-              label="Password"
+              label={_('admin.users.password')}
               type="password"
               required
               bind:value={newUser.password}
@@ -210,14 +210,16 @@
             />
 
             <div class="space-y-1">
-              <label for="role-select" class="block text-sm font-medium text-white/80">Role</label>
+              <label for="role-select" class="block text-sm font-medium text-white/80"
+                >{_('admin.users.role')}</label
+              >
               <select
                 id="role-select"
                 bind:value={newUser.role}
                 class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white focus:outline-none focus:border-white/30"
               >
-                <option value="USER" class="bg-gray-800">User</option>
-                <option value="ADMIN" class="bg-gray-800">Admin</option>
+                <option value="USER" class="bg-gray-800">{_('admin.users.user')}</option>
+                <option value="ADMIN" class="bg-gray-800">{_('admin.users.admin')}</option>
               </select>
             </div>
 
@@ -227,10 +229,10 @@
                 variant="ghost"
                 on:click={() => (showCreateDialog = false)}
               >
-                Cancel
+                {_('actions.cancel')}
               </MsqdxButton>
               <MsqdxButton type="submit" variant="primary" loading={creating} disabled={creating}>
-                Create User
+                {_('actions.create')}
               </MsqdxButton>
             </div>
           </form>

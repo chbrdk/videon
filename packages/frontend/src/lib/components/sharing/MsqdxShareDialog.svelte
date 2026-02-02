@@ -61,9 +61,9 @@
     email = user.email;
   }
 
-  const roleOptions = [
-    { value: ShareRole.VIEWER, label: 'Viewer' },
-    { value: ShareRole.EDITOR, label: 'Editor' },
+  $: roleOptions = [
+    { value: ShareRole.VIEWER, label: _('sharing.roles.viewer') },
+    { value: ShareRole.EDITOR, label: _('sharing.roles.editor') },
   ];
 
   $: if (open && itemId) {
@@ -87,7 +87,7 @@
         collaborators = await sharingApi.getVideoCollaborators(itemId);
       }
     } catch (err: any) {
-      error = 'Failed to load collaborators';
+      error = _('errors.loadingError');
       console.error(err);
     } finally {
       loading = false;
@@ -106,7 +106,7 @@
       } else {
         await sharingApi.shareVideo(itemId, email, role);
       }
-      successMessage = 'Invitation sent successfully';
+      successMessage = _('sharing.inviteSuccess');
       email = ''; // Clear email on success
       loadCollaborators(); // Refresh list
     } catch (err: any) {
@@ -117,7 +117,7 @@
   }
 
   async function handleRemove(userId: string) {
-    if (!confirm('Are you sure you want to remove this user?')) return;
+    if (!confirm(_('delete.confirmDelete'))) return;
 
     try {
       if (itemType === 'project') {
@@ -152,10 +152,12 @@
         <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
           <div>
             <h2 class="text-xl font-semibold" style="color: {MSQDX_COLORS.dark.textPrimary};">
-              Share "{itemName}"
+              {_('sharing.title', { name: itemName })}
             </h2>
             <p class="text-xs mt-1" style="color: {MSQDX_COLORS.dark.textSecondary};">
-              Invite people to collaborate on this {itemType}
+              {_('sharing.subtitle', {
+                type: itemType === 'project' ? _('project.type') : _('video.type'),
+              })}
             </p>
           </div>
           <button
@@ -173,8 +175,8 @@
             <div class="flex gap-3 items-end">
               <div class="flex-1 min-w-0">
                 <MsqdxAutocomplete
-                  label="Find Person"
-                  placeholder="Enter name or email..."
+                  label={_('sharing.findPerson')}
+                  placeholder={_('sharing.searchPlaceholder')}
                   bind:value={email}
                   items={searchResults}
                   loading={isSearching}
@@ -185,11 +187,11 @@
               </div>
               <div class="w-32">
                 <MsqdxSelect
-                  label="Role"
+                  label={_('admin.users.role')}
                   options={roleOptions}
                   bind:value={role}
                   disabled={inviteLoading}
-                  placeholder="Role"
+                  placeholder={_('admin.users.role')}
                 />
               </div>
             </div>
@@ -200,7 +202,7 @@
                 loading={inviteLoading}
                 on:click={handleInvite}
               >
-                Invite
+                {_('sharing.invite')}
               </MsqdxButton>
             </div>
           </div>
@@ -228,7 +230,7 @@
           <!-- Collaborators List -->
           <div>
             <h3 class="text-sm font-medium mb-3" style="color: {MSQDX_COLORS.dark.textPrimary};">
-              Who has access
+              {_('sharing.whoHasAccess')}
             </h3>
 
             {#if loading}
@@ -237,7 +239,7 @@
               </div>
             {:else if collaborators.length === 0}
               <p class="text-sm text-center py-2" style="color: {MSQDX_COLORS.dark.textSecondary};">
-                No one else has access yet.
+                {_('sharing.noAccess')}
               </p>
             {:else}
               <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
@@ -273,7 +275,7 @@
                       <button
                         class="text-red-400 hover:text-red-300 transition-colors p-1"
                         on:click={() => handleRemove(user.userId)}
-                        title="Remove Access"
+                        title={_('sharing.removeAccess')}
                       >
                         <MaterialSymbol icon="delete" fontSize={18} />
                       </button>

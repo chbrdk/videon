@@ -653,12 +653,20 @@
     </div>
   {:else if $isLoading}
     <div class="glass-card text-center py-16">
-      <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">⏳</div>
+      <div class="flex justify-center mb-6">
+        <MaterialSymbol
+          icon="hourglass_empty"
+          fontSize={64}
+          class="text-gray-400 dark:text-white/40"
+        />
+      </div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{_('loading.loading')}</h3>
     </div>
   {:else if currentContents.folders.length === 0 && currentContents.videos.length === 0}
     <div class="glass-card text-center py-16">
-      <div class="text-6xl text-gray-400 dark:text-white/40 mb-6">📁</div>
+      <div class="flex justify-center mb-6">
+        <MaterialSymbol icon="folder_off" fontSize={64} class="text-gray-400 dark:text-white/40" />
+      </div>
       <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
         {#if $searchQuery}
           {$searchQuery

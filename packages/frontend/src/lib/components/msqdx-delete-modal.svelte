@@ -63,9 +63,9 @@
           {#if type === 'video'}
             {_('delete.videoTitle')}
           {:else if type === 'folder'}
-            {_('delete.folderTitle') || 'Delete Folder'}
+            {_('delete.folderTitle')}
           {:else if type === 'project'}
-            {_('delete.projectTitle') || 'Delete Project'}
+            {_('delete.projectTitle')}
           {/if}
         </h2>
         <button
@@ -82,9 +82,9 @@
           {#if type === 'video'}
             {_('delete.videoConfirm')}
           {:else if type === 'folder'}
-            {_('delete.folderConfirm') || 'Are you sure you want to delete this folder?'}
+            {_('delete.folderConfirm')}
           {:else}
-            {_('delete.projectConfirm') || 'Are you sure you want to delete this project?'}
+            {_('delete.projectConfirm')}
           {/if}
         </p>
 
@@ -111,8 +111,7 @@
           <!-- Folder specific warning -->
           <div class="text-sm text-white/70">
             <p>
-              {_('delete.folderWarning') ||
-                'All videos and subfolders inside will be moved to root or deleted (depending on implementation).'}
+              {_('delete.folderWarning')}
             </p>
           </div>
         {/if}

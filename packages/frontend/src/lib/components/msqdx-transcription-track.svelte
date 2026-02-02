@@ -3,6 +3,7 @@
   import { zoomLevel } from '$lib/stores/timeline.store';
   import { MaterialSymbol } from '$lib/components/ui';
   import MsqdxTypography from '$lib/components/ui/MsqdxTypography.svelte';
+  import { _ } from '$lib/i18n';
 
   const dispatch = createEventDispatcher();
 
@@ -90,7 +91,7 @@
   <div class="track-header">
     <div style="display: flex; align-items: center; gap: var(--msqdx-spacing-xs);">
       <div class="icon-20px"><MaterialSymbol icon="mic" fontSize={20} /></div>
-      <MsqdxTypography variant="h6" weight="semibold">Transcription</MsqdxTypography>
+      <MsqdxTypography variant="h6" weight="semibold">{_('video.transcription')}</MsqdxTypography>
     </div>
     <div class="track-info">
       <span class="text-xs text-white/60">{segments.length} segments</span>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import type { ReframedVideo } from '$lib/api/saliency';
-  import { currentLocale } from '$lib/i18n';
+  import { _, currentLocale } from '$lib/i18n';
   import { api } from '$lib/config/environment';
   import { MaterialSymbol } from '$lib/components/ui';
 
@@ -39,13 +39,7 @@
 
   function handleDelete(e: Event) {
     e.stopPropagation();
-    if (
-      confirm(
-        $currentLocale === 'en'
-          ? 'Are you sure you want to delete this reframed video?'
-          : 'Möchten Sie dieses reframed Video wirklich löschen?'
-      )
-    ) {
+    if (confirm(_('reframe.deleteConfirm'))) {
       dispatch('delete', reframedVideo);
     }
   }
@@ -140,13 +134,13 @@
   function getStatusText(status: string): string {
     switch (status) {
       case 'PROCESSING':
-        return $currentLocale === 'en' ? 'Processing...' : 'Verarbeitung...';
+        return _('video.status.analyzing');
       case 'COMPLETED':
-        return $currentLocale === 'en' ? 'Completed' : 'Abgeschlossen';
+        return _('video.status.complete');
       case 'ERROR':
-        return $currentLocale === 'en' ? 'Error' : 'Fehler';
+        return _('video.status.error');
       default:
-        return 'Unknown';
+        return _('video.status.unknown');
     }
   }
 </script>
@@ -174,7 +168,7 @@
       <button
         on:click={handleStop}
         class="glass-button absolute top-2 right-2 z-20"
-        title={$currentLocale === 'en' ? 'Close Player' : 'Player schließen'}
+        title={_('actions.close')}
       >
         <div class="w-5 h-5 flex items-center justify-center">
           <MaterialSymbol icon="close" fontSize={20} />
@@ -185,7 +179,7 @@
       <button
         on:click={handleDelete}
         class="glass-button glass-button-red absolute top-2 left-2 z-20"
-        title={$currentLocale === 'en' ? 'Delete Video' : 'Video löschen'}
+        title={_('actions.delete')}
       >
         <div class="w-5 h-5 flex items-center justify-center">
           <MaterialSymbol icon="delete" fontSize={20} />
@@ -196,7 +190,7 @@
       <button
         on:click={handleDownload}
         class="glass-button glass-button-blue absolute top-14 right-2 z-20"
-        title={$currentLocale === 'en' ? 'Download Video' : 'Video herunterladen'}
+        title={_('actions.upload')}
       >
         <div class="w-5 h-5 flex items-center justify-center">
           <MaterialSymbol icon="download" fontSize={20} />
@@ -220,7 +214,7 @@
       <button
         on:click={handleDelete}
         class="glass-button glass-button-red absolute top-2 left-2 z-20"
-        title={$currentLocale === 'en' ? 'Delete Video' : 'Video löschen'}
+        title={_('actions.delete')}
       >
         <div class="w-5 h-5 flex items-center justify-center">
           <MaterialSymbol icon="delete" fontSize={20} />
@@ -231,7 +225,7 @@
       <button
         on:click={handleDownload}
         class="glass-button glass-button-blue absolute top-2 right-2 z-20"
-        title={$currentLocale === 'en' ? 'Download Video' : 'Video herunterladen'}
+        title={_('actions.upload')}
       >
         <div class="w-5 h-5 flex items-center justify-center">
           <MaterialSymbol icon="download" fontSize={20} />
