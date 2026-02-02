@@ -25,9 +25,10 @@ except ImportError:
 class HeatmapGenerator:
     """Generiert Heatmap-Videos für Debugging und Visualisierung"""
     
-    def __init__(self):
+    def __init__(self, storage_dir: Optional[str] = None):
         """Initialisiert Heatmap Generator"""
-        self.storage_dir = Path("/Volumes/DOCKER_EXTERN/prismvid/storage/saliency")
+        base_storage = Path(storage_dir or os.getenv('STORAGE_PATH', '/app/storage'))
+        self.storage_dir = base_storage / "saliency"
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         
         # Verfügbare Colormaps

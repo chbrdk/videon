@@ -26,9 +26,9 @@ class ReframingService:
     Service for handling video reframing jobs with progress tracking
     """
     
-    def __init__(self, storage_base_dir: str = "/Volumes/DOCKER_EXTERN/prismvid/storage", backend_url: str = "http://localhost:4001"):
-        self.storage_base_dir = Path(storage_base_dir)
-        self.backend_url = backend_url
+    def __init__(self, storage_base_dir: Optional[str] = None, backend_url: Optional[str] = None):
+        self.storage_base_dir = Path(storage_base_dir or os.getenv('STORAGE_PATH', '/app/storage'))
+        self.backend_url = backend_url or os.getenv('BACKEND_URL', 'http://backend:4001')
         self.active_jobs: Dict[str, Dict[str, Any]] = {}
         self.output_dir = self.storage_base_dir / "reframed_videos"
         self.output_dir.mkdir(parents=True, exist_ok=True)

@@ -33,20 +33,22 @@ except ImportError:
 class SaliencyDetector:
     """Video Saliency Detection Service"""
     
-    def __init__(self, model_type: str = "vit_b", use_coreml: bool = True):
+    def __init__(self, model_type: str = "vit_b", use_coreml: bool = True, storage_base_dir: Optional[str] = None):
         """
         Initialisiert Saliency Detector
         
         Args:
             model_type: SAM Modell-Typ
             use_coreml: Ob Core ML verwendet werden soll
+            storage_base_dir: Basis-Speicherverzeichnis
         """
         self.model_type = model_type
         self.use_coreml = use_coreml
         self.sam_model = SAMSaliencyModel(model_type=model_type, use_coreml=use_coreml)
         
         # Storage-Verzeichnisse erstellen
-        self.storage_dir = Path("/Volumes/DOCKER_EXTERN/prismvid/storage/saliency")
+        base_storage = Path(storage_base_dir or os.getenv('STORAGE_PATH', '/app/storage'))
+        self.storage_dir = base_storage / "saliency"
         self.storage_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info(f"SaliencyDetector initialized with {model_type}")

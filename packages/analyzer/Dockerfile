@@ -36,8 +36,11 @@ COPY config/ ./config/
 # Set PYTHONPATH
 ENV PYTHONPATH=/app
 
-# Create storage directories
-RUN mkdir -p storage/videos storage/keyframes
+# Create storage and model directories
+RUN mkdir -p storage/videos storage/keyframes storage/audio_stems storage/saliency models storage/temp
+
+# Download SAM model (vit_b) - Required for saliency detection
+RUN curl -L -o models/sam_vit_b_01ec64.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
 
 # Expose port
 EXPOSE 8001
