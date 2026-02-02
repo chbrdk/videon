@@ -53,90 +53,86 @@ export class VideosController {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      // Upload to STORION (mandatory when enabled)
-      let storagePath = req.file.filename;
-      let videoPath = path.join(req.file.destination, req.file.filename);
+      const file = req.file;
+      const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+      const localVideoPath = path.join(file.destination, file.filename);
 
-      if (config.storage.type === 'storion') {
-        const storageService = getStorageService();
-        const storionFileId = await storageService.uploadFile(
-          videoPath,
-          `videos/${req.file.filename}`,
-          'temp' // Will be updated with video.id after creation
-        );
-        storagePath = storionFileId;
-        logger.info('Video uploaded to STORION', {
-          videoId: 'temp',
-          storionFileId,
-          originalPath: videoPath,
-        });
-
-        // Keep local copy for processing (analyzer services need file access)
-        // The local copy is temporary and can be cleaned up after processing
-      } else {
-        logger.warn('Using local storage (STORION disabled)', {
-          videoPath,
-        });
-      }
-
-      // Create video record
+      // Create video record with local filename initially
       const video = await videoService.createVideo({
-        filename: storagePath, // Use STORION file ID or local filename
-        originalName: req.file.originalname,
-        fileSize: req.file.size,
-        mimeType: req.file.mimetype,
+        filename: file.filename, // Local filename
+        originalName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
       });
 
       // Update status to analyzing
       await videoService.updateVideoStatus(video.id, 'ANALYZING');
 
-      logger.info('Video created successfully', {
+      logger.info('Video created successfully, starting background processes', {
         videoId: video.id,
         filename: video.filename,
-        fileSize: video.fileSize,
         storageType: config.storage.type,
       });
 
-      // Trigger all analyses (async)
-      try {
-        // For analysis, we need the local file path (even if stored in STORION)
-        // Analyzer services need direct file access
-        const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
-        const localVideoPath = path.join(videosStoragePath, req.file.filename);
-
-        logger.info(`Queueing analyses for video ${video.id}`, { videoPath, filename: req.file.filename });
-
-        // 1. Standard video analysis (scenes, transcription, etc.)
-        analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
-          logger.error(`Standard analysis failed for video ${video.id}:`, error);
-        });
-
-        // 2. Audio separation
-        analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
-          logger.error(`Audio separation failed for video ${video.id}:`, error);
-        });
-
-        // 3. Saliency analysis
-        saliencyClient.analyzeSaliency(video.id, videoPath).catch(error => {
-          logger.error(`Saliency analysis failed for video ${video.id}:`, error);
-        });
-
-        logger.info(`Video uploaded and all analyses queued: ${video.id}`);
-      } catch (analysisError) {
-        logger.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
-      }
-
+      // Respond immediately
       res.status(201).json({
-        message: 'Video uploaded successfully',
+        message: 'Video upload received and processing started',
         video,
       });
+
+      // BACKGROUND PROCESSES
+      (async () => {
+        try {
+          // 1. STORION Upload (if enabled)
+          if (config.storage.type === 'storion') {
+            try {
+              logger.info(`📤 Starting background STORION upload for video ${video.id}`);
+              const storageService = getStorageService();
+              const storionFileId = await storageService.uploadFile(
+                localVideoPath,
+                `videos/${file.filename}`,
+                video.id
+              );
+
+              // Update video filename with STORION ID
+              await videoService.updateVideo(video.id, { filename: storionFileId });
+              logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
+            } catch (storionError) {
+              logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
+                error: storionError instanceof Error ? storionError.message : String(storionError)
+              });
+            }
+          }
+
+          // 2. Trigger All Analyses
+          logger.info(`🚀 Triggering background analyses for video ${video.id}`);
+
+          // Trigger Scene Detection & Vision Analysis
+          analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
+            logger.error(`Standard analysis failed for video ${video.id}:`, error);
+          });
+
+          // Trigger Audio separation
+          analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
+            logger.error(`Audio separation failed for video ${video.id}:`, error);
+          });
+
+          // Trigger Saliency analysis
+          saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
+            logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+          });
+
+        } catch (bgError) {
+          logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
+        }
+      })();
+
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const errorStack = error instanceof Error ? error.stack : undefined;
-      logger.error('Simple upload failed', { error: errorMessage, stack: errorStack });
+      logger.error('Simple upload failed', { error: errorMessage });
       res.status(500).json({
         error: 'Upload failed',
-        message: (error as Error).message,
+        message: errorMessage,
       });
     }
   }
@@ -209,35 +205,12 @@ export class VideosController {
       const file = req.file;
       logger.info(`Uploading video: ${file.originalname} (${file.size} bytes)`);
 
-      // Upload to STORION if enabled
-      let storagePath = file.filename;
+      const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const localVideoPath = path.join(file.destination, file.filename);
 
-      if (config.storage.type === 'storion') {
-        try {
-          const storageService = getStorageService();
-          const storionFileId = await storageService.uploadFile(
-            localVideoPath,
-            `videos/${file.filename}`,
-            'temp' // Will be updated with video.id after creation
-          );
-          storagePath = storionFileId;
-          logger.info('Video uploaded to STORION', {
-            storionFileId,
-            originalPath: localVideoPath,
-          });
-        } catch (storionError) {
-          logger.error('STORION upload failed, using local storage', {
-            error: storionError instanceof Error ? storionError.message : String(storionError),
-            fallbackPath: localVideoPath,
-          });
-        }
-      }
-
-      // Create video record in database
-      // @ts-ignore
+      // Create video record initially with local filename
       const video = await videoService.createVideo({
-        filename: storagePath, // Use STORION file ID or local filename
+        filename: file.filename,
         originalName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
@@ -251,44 +224,62 @@ export class VideosController {
       await videoService.createAnalysisLog(
         video.id,
         'INFO',
-        'Video uploaded successfully',
-        {
-          originalName: file.originalname,
-          fileSize: file.size,
-          mimeType: file.mimetype,
-        }
+        'Video upload received locally, processing started'
       );
 
-      // Trigger all analyses (async)
-      // Note: Analyzer services need local file access, so we keep local copy even if using STORION
-      try {
-        const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
-        const videoPath = path.join(videosStoragePath, file.filename);
-
-        // 1. Standard video analysis (scenes, transcription, etc.)
-        analyzerClient.analyzeVideo(video.id, videoPath).catch(error => {
-          logger.error(`Standard analysis failed for video ${video.id}:`, error);
-        });
-
-        // 2. Audio separation
-        analyzerClient.separateAudioForVideo(video.id, videoPath).catch(error => {
-          logger.error(`Audio separation failed for video ${video.id}:`, error);
-        });
-
-        // 3. Saliency analysis
-        saliencyClient.analyzeSaliency(video.id, videoPath).catch(error => {
-          logger.error(`Saliency analysis failed for video ${video.id}:`, error);
-        });
-
-        logger.info(`Video uploaded and all analyses queued: ${video.id}`);
-      } catch (analysisError) {
-        logger.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
-      }
-
+      // Respond immediately
       res.status(201).json({
-        message: 'Video uploaded successfully',
+        message: 'Video upload received',
         video,
       });
+
+      // BACKGROUND PROCESSES
+      (async () => {
+        try {
+          // 1. STORION Upload (if enabled)
+          if (config.storage.type === 'storion') {
+            try {
+              logger.info(`📤 Starting background STORION upload for video ${video.id}`);
+              const storageService = getStorageService();
+              const storionFileId = await storageService.uploadFile(
+                localVideoPath,
+                `videos/${file.filename}`,
+                video.id
+              );
+
+              // Update video filename with STORION ID
+              await videoService.updateVideo(video.id, { filename: storionFileId });
+              logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
+            } catch (storionError) {
+              logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
+                error: storionError instanceof Error ? storionError.message : String(storionError)
+              });
+            }
+          }
+
+          // 2. Trigger All Analyses
+          logger.info(`🚀 Triggering background analyses for video ${video.id}`);
+
+          // Trigger Scene Detection & Vision Analysis
+          analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
+            logger.error(`Standard analysis failed for video ${video.id}:`, error);
+          });
+
+          // Trigger Audio separation
+          analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
+            logger.error(`Audio separation failed for video ${video.id}:`, error);
+          });
+
+          // Trigger Saliency analysis
+          saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
+            logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+          });
+
+        } catch (bgError) {
+          logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
+        }
+      })();
+
     } catch (error) {
       logger.error('Error uploading video:', error);
       res.status(500).json({
