@@ -2,12 +2,9 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { theme } from '$lib/stores/theme.store';
-  import {
-    MSQDX_COLORS,
-    MSQDX_SPACING,
-    MSQDX_RESPONSIVE,
-    MSQDX_TYPOGRAPHY,
-  } from '$lib/design-tokens';
+  import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_RESPONSIVE, MSQDX_EFFECTS } from '$lib/design-tokens';
+  import { _ } from '$lib/i18n';
+  import { MaterialSymbol } from '$lib/components/ui';
   import { base } from '$app/paths';
   import MsqdxAdminNav from './MsqdxAdminNav.svelte';
 
@@ -47,14 +44,14 @@
       pathname = pathname.slice(base.length) || '/';
     }
     const pathMap: Record<string, string> = {
-      '/videos': 'videos',
-      '/videos/shared': 'shared',
-      '/search': 'suche',
-      '/ai-creator': 'ki creator',
-      '/projects': 'projekte',
-      '/upload': 'hochladen',
-      '/settings': 'settings',
-      '/admin/users': 'users',
+      '/videos': _('nav.videos'),
+      '/videos/shared': _('nav.shared'),
+      '/search': _('nav.search'),
+      '/ai-creator': _('nav.aiCreator'),
+      '/projects': _('nav.projects'),
+      '/upload': _('nav.upload'),
+      '/settings': _('nav.settings'),
+      '/admin/users': _('nav.users'),
     };
 
     if (pathMap[pathname]) {

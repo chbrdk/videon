@@ -8,6 +8,7 @@
   import { api } from '$lib/config/environment';
   import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY } from '$lib/design-tokens';
   import { MaterialSymbol } from '$lib/components/ui';
+  import { _ } from '$lib/i18n';
 
   export let open = false;
   export let onClose = () => {};
@@ -60,12 +61,12 @@
   }
 
   $: navItems = [
-    { label: 'Videos', path: '/videos', icon: 'video_file' },
-    { label: 'Shared', path: '/videos/shared', icon: 'share' },
-    { label: 'Suche', path: '/search', icon: 'search' },
-    { label: 'KI Creator', path: '/ai-creator', icon: 'auto_awesome' },
+    { label: _('nav.videos'), path: '/videos', icon: 'video_file' },
+    { label: _('nav.shared'), path: '/videos/shared', icon: 'share' },
+    { label: _('nav.search'), path: '/search', icon: 'search' },
+    { label: _('nav.aiCreator'), path: '/ai-creator', icon: 'auto_awesome' },
     ...($userStore?.role === 'ADMIN'
-      ? [{ label: 'Users', path: '/admin/users', icon: 'group' }]
+      ? [{ label: _('nav.users'), path: '/admin/users', icon: 'group' }]
       : []),
   ];
 
@@ -130,7 +131,7 @@
               font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};
               line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
               color: rgba(255, 255, 255, 0.7);
-            ">Menu</span
+            ">{_('nav.menu')}</span
               >
             {/if}
           </button>
@@ -210,7 +211,7 @@
         style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
       />
       {#if isExpanded}
-        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">Settings</span>
+        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">{_('nav.settings')}</span>
       {/if}
     </a>
 
@@ -236,7 +237,7 @@
           font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};
           line-height: {MSQDX_TYPOGRAPHY.lineHeight.normal};
           color: rgba(255, 255, 255, 0.7);
-        ">{$theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span
+        ">{$theme === 'dark' ? _('nav.lightMode') : _('nav.darkMode')}</span
         >
       {/if}
     </button>
@@ -256,7 +257,7 @@
         style="margin-right: {isExpanded ? (isMobile ? '1rem' : '0.75rem') : '0'};"
       />
       {#if isExpanded}
-        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">Sign Out</span>
+        <span style="font-weight: {MSQDX_TYPOGRAPHY.fontWeight.regular};">{_('nav.signOut')}</span>
       {/if}
     </button>
   </div>

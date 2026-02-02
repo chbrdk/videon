@@ -1,7 +1,17 @@
 {
   "nav": {
     "videos": "Videos",
-    "upload": "Upload"
+    "shared": "Geteilt",
+    "search": "Suche",
+    "aiCreator": "KI Creator",
+    "users": "Benutzer",
+    "upload": "Upload",
+    "menu": "Menü",
+    "settings": "Einstellungen",
+    "projects": "Projekte",
+    "lightMode": "Helles Design",
+    "darkMode": "Dunkles Design",
+    "signOut": "Abmelden"
   },
   "dialog": {
     "createNew": "Neu erstellen",

@@ -1,7 +1,17 @@
 {
   "nav": {
     "videos": "Videos",
-    "upload": "Upload"
+    "shared": "Shared",
+    "search": "Search",
+    "aiCreator": "AI Creator",
+    "users": "Users",
+    "upload": "Upload",
+    "menu": "Menu",
+    "settings": "Settings",
+    "projects": "Projects",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "signOut": "Sign Out"
   },
   "dialog": {
     "createNew": "Create New",
