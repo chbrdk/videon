@@ -106,14 +106,19 @@
   <title>{_('search.title')} - Videon</title>
 </svelte:head>
 
-<div class="space-y-8 pb-12">
+<div class="space-y-8 pb-12 mt-32">
   <!-- Search Input Area -->
-  <div class="max-w-3xl mx-auto mb-12">
-    <MsqdxGlassCard variant="default" noPadding borderRadiusVariant="xxl" className="p-2">
-      <div class="flex gap-2">
+  <div class="max-w-3xl mx-auto px-4">
+    <MsqdxGlassCard
+      variant="default"
+      noPadding
+      borderRadiusVariant="full"
+      className="p-1.5 shadow-2xl"
+    >
+      <div class="flex items-center gap-2">
         <div class="relative flex-1 group">
           <div
-            class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/30 group-focus-within:text-[var(--msqdx-color-brand-orange)] transition-colors"
+            class="absolute left-5 top-1/2 transform -translate-y-1/2 text-white/30 group-focus-within:text-[var(--msqdx-color-brand-orange)] transition-colors"
           >
             <MaterialSymbol icon="search" fontSize={24} />
           </div>
@@ -122,8 +127,8 @@
             bind:value={searchQuery}
             on:keydown={e => e.key === 'Enter' && handleSearch()}
             placeholder={_('search.placeholder')}
-            class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 outline-none focus:border-[var(--msqdx-color-brand-orange)]/50 focus:bg-white/10 transition-all duration-300"
-            style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};"
+            class="w-full pl-14 pr-4 py-4 bg-transparent border-none text-white placeholder-white/20 outline-none focus:ring-0 transition-all duration-300"
+            style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary}; font-size: 1.1rem;"
           />
         </div>
 
@@ -132,12 +137,9 @@
           disabled={searching || !searchQuery.trim()}
           loading={searching}
           variant="contained"
-          class="!rounded-xl px-8"
+          class="aspect-square !p-0 w-[52px] h-[52px] !rounded-full shadow-lg"
         >
-          <span class="flex items-center gap-2">
-            {_('search.button')}
-            <MaterialSymbol icon="arrow_forward" fontSize={20} />
-          </span>
+          <MaterialSymbol icon="arrow_forward" fontSize={24} />
         </MsqdxButton>
       </div>
     </MsqdxGlassCard>
