@@ -186,7 +186,7 @@ app.use(globalErrorHandler);
 
 // Start server only if not in test environment
 if (config.nodeEnv !== 'test') {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     logger.info('VIDEON Backend API started', {
       port: PORT,
       environment: config.nodeEnv,
@@ -224,6 +224,11 @@ if (config.nodeEnv !== 'test') {
       }
     })();
   });
+
+  // increase timeouts for large uploads
+  server.timeout = 1800000; // 30 minutes
+  server.keepAliveTimeout = 1800000;
+  server.headersTimeout = 1801000;
 }
 
 export default app;

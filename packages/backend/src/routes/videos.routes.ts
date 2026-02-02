@@ -89,7 +89,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 1024 * 1024 * 1024 } // 1GB
+  limits: { fileSize: 10 * 1024 * 1024 * 1024 } // 10GB
 });
 
 // Folders API endpoints (must be before :id routes)
