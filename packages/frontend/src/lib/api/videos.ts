@@ -135,33 +135,55 @@ class VideosApi {
       formData.append('uploadId', uploadId);
       formData.append('filename', file.name);
 
-      response = await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
+      const performUpload = async (retryCount = 0): Promise<any> => {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
 
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable && onProgress) {
-            const overallProgress = ((start + e.loaded) / file.size) * 100;
-            onProgress(overallProgress);
-          }
-        });
-
-        xhr.addEventListener('load', () => {
-          if (xhr.status === 200 || xhr.status === 201) {
-            try {
-              resolve(JSON.parse(xhr.responseText));
-            } catch (error) {
-              reject(new Error('Invalid response format'));
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && onProgress) {
+              const overallProgress = ((start + e.loaded) / file.size) * 100;
+              onProgress(overallProgress);
             }
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
-          }
-        });
+          });
 
-        xhr.addEventListener('error', () => reject(new Error('Network error')));
-        xhr.open('POST', `${API_BASE_URL}/videos/upload/chunk`);
-        xhr.withCredentials = true;
-        xhr.send(formData);
-      });
+          xhr.addEventListener('load', () => {
+            if (xhr.status === 200 || xhr.status === 201 || xhr.status === 202) {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch (error) {
+                reject(new Error('Invalid response format'));
+              }
+            } else if (xhr.status === 502 || xhr.status === 504 || xhr.status === 500) {
+              // Retry on gateway or server errors
+              if (retryCount < 3) {
+                const delay = Math.pow(2, retryCount) * 1000;
+                console.warn(`⚠️ Chunk ${i} failed with ${xhr.status}. Retrying in ${delay}ms... (Attempt ${retryCount + 1})`);
+                setTimeout(() => performUpload(retryCount + 1).then(resolve).catch(reject), delay);
+              } else {
+                reject(new Error(`Upload failed with status ${xhr.status} after 3 retries`));
+              }
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            if (retryCount < 3) {
+              const delay = Math.pow(2, retryCount) * 1000;
+              console.warn(`⚠️ Network error on chunk ${i}. Retrying in ${delay}ms...`);
+              setTimeout(() => performUpload(retryCount + 1).then(resolve).catch(reject), delay);
+            } else {
+              reject(new Error('Network error after 3 retries'));
+            }
+          });
+
+          xhr.open('POST', `${API_BASE_URL}/videos/upload/chunk`);
+          xhr.withCredentials = true;
+          xhr.send(formData);
+        });
+      };
+
+      response = await performUpload();
     }
 
     return response as UploadResponse;

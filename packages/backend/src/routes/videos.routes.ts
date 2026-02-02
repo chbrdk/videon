@@ -102,13 +102,19 @@ router.get('/folders', async (req: any, res: any) => {
   }
 });
 
+// Specialized multer for chunks (uses memory to avoid slow disk I/O)
+const chunkUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max per chunk
+});
+
 // Simple upload video (single file)
 router.post('/', upload.single('video'), validateVideoUpload, (req: any, res: any) =>
   videosController.simpleUpload(req, res)
 );
 
-// Chunked upload handler
-router.post('/upload/chunk', upload.single('chunk'), (req: any, res: any) =>
+// Chunked upload handler - Using memoryStorage for speed and to avoid 504 timeouts
+router.post('/upload/chunk', chunkUpload.single('chunk'), (req: any, res: any) =>
   videosController.handleChunk(req, res)
 );
 

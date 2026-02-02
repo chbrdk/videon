@@ -296,9 +296,15 @@ export class VideosController {
         fs.mkdirSync(tempDir, { recursive: true });
       }
 
-      // 1. Move/Save the chunk
+      // 1. Save the chunk (file is in memory buffer from Multer memoryStorage)
       const chunkPath = path.join(tempDir, `chunk_${chunkIndex}`);
-      fs.renameSync(file.path, chunkPath);
+      if (file.buffer) {
+        fs.writeFileSync(chunkPath, file.buffer);
+      } else if (file.path) {
+        fs.renameSync(file.path, chunkPath);
+      } else {
+        throw new Error('No file data or path available');
+      }
 
       // 2. Performance Check: Quick response if not finished
       const uploadedChunks = fs.readdirSync(tempDir).filter(f => f.startsWith('chunk_')).length;
