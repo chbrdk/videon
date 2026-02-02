@@ -113,7 +113,7 @@
       variant="default"
       noPadding
       borderRadiusVariant="full"
-      className="p-1.5 shadow-2xl"
+      className="p-1.5 shadow-2xl !rounded-full overflow-hidden"
     >
       <div class="flex items-center gap-2">
         <div class="relative flex-1 group">
@@ -170,6 +170,7 @@
           {#each results as result}
             <MsqdxGlassCard
               variant="default"
+              borderRadiusVariant="xxl"
               className="!p-0 overflow-hidden group hover:border-[var(--msqdx-color-brand-orange)]/30 transition-colors duration-300"
             >
               <!-- Video Player -->
@@ -188,17 +189,12 @@
                 <!-- Play Overlay -->
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div
-                    class="
-                    w-12 h-12 rounded-full
-                    bg-white/10 backdrop-blur-sm border border-white/20
-                    flex items-center justify-center
-                    opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110
-                  "
+                    class="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110"
                   >
                     <MaterialSymbol
                       icon={playingVideoId === result.videoId ? 'pause' : 'play_arrow'}
-                      fontSize={24}
-                      class="text-white"
+                      fontSize={48}
+                      class="text-white drop-shadow-lg"
                     />
                   </div>
                 </div>
@@ -210,51 +206,55 @@
                   {formatTime(result.startTime)}
                 </div>
 
-                <!-- Match Score -->
+                <!-- Match Score Badge -->
                 <div
-                  class="absolute top-3 left-3 px-2 py-1 rounded bg-[var(--msqdx-color-brand-orange)]/80 backdrop-blur-md border border-white/10 text-xs font-bold text-white shadow-lg"
+                  class="absolute top-3 left-3 px-3 py-1 rounded-full bg-[var(--msqdx-color-brand-orange)]/90 backdrop-blur-md border border-white/20 text-[10px] font-bold text-white shadow-xl flex items-center gap-1.5"
                 >
-                  {Math.round(result.score * 100)}% Match
+                  <MaterialSymbol icon="target" fontSize={12} />
+                  {Math.round(result.score * 100)}% MATCH
                 </div>
               </div>
 
-              <!-- Content -->
-              <div class="p-5 space-y-4">
-                <div>
-                  <h3 class="font-medium text-white mb-1 truncate" title={result.videoTitle}>
-                    {result.videoTitle}
-                  </h3>
-                  <div class="text-xs text-indigo-300 font-medium">
-                    {_('search.playsFrom')}
-                    {formatTime(result.startTime)}
+              <!-- Info Area -->
+              <div class="p-6">
+                <div class="flex items-start justify-between gap-4 mb-4">
+                  <div class="flex-1 min-width-0">
+                    <h3 class="font-semibold text-lg text-white truncate" title={result.videoTitle}>
+                      {result.videoTitle}
+                    </h3>
+                    <div
+                      class="text-xs text-[var(--msqdx-color-brand-orange)] font-semibold mt-1 uppercase tracking-wider"
+                    >
+                      {_('search.playsFrom')}
+                      {formatTime(result.startTime)}
+                    </div>
                   </div>
-                </div>
-
-                <p class="text-sm text-white/60 line-clamp-3 leading-relaxed">
-                  {result.content}
-                </p>
-
-                <!-- Action Buttons -->
-                <div class="flex gap-2 pt-2">
                   <MsqdxButton
                     variant="text"
                     glass
-                    class="flex-1 !py-2 !px-3 !rounded-lg text-xs"
-                    on:click={() => openAddToProjectModal(result)}
-                  >
-                    <MaterialSymbol icon="playlist_add" fontSize={16} />
-                    {_('search.addToProject')}
-                  </MsqdxButton>
-                  <MsqdxButton
-                    variant="text"
-                    glass
-                    class="!py-2 !px-3 !rounded-lg"
+                    class="!p-0 w-10 h-10 !rounded-full shrink-0 border-[var(--msqdx-color-brand-orange)]/40 text-[var(--msqdx-color-brand-orange)]"
                     on:click={() => {
                       window.location.href = `${base}/videos/${result.videoId}`;
                     }}
                     title={_('search.viewVideo')}
                   >
-                    <MaterialSymbol icon="open_in_new" fontSize={16} />
+                    <MaterialSymbol icon="open_in_new" fontSize={20} />
+                  </MsqdxButton>
+                </div>
+
+                <p class="text-sm text-white/50 line-clamp-2 leading-relaxed h-10">
+                  {result.content}
+                </p>
+
+                <div class="pt-4">
+                  <MsqdxButton
+                    variant="text"
+                    glass
+                    class="w-full !py-2.5 !rounded-xl text-sm"
+                    on:click={() => openAddToProjectModal(result)}
+                  >
+                    <MaterialSymbol icon="playlist_add" fontSize={20} />
+                    {_('search.addToProject')}
                   </MsqdxButton>
                 </div>
               </div>
