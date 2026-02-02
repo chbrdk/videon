@@ -5,8 +5,9 @@
   import { base } from '$app/paths';
   import { getVideoUrl, getCoverImageUrl } from '$lib/config/environment';
 
+  import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_TYPOGRAPHY, MSQDX_EFFECTS } from '$lib/design-tokens';
   import MsqdxGlassCard from '$lib/components/ui/MsqdxGlassCard.svelte';
-  import { MaterialSymbol } from '$lib/components/ui';
+  import { MaterialSymbol, MsqdxButton } from '$lib/components/ui';
 
   let searchQuery = '';
   let searching = false;
@@ -107,57 +108,39 @@
 
 <div class="space-y-8 pb-12">
   <!-- Search Input Area -->
-  <div class="max-w-2xl mx-auto">
-    <div class="relative group">
-      <div
-        class="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-50"
-      ></div>
-
-      <div class="relative flex gap-2">
-        <div class="relative flex-1">
+  <div class="max-w-3xl mx-auto mb-12">
+    <MsqdxGlassCard variant="default" noPadding borderRadiusVariant="xxl" className="p-2">
+      <div class="flex gap-2">
+        <div class="relative flex-1 group">
+          <div
+            class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/30 group-focus-within:text-[var(--msqdx-color-brand-orange)] transition-colors"
+          >
+            <MaterialSymbol icon="search" fontSize={24} />
+          </div>
           <input
             type="text"
             bind:value={searchQuery}
             on:keydown={e => e.key === 'Enter' && handleSearch()}
             placeholder={_('search.placeholder')}
-            class="
-              w-full pl-12 pr-4 py-4
-              bg-gray-900/60 backdrop-blur-xl
-              border border-white/10 focus:border-indigo-500/50
-              rounded-xl
-              text-white placeholder-white/30
-              outline-none
-              shadow-lg shadow-black/20
-              transition-all duration-300
-            "
+            class="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 outline-none focus:border-[var(--msqdx-color-brand-orange)]/50 focus:bg-white/10 transition-all duration-300"
+            style="font-family: {MSQDX_TYPOGRAPHY.fontFamily.primary};"
           />
-          <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/30">
-            <MaterialSymbol icon="search" fontSize={24} />
-          </div>
         </div>
 
-        <button
+        <MsqdxButton
           on:click={handleSearch}
           disabled={searching || !searchQuery.trim()}
-          class="
-            px-6 rounded-xl
-            bg-white/10 hover:bg-white/20 disabled:bg-white/5
-            border border-white/10 disabled:border-transparent
-            text-white disabled:text-white/20
-            transition-all duration-200
-            flex items-center justify-center
-          "
+          loading={searching}
+          variant="contained"
+          class="!rounded-xl px-8"
         >
-          {#if searching}
-            <div
-              class="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full"
-            ></div>
-          {:else}
-            <MaterialSymbol icon="arrow_forward" fontSize={24} />
-          {/if}
-        </button>
+          <span class="flex items-center gap-2">
+            {_('search.button')}
+            <MaterialSymbol icon="arrow_forward" fontSize={20} />
+          </span>
+        </MsqdxButton>
       </div>
-    </div>
+    </MsqdxGlassCard>
   </div>
 
   <!-- Results -->
@@ -185,7 +168,7 @@
           {#each results as result}
             <MsqdxGlassCard
               variant="default"
-              className="!p-0 overflow-hidden group hover:border-indigo-500/30 transition-colors duration-300"
+              className="!p-0 overflow-hidden group hover:border-[var(--msqdx-color-brand-orange)]/30 transition-colors duration-300"
             >
               <!-- Video Player -->
               <div class="relative aspect-video bg-black/40">
@@ -227,7 +210,7 @@
 
                 <!-- Match Score -->
                 <div
-                  class="absolute top-3 left-3 px-2 py-1 rounded bg-indigo-500/80 backdrop-blur-md border border-indigo-400/20 text-xs font-bold text-white shadow-lg"
+                  class="absolute top-3 left-3 px-2 py-1 rounded bg-[var(--msqdx-color-brand-orange)]/80 backdrop-blur-md border border-white/10 text-xs font-bold text-white shadow-lg"
                 >
                   {Math.round(result.score * 100)}% Match
                 </div>
@@ -251,35 +234,26 @@
 
                 <!-- Action Buttons -->
                 <div class="flex gap-2 pt-2">
-                  <button
-                    class="
-                      flex-1 py-2 px-3 rounded-lg
-                      bg-white/5 hover:bg-white/10
-                      border border-white/5 hover:border-white/10
-                      text-xs text-white/70 hover:text-white
-                      transition-all duration-200
-                      flex items-center justify-center gap-2
-                    "
+                  <MsqdxButton
+                    variant="text"
+                    glass
+                    class="flex-1 !py-2 !px-3 !rounded-lg text-xs"
                     on:click={() => openAddToProjectModal(result)}
                   >
                     <MaterialSymbol icon="playlist_add" fontSize={16} />
                     {_('search.addToProject')}
-                  </button>
-                  <button
-                    class="
-                      py-2 px-3 rounded-lg
-                      bg-white/5 hover:bg-white/10
-                      border border-white/5 hover:border-white/10
-                      text-white/70 hover:text-white
-                      transition-all duration-200
-                    "
+                  </MsqdxButton>
+                  <MsqdxButton
+                    variant="text"
+                    glass
+                    class="!py-2 !px-3 !rounded-lg"
                     on:click={() => {
                       window.location.href = `${base}/videos/${result.videoId}`;
                     }}
                     title={_('search.viewVideo')}
                   >
                     <MaterialSymbol icon="open_in_new" fontSize={16} />
-                  </button>
+                  </MsqdxButton>
                 </div>
               </div>
             </MsqdxGlassCard>
@@ -320,18 +294,21 @@
         </div>
 
         <div class="p-4 bg-black/20 border-t border-white/5 flex gap-3">
-          <button
-            class="flex-1 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
+          <MsqdxButton
+            variant="contained"
+            class="flex-1 !py-2 !rounded-lg text-sm"
             on:click={createNewProject}
           >
             {_('search.createNewProject')}
-          </button>
-          <button
-            class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-sm transition-colors"
+          </MsqdxButton>
+          <MsqdxButton
+            variant="text"
+            glass
+            class="!px-4 !py-2 !rounded-lg text-sm"
             on:click={() => (showProjectModal = false)}
           >
             {_('actions.cancel')}
-          </button>
+          </MsqdxButton>
         </div>
       </MsqdxGlassCard>
     </div>
