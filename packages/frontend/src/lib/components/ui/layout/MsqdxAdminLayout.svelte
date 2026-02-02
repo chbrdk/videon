@@ -2,7 +2,13 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { theme } from '$lib/stores/theme.store';
-  import { MSQDX_COLORS, MSQDX_SPACING, MSQDX_RESPONSIVE, MSQDX_EFFECTS } from '$lib/design-tokens';
+  import {
+    MSQDX_COLORS,
+    MSQDX_SPACING,
+    MSQDX_RESPONSIVE,
+    MSQDX_EFFECTS,
+    MSQDX_TYPOGRAPHY,
+  } from '$lib/design-tokens';
   import { _ } from '$lib/i18n';
   import { MaterialSymbol } from '$lib/components/ui';
   import { base } from '$app/paths';
