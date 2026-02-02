@@ -162,6 +162,12 @@ class VideosApi {
     });
   }
 
+  async analyzeFull(videoId: string): Promise<{ message: string; videoId: string }> {
+    return this.request<{ message: string; videoId: string }>(`/videos/${videoId}/analyze/full`, {
+      method: 'POST',
+    });
+  }
+
   // Audio Stems API
   async getAudioStems(videoId: string): Promise<AudioStem[]> {
     return this.request<AudioStem[]>(`/audio-stems/videos/${videoId}/audio-stems`);

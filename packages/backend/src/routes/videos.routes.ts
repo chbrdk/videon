@@ -25,6 +25,11 @@ console.log('✅ Loading Videos Routes...');
 // Protect all routes
 router.use(isAuthenticated);
 
+// Trigger full analysis for video
+router.post('/:id/analyze/full', async (req: any, res: any) => {
+  videosController.analyzeFull(req, res);
+});
+
 // Trigger Qwen VL semantic analysis for video - MOVED TO TOP
 router.post('/:id/qwenVL/analyze', async (req: any, res: any) => {
   console.log('🎯 Qwen VL Route HIT!', req.path, req.params);

@@ -522,6 +522,40 @@
     poll();
   }
 
+  async function triggerFullAnalysis() {
+    const currentVideoId = $page.params.id;
+    if (!currentVideoId) return;
+
+    logger.info('Triggering full video analysis', { videoId: currentVideoId });
+    try {
+      await videosApi.analyzeFull(currentVideoId);
+
+      // Start polling for all services
+      pollAudioSeparationStatus();
+      pollSaliencyStatus();
+      analyzingQwenVL = true;
+      pollQwenVLStatus();
+
+      // Refresh video status periodically
+      const interval = setInterval(async () => {
+        await refreshVideo(currentVideoId);
+        if ($selectedVideo.status === 'ANALYZED' || $selectedVideo.status === 'ERROR') {
+          clearInterval(interval);
+          await loadVisionData();
+          await loadTranscription();
+          await loadSaliencyStatus();
+          await loadAudioStems(currentVideoId);
+        }
+      }, 5000);
+    } catch (error: any) {
+      logger.error('Failed to trigger full analysis', {
+        videoId: currentVideoId,
+        error: error?.message,
+      });
+      alert('Analysis trigger failed: ' + (error?.message || 'Unknown error'));
+    }
+  }
+
   async function handleExport(format: 'premiere' | 'fcpxml' | 'srt') {
     if (!videoId || exporting) return;
 
@@ -786,106 +820,30 @@
                   >{refreshing ? _('videoDetails.refreshing') : _('videoDetails.refresh')}</span
                 >
               </button>
+
               <button
                 on:click={() => {
-                  triggerVisionAnalysis();
+                  triggerFullAnalysis();
                   servicesOpen = false;
                 }}
                 class="dropdown-item"
+                disabled={$selectedVideo.status === 'ANALYZING' || analyzingQwenVL}
               >
-                <MaterialSymbol icon="play_arrow" fontSize={16} />
-                <span class="dropdown-item-text"
-                  >{$currentLocale === 'en' ? 'Start Analysis' : 'Analyse starten'}</span
-                >
-              </button>
-              <button
-                on:click={() => {
-                  triggerQwenVLAnalysis();
-                  servicesOpen = false;
-                }}
-                class="dropdown-item"
-                disabled={analyzingQwenVL}
-              >
-                {#if analyzingQwenVL}
+                {#if $selectedVideo.status === 'ANALYZING' || analyzingQwenVL}
                   <div class="spinner-small"></div>
                   <span class="dropdown-item-text"
                     >{$currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...'}</span
                   >
                 {:else}
-                  <MaterialSymbol icon="visibility" fontSize={16} />
+                  <MaterialSymbol icon="analytics" fontSize={16} />
                   <span class="dropdown-item-text"
-                    >{$currentLocale === 'en'
-                      ? 'Semantic Analysis (Qwen VL)'
-                      : 'Semantische Analyse (Qwen VL)'}</span
+                    >{$currentLocale === 'en' ? 'Full Analysis' : 'Vollständige Analyse'}</span
                   >
                 {/if}
               </button>
-              <button
-                on:click={() => {
-                  triggerAudioSeparation();
-                  servicesOpen = false;
-                }}
-                class="dropdown-item"
-                disabled={separatingAudio}
-              >
-                {#if separatingAudio}
-                  <div class="spinner-small"></div>
-                {:else}
-                  <MaterialSymbol icon="music_note" fontSize={16} />
-                {/if}
-                <span class="dropdown-item-text"
-                  >{separatingAudio
-                    ? $currentLocale === 'en'
-                      ? 'Separating...'
-                      : 'Trennt...'
-                    : $currentLocale === 'en'
-                      ? 'Separate Audio'
-                      : 'Audio trennen'}</span
-                >
-              </button>
-              <button
-                on:click={() => {
-                  triggerSpleeterSeparation();
-                  servicesOpen = false;
-                }}
-                class="dropdown-item"
-                disabled={separatingSpleeter}
-              >
-                {#if separatingSpleeter}
-                  <div class="spinner-small"></div>
-                {:else}
-                  <MaterialSymbol icon="graphic_eq" fontSize={16} />
-                {/if}
-                <span class="dropdown-item-text"
-                  >{$currentLocale === 'en' ? 'Spleeter' : 'Spleeter'}</span
-                >
-              </button>
-              {#if !saliencyAnalyzed}
-                <button
-                  on:click={() => {
-                    triggerSaliencyAnalysis();
-                    servicesOpen = false;
-                  }}
-                  class="dropdown-item"
-                  disabled={analyzingSaliency}
-                >
-                  {#if analyzingSaliency}
-                    <div class="spinner-small"></div>
-                  {:else}
-                    <MaterialSymbol icon="visibility" fontSize={16} />
-                  {/if}
-                  <span class="dropdown-item-text"
-                    >{analyzingSaliency
-                      ? $currentLocale === 'en'
-                        ? 'Analyzing...'
-                        : 'Analysiert...'
-                      : $currentLocale === 'en'
-                        ? 'Analyze Saliency'
-                        : 'Saliency analysieren'}</span
-                  >
-                </button>
-              {/if}
+
               {#if saliencyAnalyzed}
+                <div class="dropdown-divider"></div>
                 <button
                   on:click={() => {
                     openReframeModal();
@@ -1240,6 +1198,12 @@
     padding: var(--msqdx-spacing-xxs) 0;
     border: 1px solid var(--msqdx-color-dark-border);
     background: var(--msqdx-color-dark-paper);
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background: var(--msqdx-color-dark-border);
+    margin: var(--msqdx-spacing-xxs) 0;
   }
 
   .dropdown-item {

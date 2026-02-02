@@ -141,6 +141,61 @@ export class VideosController {
     }
   }
 
+  async analyzeFull(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const video = await videoService.getVideoById(id);
+
+      if (!video) {
+        return res.status(404).json({ error: 'Video not found' });
+      }
+
+      // Get local video path
+      const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+      const videoPath = path.join(videosStoragePath, video.filename);
+
+      if (!fs.existsSync(videoPath)) {
+        return res.status(404).json({
+          error: 'Video file not found',
+          message: 'The original video file is missing. Full analysis cannot be performed.',
+        });
+      }
+
+      // Update status to analyzing
+      await videoService.updateVideoStatus(video.id, 'ANALYZING');
+      await videoService.createAnalysisLog(video.id, 'INFO', 'Full analysis started');
+
+      logger.info(`🚀 Starting full analysis for video ${video.id}`, { videoPath });
+
+      // 1. Standard video analysis (scenes, transcription, etc.)
+      analyzerClient.analyzeVideo(video.id, videoPath).catch((error) => {
+        logger.error(`Standard analysis failed for video ${video.id}:`, error);
+      });
+
+      // 2. Audio separation
+      analyzerClient.separateAudioForVideo(video.id, videoPath).catch((error) => {
+        logger.error(`Audio separation failed for video ${video.id}:`, error);
+      });
+
+      // 3. Saliency analysis
+      saliencyClient.analyzeSaliency(video.id, videoPath).catch((error) => {
+        logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+      });
+
+      res.status(200).json({
+        message: 'Full analysis started successfully',
+        videoId: video.id,
+        status: 'ANALYZING',
+      });
+    } catch (error) {
+      logger.error('Full analysis trigger failed', error);
+      res.status(500).json({
+        error: 'Analysis trigger failed',
+        message: (error as Error).message,
+      });
+    }
+  }
+
   async uploadVideo(req: Request, res: Response) {
     try {
       if (!req.file) {
