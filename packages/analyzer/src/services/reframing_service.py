@@ -17,10 +17,8 @@ from datetime import datetime
 import httpx
 import subprocess
 
-# Add src to path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-from smooth_reframing import SmoothReframer
+# from smooth_reframing import SmoothReframer
+from .smooth_reframing import SmoothReframer
 from ..utils.logger import logger
 
 class ReframingService:
