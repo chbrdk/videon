@@ -107,6 +107,11 @@ router.post('/', upload.single('video'), validateVideoUpload, (req: any, res: an
   videosController.simpleUpload(req, res)
 );
 
+// Chunked upload handler
+router.post('/upload/chunk', upload.single('chunk'), (req: any, res: any) =>
+  videosController.handleChunk(req, res)
+);
+
 // Multiple video upload (up to 10 files)
 router.post('/upload-multiple', uploadMultipleMiddleware, async (req: any, res: any) => {
   try {

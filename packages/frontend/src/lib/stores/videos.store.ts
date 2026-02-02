@@ -23,7 +23,7 @@ export const uploadVideo = async (file: File, onProgress?: (progress: number) =>
   error.set(null);
   uploadProgress.set(0);
   try {
-    const response = await videosApi.uploadVideo(file, (progress) => {
+    const response = await videosApi.uploadVideoChunked(file, (progress) => {
       uploadProgress.set(progress);
       if (onProgress) onProgress(progress);
     });

@@ -70,15 +70,11 @@
     try {
       for (let i = 0; i < files.length; i++) {
         currentFileIndex = i;
-        await videosApi.uploadVideo(
-          files[i],
-          p => {
-            const filesCompleted = i;
-            const currentFileProgress = p / 100;
-            progress = ((filesCompleted + currentFileProgress) / totalFiles) * 100;
-          },
-          currentFolderId || undefined
-        );
+        await videosApi.uploadVideoChunked(files[i], p => {
+          const filesCompleted = i;
+          const currentFileProgress = p / 100;
+          progress = ((filesCompleted + currentFileProgress) / totalFiles) * 100;
+        });
       }
       onUploadComplete();
       close();

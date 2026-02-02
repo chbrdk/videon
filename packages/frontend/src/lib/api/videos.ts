@@ -117,6 +117,56 @@ class VideosApi {
     });
   }
 
+  async uploadVideoChunked(file: File, onProgress?: (progress: number) => void): Promise<UploadResponse> {
+    const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+    let response: any = null;
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(file.size, start + CHUNK_SIZE);
+      const chunk = file.slice(start, end);
+
+      const formData = new FormData();
+      formData.append('chunk', chunk);
+      formData.append('chunkIndex', i.toString());
+      formData.append('totalChunks', totalChunks.toString());
+      formData.append('uploadId', uploadId);
+      formData.append('filename', file.name);
+
+      response = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable && onProgress) {
+            const overallProgress = ((start + e.loaded) / file.size) * 100;
+            onProgress(overallProgress);
+          }
+        });
+
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200 || xhr.status === 201) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch (error) {
+              reject(new Error('Invalid response format'));
+            }
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => reject(new Error('Network error')));
+        xhr.open('POST', `${API_BASE_URL}/videos/upload/chunk`);
+        xhr.withCredentials = true;
+        xhr.send(formData);
+      });
+    }
+
+    return response as UploadResponse;
+  }
+
   async getAllVideos(): Promise<Video[]> {
     return this.request<Video[]>('/videos');
   }

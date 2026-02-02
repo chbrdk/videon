@@ -40,6 +40,72 @@ const upload = multer({
 });
 
 export class VideosController {
+  // Helper to trigger background STORION and analysis
+  private triggerBackgroundProcesses(video: any, localVideoPath: string, originalFilename: string) {
+    // BACKGROUND PROCESSES - Use setTimeout to ensure response is sent first
+    setTimeout(async () => {
+      try {
+        logger.info(`🧵 Starting background processing for video ${video.id}`);
+
+        // 1. STORION Upload (if enabled)
+        if (config.storage.type === 'storion') {
+          try {
+            logger.info(`📤 Starting background STORION upload for video ${video.id}`);
+            const storageService = getStorageService();
+            const storionFileId = await storageService.uploadFile(
+              localVideoPath,
+              `videos/${originalFilename}`,
+              video.id
+            );
+
+            if (storionFileId) {
+              // Update video filename with STORION ID
+              await videoService.updateVideo(video.id, { filename: storionFileId });
+              logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
+            } else {
+              throw new Error('STORION upload returned empty file ID');
+            }
+          } catch (storionError) {
+            logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
+              error: storionError instanceof Error ? storionError.message : String(storionError)
+            });
+            await videoService.createAnalysisLog(video.id, 'ERROR', 'Background STORION upload failed', {
+              error: storionError instanceof Error ? storionError.message : String(storionError)
+            });
+          }
+        }
+
+        // 2. Trigger All Analyses
+        logger.info(`🚀 Triggering background analyses for video ${video.id}`);
+
+        // Trigger Scene Detection & Vision Analysis
+        analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
+          logger.error(`Standard analysis failed for video ${video.id}:`, error);
+        });
+
+        // Trigger Audio separation
+        analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
+          logger.error(`Audio separation failed for video ${video.id}:`, error);
+        });
+
+        // Trigger Saliency analysis
+        saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
+          logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+        });
+
+      } catch (bgError) {
+        logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
+        try {
+          await videoService.createAnalysisLog(video.id, 'ERROR', 'Fatal background process error', {
+            error: bgError instanceof Error ? bgError.message : String(bgError)
+          });
+        } catch (logError) {
+          logger.error('Failed to log background error to DB', logError);
+        }
+      }
+    }, 100);
+  }
+
   // Simple upload method without middleware
   async simpleUpload(req: Request, res: Response) {
     try {
@@ -80,52 +146,8 @@ export class VideosController {
         video,
       });
 
-      // BACKGROUND PROCESSES
-      (async () => {
-        try {
-          // 1. STORION Upload (if enabled)
-          if (config.storage.type === 'storion') {
-            try {
-              logger.info(`📤 Starting background STORION upload for video ${video.id}`);
-              const storageService = getStorageService();
-              const storionFileId = await storageService.uploadFile(
-                localVideoPath,
-                `videos/${file.filename}`,
-                video.id
-              );
-
-              // Update video filename with STORION ID
-              await videoService.updateVideo(video.id, { filename: storionFileId });
-              logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
-            } catch (storionError) {
-              logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
-                error: storionError instanceof Error ? storionError.message : String(storionError)
-              });
-            }
-          }
-
-          // 2. Trigger All Analyses
-          logger.info(`🚀 Triggering background analyses for video ${video.id}`);
-
-          // Trigger Scene Detection & Vision Analysis
-          analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
-            logger.error(`Standard analysis failed for video ${video.id}:`, error);
-          });
-
-          // Trigger Audio separation
-          analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
-            logger.error(`Audio separation failed for video ${video.id}:`, error);
-          });
-
-          // Trigger Saliency analysis
-          saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
-            logger.error(`Saliency analysis failed for video ${video.id}:`, error);
-          });
-
-        } catch (bgError) {
-          logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
-        }
-      })();
+      // Trigger background processes
+      this.triggerBackgroundProcesses(video, localVideoPath, file.filename);
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -233,74 +255,99 @@ export class VideosController {
         video,
       });
 
-      // BACKGROUND PROCESSES - Use setTimeout to ensure response is sent first
-      setTimeout(async () => {
-        try {
-          logger.info(`🧵 Starting background processing for video ${video.id}`);
+      // Trigger background processes
+      this.triggerBackgroundProcesses(video, localVideoPath, file.filename);
 
-          // 1. STORION Upload (if enabled)
-          if (config.storage.type === 'storion') {
-            try {
-              logger.info(`📤 Starting background STORION upload for video ${video.id}`);
-              const storageService = getStorageService();
-              const storionFileId = await storageService.uploadFile(
-                localVideoPath,
-                `videos/${file.filename}`,
-                video.id
-              );
-
-              if (storionFileId) {
-                // Update video filename with STORION ID
-                await videoService.updateVideo(video.id, { filename: storionFileId });
-                logger.info(`✅ Background STORION upload completed for video ${video.id}`, { storionFileId });
-              } else {
-                throw new Error('STORION upload returned empty file ID');
-              }
-            } catch (storionError) {
-              logger.error(`❌ Background STORION upload failed for video ${video.id}`, {
-                error: storionError instanceof Error ? storionError.message : String(storionError)
-              });
-              await videoService.createAnalysisLog(video.id, 'ERROR', 'Background STORION upload failed', {
-                error: storionError instanceof Error ? storionError.message : String(storionError)
-              });
-            }
-          }
-
-          // 2. Trigger All Analyses
-          logger.info(`🚀 Triggering background analyses for video ${video.id}`);
-
-          // Trigger Scene Detection & Vision Analysis
-          analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
-            logger.error(`Standard analysis failed for video ${video.id}:`, error);
-          });
-
-          // Trigger Audio separation
-          analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
-            logger.error(`Audio separation failed for video ${video.id}:`, error);
-          });
-
-          // Trigger Saliency analysis
-          saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
-            logger.error(`Saliency analysis failed for video ${video.id}:`, error);
-          });
-
-        } catch (bgError) {
-          logger.error(`❌ Fatal background process error for video ${video.id}:`, bgError);
-          try {
-            await videoService.createAnalysisLog(video.id, 'ERROR', 'Fatal background process error', {
-              error: bgError instanceof Error ? bgError.message : String(bgError)
-            });
-          } catch (logError) {
-            logger.error('Failed to log background error to DB', logError);
-          }
-        }
-      }, 100);
+      res.status(201).json({
+        message: 'Video upload received',
+        video,
+      });
 
     } catch (error) {
       logger.error('Error uploading video:', error);
       res.status(500).json({
         error: 'Upload failed',
         message: 'Failed to upload video',
+      });
+    }
+  }
+
+  // Chunked upload handler
+  async handleChunk(req: Request, res: Response) {
+    try {
+      const { uploadId, chunkIndex, totalChunks, filename } = req.body;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No chunk file uploaded' });
+      }
+
+      const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+      const tempDir = path.join(videosStoragePath, 'temp', uploadId);
+
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+
+      const chunkPath = path.join(tempDir, `chunk_${chunkIndex}`);
+      // Move chunk to temp dir
+      fs.renameSync(file.path, chunkPath);
+
+      const uploadedChunks = fs.readdirSync(tempDir).filter(f => f.startsWith('chunk_')).length;
+      const isComplete = uploadedChunks === parseInt(totalChunks);
+
+      if (isComplete) {
+        logger.info(`✅ All chunks received for upload ${uploadId}. Reassembling...`);
+        const finalPath = path.join(videosStoragePath, filename);
+
+        // Assemble chunks
+        const writeStream = fs.createWriteStream(finalPath);
+        for (let i = 0; i < totalChunks; i++) {
+          const chunkFile = path.join(tempDir, `chunk_${i}`);
+          const chunkBuffer = fs.readFileSync(chunkFile);
+          writeStream.write(chunkBuffer);
+          fs.unlinkSync(chunkFile); // Remove chunk after writing
+        }
+        writeStream.end();
+
+        await new Promise((resolve) => writeStream.on('finish', resolve));
+
+        // Clean up temp dir
+        fs.rmdirSync(tempDir);
+
+        // Create video record
+        const user = (req as any).user;
+        const video = await videoService.createVideo({
+          filename: filename,
+          originalName: filename,
+          fileSize: fs.statSync(finalPath).size,
+          mimeType: 'video/mp4',
+          userId: user?.id
+        });
+
+        // Update status to analyzing
+        await videoService.updateVideoStatus(video.id, 'ANALYZING');
+        await videoService.createAnalysisLog(video.id, 'INFO', 'Chunked upload reassembled, processing started');
+
+        // Trigger background processes
+        this.triggerBackgroundProcesses(video, finalPath, filename);
+
+        res.status(201).json({
+          message: 'Video reassembled and processing started',
+          video,
+        });
+      } else {
+        res.status(200).json({
+          message: `Chunk ${chunkIndex} received`,
+          receivedChunks: uploadedChunks,
+          totalChunks: parseInt(totalChunks)
+        });
+      }
+    } catch (error) {
+      logger.error('Chunk upload failed', error);
+      res.status(500).json({
+        error: 'Chunk upload failed',
+        message: (error as Error).message
       });
     }
   }
