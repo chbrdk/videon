@@ -484,5 +484,11 @@
   },
   "common": {
     "optional": "Optional"
+  },
+  "maintenance": {
+    "notice": {
+      "title": "Wartungsfenster",
+      "message": "Ab 18 Uhr arbeiten wir an neuen Features. Einige Funktionen können verzögert sein."
+    }
   }
 }

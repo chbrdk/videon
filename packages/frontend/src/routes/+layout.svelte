@@ -7,7 +7,7 @@
   import { theme } from '$lib/stores/theme.store';
   import { currentLocale, _, initI18n } from '$lib/i18n';
   import { browser } from '$app/environment';
-  import ServiceStatusPanel from '$lib/components/ServiceStatusPanel.svelte';
+  import MsqdxMaintenanceNotice from '$lib/components/MsqdxMaintenanceNotice.svelte';
   import { contextMenuStore } from '$lib/stores/context-menu.store';
   import GlobalContextMenu from '$lib/components/GlobalContextMenu.svelte';
   import MsqdxAdminLayout from '$lib/components/ui/layout/MsqdxAdminLayout.svelte';
@@ -75,8 +75,8 @@
     <slot />
   </MsqdxAdminLayout>
 
-  <!-- Service Status Panel only for authenticated users -->
-  <ServiceStatusPanel />
+  <!-- Navigation Maintenance Notice (Visible 18:00 - 09:00 Berlin Time) -->
+  <MsqdxMaintenanceNotice />
 {:else}
   <!-- Loading State -->
   <div class="h-screen w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">

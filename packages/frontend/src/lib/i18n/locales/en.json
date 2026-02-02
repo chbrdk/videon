@@ -248,13 +248,15 @@
     "scene": "Scene"
   },
   "export": {
-    "exportFailed": "Export failed",
-    "xmlExportFailed": "XML Export failed",
-    "unknownError": "Unknown error",
-    "exportPremiere": "Export Premiere",
-    "exportXml": "XML Only",
-    "exportSrt": "SRT",
-    "exporting": "Exporting..."
+    "export": {
+      "exportFailed": "Export failed",
+      "xmlExportFailed": "XML Export failed",
+      "unknownError": "Unknown error",
+      "exportPremiere": "Export Premiere",
+      "exportXml": "XML Only",
+      "exportSrt": "SRT",
+      "exporting": "Exporting..."
+    }
   },
   "sharing": {
     "title": "Share \"{name}\"",
@@ -484,5 +486,11 @@
   },
   "common": {
     "optional": "Optional"
+  },
+  "maintenance": {
+    "notice": {
+      "title": "Maintenance Window",
+      "message": "From 6 PM we are working on new features. Some functions may be delayed."
+    }
   }
 }
