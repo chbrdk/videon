@@ -1,3 +1,4 @@
+<script lang="ts">
   import { MaterialSymbol } from '$lib/components/ui';
   import { _ } from '$lib/i18n';
   // Svelte 5 Props

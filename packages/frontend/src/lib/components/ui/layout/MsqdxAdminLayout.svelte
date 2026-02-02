@@ -461,7 +461,7 @@
         background-color: rgba(0, 0, 0, 0.5);
         z-index: 1099;
       "
-    />
+    ></div>
   {/if}
 </div>
 

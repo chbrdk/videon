@@ -103,7 +103,7 @@
   on:click
   on:keydown
   role={hoverable ? 'button' : undefined}
-  tabindex={hoverable ? 0 : undefined}
+  tabindex={hoverable ? 0 : -1}
   {...$$restProps}
 >
   {#if accent !== 'none'}
