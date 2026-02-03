@@ -99,8 +99,19 @@
       if (isPlaying) {
         videoPlayer.pause();
       } else {
-        videoPlayer.play();
+        const playPromise = videoPlayer.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('🎬 Main video playback started successfully');
+            })
+            .catch(error => {
+              console.error('❌ Main video playback failed:', error);
+            });
+        }
       }
+    } else {
+      console.error('❌ handlePlayPause: videoPlayer is undefined');
     }
   }
 
@@ -197,13 +208,20 @@
 
   onMount(() => {
     if (videoPlayer) {
+      console.log('✅ Video player mounted, registering events');
       videoPlayer.addEventListener('play', handleVideoPlay);
       videoPlayer.addEventListener('pause', handleVideoPause);
       videoPlayer.addEventListener('seeked', handleVideoSeek);
       videoPlayer.addEventListener('timeupdate', handleTimeUpdate);
       videoPlayer.addEventListener('loadedmetadata', () => {
         duration = videoPlayer.duration || videoDuration;
+        console.log('✅ Video metadata loaded, duration:', duration);
       });
+
+      // Register with Audio Stem Player
+      audioStemPlayer.setVideoElement(videoPlayer);
+    } else {
+      console.error('❌ Video player not found in onMount');
     }
   });
 
