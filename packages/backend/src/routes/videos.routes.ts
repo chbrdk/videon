@@ -14,11 +14,13 @@ import { PremiereExportService } from '../services/premiere-export.service';
 import logger from '../utils/logger';
 import { t } from '../utils/i18n';
 import { isAuthenticated } from '../middleware/auth.middleware';
+import { VideoService } from '../services/video.service';
 
 const router: any = Router();
 const videosController = new VideosController();
 const visionService = new VisionService();
 const premiereExportService = new PremiereExportService();
+const videoService = new VideoService();
 
 console.log('✅ Loading Videos Routes...');
 
@@ -918,7 +920,11 @@ router.post('/:id/transcribe', async (req: any, res: any) => {
     logger.info(`🎤 Transcription request received for video: ${id}`, { language: language || 'auto-detect' });
 
     // 1. Verify video exists in DB
-    const video = await videosController.videoService.getVideoById(id);
+    const video = await videoService.getVideoById(
+      id,
+      req.user?.id,
+      req.user?.role === 'ADMIN'
+    );
     if (!video) {
       logger.error(`❌ Transcription failed: Video ${id} not found in database`);
       return res.status(404).json({ error: 'Video not found' });
