@@ -239,7 +239,12 @@
   }
 
   // Reactive function to update playhead when zoom changes
-  $: if (videoElement && timelineDuration > 0 && $zoomLevel && $currentTime) {
+  $: if (
+    videoElement &&
+    timelineDuration > 0 &&
+    $zoomLevel !== undefined &&
+    $currentTime !== undefined
+  ) {
     const time = $currentTime;
     const position = (time / timelineDuration) * timelineWidth;
     playheadPosition.set(position);
@@ -772,10 +777,9 @@
 <div class="unified-timeline" bind:this={timelineContainer}>
   <!-- Scrollable Tracks Container -->
   <div class="tracks-scroll-container" bind:this={scrollContainer}>
-    <!-- Global Playhead (außerhalb des scrollbaren Bereichs) -->
-    <div class="global-playhead" style="left: {$playheadPosition}px"></div>
-
     <div class="tracks-inner" style="width: {timelineWidth}px;">
+      <!-- Global Playhead -->
+      <div class="global-playhead" style="left: {$playheadPosition}px"></div>
       <!-- Tracks dynamisch rendern -->
       {#each $trackConfigs.sort((a, b) => a.order - b.order) as track (track.id)}
         {#if track.visible}
