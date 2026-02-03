@@ -57,6 +57,53 @@
   let showReVoiceModal = false;
   let showVoiceCloneModal = false;
 
+  // Draggable Timeline state
+  let isDraggingTimeline = false;
+  let startX = 0;
+  let scrollLeftStart = 0;
+  let dragMoved = false;
+
+  function handleRulerMouseDown(e: MouseEvent) {
+    if (!scrollContainer || e.button !== 0) return;
+
+    isDraggingTimeline = true;
+    startX = e.pageX;
+    scrollLeftStart = scrollContainer.scrollLeft;
+    dragMoved = false;
+
+    // Prevent text selection
+    e.preventDefault();
+
+    window.addEventListener('mousemove', handleRulerMouseMove);
+    window.addEventListener('mouseup', handleRulerMouseUp);
+  }
+
+  function handleRulerMouseMove(e: MouseEvent) {
+    if (!isDraggingTimeline || !scrollContainer) return;
+
+    const x = e.pageX;
+    const walk = x - startX;
+
+    if (Math.abs(walk) > 5) {
+      dragMoved = true;
+    }
+
+    if (dragMoved) {
+      scrollContainer.scrollLeft = scrollLeftStart - walk;
+    }
+  }
+
+  function handleRulerMouseUp() {
+    isDraggingTimeline = false;
+    window.removeEventListener('mousemove', handleRulerMouseMove);
+    window.removeEventListener('mouseup', handleRulerMouseUp);
+
+    // Keep dragMoved true for a moment to prevent click events from triggering a seek
+    setTimeout(() => {
+      dragMoved = false;
+    }, 100);
+  }
+
   // Video Event Listeners
   function handleVideoTimeUpdate() {
     if (videoElement && actualDuration > 0) {
@@ -869,13 +916,18 @@
       {/each}
 
       <!-- Timeline Ruler (gemeinsame Zeitachse) - JETZT INNERHALB DES SCROLLBARE BEREICHS -->
-      <div class="timeline-ruler">
+      <div
+        class="timeline-ruler"
+        class:dragging={isDraggingTimeline}
+        on:mousedown={handleRulerMouseDown}
+      >
         <!-- Haupt-Marker (alle 10 Sekunden) -->
         {#each Array.from({ length: Math.ceil(timelineDuration / 10) }) as _, i}
           <div
             class="time-marker clickable main-marker"
             style="left: {i * 10 * $zoomLevel * 20}px"
             on:click={() => {
+              if (dragMoved) return;
               const targetTime = i * 10;
               console.log('🎯 Jumping to time:', targetTime);
               currentTime.set(targetTime);
@@ -899,6 +951,7 @@
                 class="time-marker clickable sub-marker"
                 style="left: {timePosition * $zoomLevel * 20}px"
                 on:click={() => {
+                  if (dragMoved) return;
                   console.log('🎯 Jumping to time:', timePosition);
                   currentTime.set(timePosition);
                   playheadPosition.set((timePosition / timelineDuration) * timelineWidth);
@@ -1176,6 +1229,12 @@
     margin-top: var(--msqdx-spacing-sm);
     border-radius: var(--msqdx-radius-xs);
     overflow: hidden; /* Prevent ruler from breaking out to the right */
+    cursor: grab;
+    user-select: none;
+  }
+
+  .timeline-ruler.dragging {
+    cursor: grabbing;
   }
 
   .time-marker {
