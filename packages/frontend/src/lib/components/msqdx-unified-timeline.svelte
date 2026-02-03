@@ -134,10 +134,8 @@
   function handleVideoTimeUpdate() {
     if (videoElement) {
       const time = videoElement.currentTime;
-      // Only update store if difference is significant to reduce churn
-      if (Math.abs(time - $currentTime) > 0.05) {
-        currentTime.set(time);
-      }
+      // ALWAYS update currentTime to ensure smoothness
+      currentTime.set(time);
     }
   }
 
@@ -759,6 +757,19 @@
 <div class="unified-timeline" bind:this={timelineContainer}>
   <!-- Scrollable Tracks Container -->
   <div class="tracks-scroll-container" bind:this={scrollContainer}>
+    <!-- DEBUG OVERLAY -->
+    <div
+      style="position: sticky; left: 0; top: 0; z-index: 9999; background: rgba(0,0,0,0.8); color: lime; padding: 10px; font-family: monospace; font-size: 12px; pointer-events: none;"
+    >
+      <div>Time: {$currentTime?.toFixed(3)}</div>
+      <div>Duration: {actualDuration?.toFixed(3)}</div>
+      <div>TimelineDur: {timelineDuration?.toFixed(3)}</div>
+      <div>PlayheadPos: {$playheadPosition?.toFixed(3)}</div>
+      <div>TimelineWidth: {timelineWidth?.toFixed(0)}</div>
+      <div>Playing: {videoElement && !videoElement.paused}</div>
+      <div>Zoom: {$zoomLevel}</div>
+    </div>
+
     <div class="tracks-inner" style="width: {timelineWidth}px;">
       <!-- Global Playhead -->
       <div class="global-playhead" style="left: {$playheadPosition}px"></div>
