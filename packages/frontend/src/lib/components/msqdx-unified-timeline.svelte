@@ -57,6 +57,23 @@
   let showReVoiceModal = false;
   let showVoiceCloneModal = false;
 
+  // Reactive function to update playhead when zoom or time changes
+  $: {
+    if (
+      videoElement &&
+      timelineDuration > 0 &&
+      ($zoomLevel !== undefined || $currentTime !== undefined)
+    ) {
+      const time = $currentTime || 0;
+      const position = (time / timelineDuration) * timelineWidth;
+
+      // Update store
+      if (position !== $playheadPosition) {
+        playheadPosition.set(position);
+      }
+    }
+  }
+
   // Draggable Timeline state
   let isDraggingTimeline = false;
   let startX = 0;
@@ -106,51 +123,34 @@
 
   // Video Event Listeners
   function handleVideoTimeUpdate() {
-    if (videoElement && actualDuration > 0) {
+    if (videoElement) {
       const time = videoElement.currentTime;
       currentTime.set(time);
 
-      // Update Playhead Position using actualDuration and timelineWidth
-      // No track-label offset needed - everything starts at 0
-      logger.debug('Playhead position update', {
-        time: time.toFixed(1),
-        actualDuration: actualDuration,
-        videoElementDuration: videoElement?.duration,
-        timelineWidth: timelineWidth,
-        zoomLevel: $zoomLevel,
+      // Log playhead details for debugging
+      console.log('🕒 Time update:', {
+        time: time.toFixed(2),
+        actualDuration: actualDuration.toFixed(2),
+        timelineDuration: timelineDuration.toFixed(2),
+        timelineWidth: timelineWidth.toFixed(0),
+        zoom: $zoomLevel,
       });
 
+      // Update Playhead Position using timelineDuration (which is at least 30)
       if (timelineDuration > 0) {
         const position = (time / timelineDuration) * timelineWidth;
         playheadPosition.set(position);
-        console.log('🎯 Playhead position set to:', position);
-
-        // Debug logging every 5 seconds
-        if (Math.floor(time) % 5 === 0 && Math.floor(time * 10) % 10 === 0) {
-          console.log('🎯 Playhead update:', {
-            time: time.toFixed(1),
-            zoom: $zoomLevel,
-            timelineWidth: timelineWidth,
-            position: position.toFixed(1),
-            autoScroll: $autoScroll,
-          });
-        }
 
         // Auto-Scroll Logic
         if ($autoScroll && scrollContainer) {
           const scrollLeft = scrollContainer.scrollLeft;
           const scrollWidth = scrollContainer.clientWidth;
 
-          // Scroll wenn Playhead aus sichtbarem Bereich
+          // Scroll if playhead is out of view
           if (position < scrollLeft || position > scrollLeft + scrollWidth) {
-            const newScrollLeft = position - scrollWidth / 2;
-            console.log('📜 Auto-scrolling:', scrollLeft, '→', newScrollLeft);
-            scrollContainer.scrollLeft = newScrollLeft;
+            scrollContainer.scrollLeft = position - scrollWidth / 2;
           }
         }
-      } else {
-        console.log('❌ timelineDuration is 0, setting playhead to 0px');
-        playheadPosition.set(0);
       }
     }
   }
@@ -238,32 +238,26 @@
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  // Reactive function to update playhead when zoom changes
-  $: if (
-    videoElement &&
-    timelineDuration > 0 &&
-    $zoomLevel !== undefined &&
-    $currentTime !== undefined
-  ) {
-    const time = $currentTime;
+  // Reactive function to update playhead when zoom or time changes
+  $: if (videoElement && timelineDuration > 0 && $zoomLevel !== undefined) {
+    const time = $currentTime || 0;
     const position = (time / timelineDuration) * timelineWidth;
     playheadPosition.set(position);
-    console.log('🔄 Reactive playhead update:', {
-      zoom: $zoomLevel,
-      time: time.toFixed(1),
-      timelineDuration: timelineDuration,
-      timelineWidth: timelineWidth,
-      position: position.toFixed(1),
-    });
   }
 
-  // Get actual video duration (prioritize prop, fallback to video element)
+  // Robust actualDuration tracking
   let actualDuration = 0;
   $: {
     if (videoDuration > 0) {
-      actualDuration = videoDuration;
+      if (actualDuration !== videoDuration) {
+        actualDuration = videoDuration;
+        console.log('✅ actualDuration updated from prop:', actualDuration);
+      }
     } else if (videoElement?.duration > 0) {
-      actualDuration = videoElement.duration;
+      if (actualDuration !== videoElement.duration) {
+        actualDuration = videoElement.duration;
+        console.log('✅ actualDuration updated from videoElement:', actualDuration);
+      }
     }
   }
 
@@ -722,6 +716,15 @@
 
     // Initialize Clips
     initializeClips(scenes);
+
+    // Initialize Duration if already available
+    if (videoElement && videoElement.duration > 0) {
+      actualDuration = videoElement.duration;
+      console.log('✅ onMount: initial actualDuration:', actualDuration);
+    } else if (videoDuration > 0) {
+      actualDuration = videoDuration;
+      console.log('✅ onMount: initial actualDuration from prop:', actualDuration);
+    }
 
     // Set container width
     if (timelineContainer) {
