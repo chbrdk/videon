@@ -545,7 +545,7 @@ router.post('/:id/vision/analyze', async (req: any, res: any) => {
     logger.info('Video status updated to ANALYZING', { videoId: id });
 
     // Direct scene detection (no external service)
-    const SceneDetector = require('../services/scene-detector');
+    const { SceneDetector } = require('../services/scene-detector');
     const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
     const videoPath = path.join(videosStoragePath, video.filename);
 

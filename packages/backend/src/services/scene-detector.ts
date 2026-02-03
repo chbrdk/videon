@@ -1,18 +1,22 @@
-const { exec } = require('child_process');
-const path = require('path');
-const { promisify } = require('util');
+
+import { exec } from 'child_process';
+import path from 'path';
+import { promisify } from 'util';
+import fs from 'fs';
 
 const execAsync = promisify(exec);
 
-class SceneDetector {
+export class SceneDetector {
+    private threshold: number;
+
     constructor() {
         this.threshold = 15.0; // Senken von 30.0 auf 15.0 für empfindlichere Erkennung
     }
 
-    async detectScenes(videoPath) {
+    async detectScenes(videoPath: string): Promise<Array<{ startTime: number; endTime: number }>> {
         try {
             // Scene detection started - logging handled by caller
-            
+
             // Use PySceneDetect with new API
             const pythonScript = `
 import sys
@@ -80,13 +84,13 @@ if __name__ == "__main__":
 
             // Write temporary Python script
             const tempScriptPath = path.join(__dirname, 'temp_scene_detector.py');
-            require('fs').writeFileSync(tempScriptPath, pythonScript);
+            fs.writeFileSync(tempScriptPath, pythonScript);
 
             // Execute Python script
             const { stdout, stderr } = await execAsync(`python3 "${tempScriptPath}"`);
-            
+
             // Clean up
-            require('fs').unlinkSync(tempScriptPath);
+            fs.unlinkSync(tempScriptPath);
 
             if (stderr) {
                 // Scene detection error - logging handled by caller
@@ -96,7 +100,7 @@ if __name__ == "__main__":
             // Parse output
             const lines = stdout.trim().split('\n');
             let sceneCount = 0;
-            const scenes = [];
+            const scenes: Array<{ startTime: number; endTime: number }> = [];
 
             for (const line of lines) {
                 if (line.startsWith('DETECTED_SCENES:')) {
@@ -120,5 +124,3 @@ if __name__ == "__main__":
         }
     }
 }
-
-module.exports = SceneDetector;
