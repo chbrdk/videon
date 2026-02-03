@@ -139,10 +139,45 @@
     }
   }
 
-  function handleVideoPlay() {
-    console.log('🎬 Video started playing');
+  function handleVideoLoadedMetadata() {
+    if (videoElement) {
+      console.log('🎬 Video metadata loaded:', videoElement.duration);
+      if (videoElement.duration > 0) {
+        actualDuration = videoElement.duration;
+      }
+    }
   }
 
+  // Reactive Listener Attachment
+  // This handles the case where videoElement is bound AFTER this component mounts
+  let _attachedVideoElement: HTMLVideoElement | null = null;
+
+  $: if (videoElement !== _attachedVideoElement) {
+    // Cleanup old
+    if (_attachedVideoElement) {
+      console.log('🧹 Removing listeners from old video element');
+      _attachedVideoElement.removeEventListener('timeupdate', handleVideoTimeUpdate);
+      _attachedVideoElement.removeEventListener('play', handleVideoPlay);
+      _attachedVideoElement.removeEventListener('pause', handleVideoPause);
+      _attachedVideoElement.removeEventListener('loadedmetadata', handleVideoLoadedMetadata);
+    }
+
+    // Attach new
+    if (videoElement) {
+      console.log('🎬 Attaching listeners to video element');
+      videoElement.addEventListener('timeupdate', handleVideoTimeUpdate);
+      videoElement.addEventListener('play', handleVideoPlay);
+      videoElement.addEventListener('pause', handleVideoPause);
+      videoElement.addEventListener('loadedmetadata', handleVideoLoadedMetadata);
+
+      // Initial check
+      if (videoElement.readyState >= 1) {
+        handleVideoLoadedMetadata();
+      }
+    }
+
+    _attachedVideoElement = videoElement;
+  }
   function handleVideoPause() {
     console.log('⏸️ Video paused');
   }
@@ -666,12 +701,12 @@
   }
 
   onMount(() => {
+    // Initial call to attach listeners if videoElement is already present
+    // (Though the reactive block usually handles this, we log it for clarity)
     if (videoElement) {
-      videoElement.addEventListener('timeupdate', handleVideoTimeUpdate);
-      videoElement.addEventListener('play', handleVideoPlay);
-      videoElement.addEventListener('pause', handleVideoPause);
-      videoElement.addEventListener('loadedmetadata', handleVideoLoadedMetadata);
-      console.log('🎬 Video event listeners attached');
+      console.log('🎬 onMount: videoElement is present');
+    } else {
+      console.log('⏳ onMount: waiting for videoElement...');
     }
 
     // Listen for custom setTime events
@@ -738,11 +773,12 @@
   });
 
   onDestroy(() => {
-    if (videoElement) {
-      videoElement.removeEventListener('timeupdate', handleVideoTimeUpdate);
-      videoElement.removeEventListener('play', handleVideoPlay);
-      videoElement.removeEventListener('pause', handleVideoPause);
-      videoElement.removeEventListener('loadedmetadata', handleVideoLoadedMetadata);
+    // Clean up video listeners handled by reactive block
+    if (_attachedVideoElement) {
+      _attachedVideoElement.removeEventListener('timeupdate', handleVideoTimeUpdate);
+      _attachedVideoElement.removeEventListener('play', handleVideoPlay);
+      _attachedVideoElement.removeEventListener('pause', handleVideoPause);
+      _attachedVideoElement.removeEventListener('loadedmetadata', handleVideoLoadedMetadata);
     }
 
     // Clean up ResizeObserver
