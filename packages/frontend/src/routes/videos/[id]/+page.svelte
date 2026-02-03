@@ -459,15 +459,24 @@
     const currentVideoId = $page.params.id;
     if (!currentVideoId) return;
 
+    loadingVision = true;
     try {
       const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/vision/analyze`, {
         method: 'POST',
       });
       if (response.ok) {
         await loadVisionData();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(
+          `Vision analysis failed: ${errorData.message || errorData.error || response.statusText}`
+        );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error triggering vision analysis:', error);
+      alert(`Network error: ${error?.message || 'Failed to reach backend'}`);
+    } finally {
+      loadingVision = false;
     }
   }
 
