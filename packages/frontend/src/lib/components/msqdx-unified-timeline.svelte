@@ -205,8 +205,15 @@
     });
   }
 
-  // Get actual video duration (use video element duration if prop is 0)
-  $: actualDuration = videoDuration > 0 ? videoDuration : videoElement?.duration || 0;
+  // Get actual video duration (prioritize prop, fallback to video element)
+  let actualDuration = 0;
+  $: {
+    if (videoDuration > 0) {
+      actualDuration = videoDuration;
+    } else if (videoElement?.duration > 0) {
+      actualDuration = videoElement.duration;
+    }
+  }
 
   // Timeline duration with minimum 30 seconds for ruler and playhead
   $: timelineDuration = Math.max(actualDuration, 30);

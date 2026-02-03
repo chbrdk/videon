@@ -34,7 +34,7 @@
   let videoAudioLevel = 100; // 0-200%
   let isPlaying = false;
   let currentTime = 0;
-  let duration = 0;
+  let duration = videoDuration;
 
   async function handleVideoPlay() {
     isPlaying = true;
@@ -288,8 +288,8 @@
     {scenes}
     {transcriptionSegments}
     videoElement={videoPlayer}
-    {videoDuration}
-    {originalVideoDuration}
+    videoDuration={duration || videoDuration}
+    originalVideoDuration={duration || originalVideoDuration}
     {videoId}
     {isProject}
     on:seekTo
