@@ -70,6 +70,17 @@
       // Update store
       if (position !== $playheadPosition) {
         playheadPosition.set(position);
+
+        // Auto-Scroll Logic (moved here to be reactive)
+        if ($autoScroll && scrollContainer) {
+          const scrollLeft = scrollContainer.scrollLeft;
+          const scrollWidth = scrollContainer.clientWidth;
+
+          // Scroll if playhead is out of view
+          if (position < scrollLeft || position > scrollLeft + scrollWidth) {
+            scrollContainer.scrollLeft = position - scrollWidth / 2;
+          }
+        }
       }
     }
   }
@@ -125,32 +136,9 @@
   function handleVideoTimeUpdate() {
     if (videoElement) {
       const time = videoElement.currentTime;
-      currentTime.set(time);
-
-      // Log playhead details for debugging
-      console.log('🕒 Time update:', {
-        time: time.toFixed(2),
-        actualDuration: actualDuration.toFixed(2),
-        timelineDuration: timelineDuration.toFixed(2),
-        timelineWidth: timelineWidth.toFixed(0),
-        zoom: $zoomLevel,
-      });
-
-      // Update Playhead Position using timelineDuration (which is at least 30)
-      if (timelineDuration > 0) {
-        const position = (time / timelineDuration) * timelineWidth;
-        playheadPosition.set(position);
-
-        // Auto-Scroll Logic
-        if ($autoScroll && scrollContainer) {
-          const scrollLeft = scrollContainer.scrollLeft;
-          const scrollWidth = scrollContainer.clientWidth;
-
-          // Scroll if playhead is out of view
-          if (position < scrollLeft || position > scrollLeft + scrollWidth) {
-            scrollContainer.scrollLeft = position - scrollWidth / 2;
-          }
-        }
+      // Only update store if difference is significant to reduce churn
+      if (Math.abs(time - $currentTime) > 0.05) {
+        currentTime.set(time);
       }
     }
   }
