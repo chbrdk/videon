@@ -848,6 +848,27 @@
                 {/if}
               </button>
 
+              <button
+                on:click={() => {
+                  triggerVisionAnalysis();
+                  servicesOpen = false;
+                }}
+                class="dropdown-item"
+                disabled={loadingVision}
+              >
+                {#if loadingVision}
+                  <div class="spinner-small"></div>
+                  <span class="dropdown-item-text"
+                    >{$currentLocale === 'en' ? 'Analyzing...' : 'Analysiere...'}</span
+                  >
+                {:else}
+                  <MaterialSymbol icon="image_search" fontSize={16} />
+                  <span class="dropdown-item-text"
+                    >{$currentLocale === 'en' ? 'Vision Analysis' : 'Visuelle Analyse'}</span
+                  >
+                {/if}
+              </button>
+
               {#if saliencyAnalyzed}
                 <div class="dropdown-divider"></div>
                 <button
