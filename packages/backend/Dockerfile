@@ -45,7 +45,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PySceneDetect
-RUN pip3 install --no-cache-dir --break-system-packages scenedetect[opencv]
+RUN pip3 install --no-cache-dir --break-system-packages scenedetect opencv-python-headless
 
 # Copy package files
 COPY package.json ./
@@ -56,9 +56,6 @@ RUN npm install --only=production
 # Copy built application and prisma
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
-
-# Copy JavaScript service files
-COPY --from=base /app/src/services/*.js ./dist/services/
 
 # Generate Prisma client for production
 RUN ./node_modules/.bin/prisma generate --schema=./prisma/schema.prisma
