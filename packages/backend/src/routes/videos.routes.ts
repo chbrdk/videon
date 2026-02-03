@@ -911,39 +911,72 @@ router.post('/:id/scenes/merge', async (req: any, res: any) => {
 
 // Trigger transcription
 router.post('/:id/transcribe', async (req: any, res: any) => {
+  const { id } = req.params;
   try {
-    const { id } = req.params;
     const { language } = req.body; // Optional: 'de', 'en', null for auto
 
-    console.log(`🎤 Starting transcription for video: ${id}`);
-    console.log(`🌍 Language override: ${language || 'auto-detect'}`);
+    logger.info(`🎤 Transcription request received for video: ${id}`, { language: language || 'auto-detect' });
 
-    // Call Python Analyzer Service - use Docker service name instead of localhost
-    const analyzerUrl = process.env.ANALYZER_SERVICE_URL || 'http://analyzer:8001';
-    const analyzerResponse = await axios.post(
-      `${analyzerUrl}/api/transcribe/${id}`,
-      { language },
-      { timeout: 300000 } // 5 minute timeout
-    );
-
-    console.log('✅ Transcription completed:', analyzerResponse.data);
-
-    // Automatische Suchindexierung nach Transkription
-    try {
-      console.log('🔍 Starting automatic search indexing...');
-      const { SearchIndexService } = require('../services/search-index.service');
-      const searchIndexService = new SearchIndexService();
-      await searchIndexService.indexVideo(id);
-      console.log('✅ Search indexing completed');
-    } catch (indexError) {
-      console.error('❌ Search indexing failed:', (indexError as Error).message);
-      // Non-blocking: Indexierung läuft im Hintergrund
+    // 1. Verify video exists in DB
+    const video = await videosController.videoService.getVideoById(id);
+    if (!video) {
+      logger.error(`❌ Transcription failed: Video ${id} not found in database`);
+      return res.status(404).json({ error: 'Video not found' });
     }
 
-    res.status(200).json(analyzerResponse.data);
+    // 2. Verify file exists on disk
+    const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+    const videoPath = path.join(videosStoragePath, video.filename);
+
+    if (!fs.existsSync(videoPath)) {
+      logger.error(`❌ Transcription failed: File not found at ${videoPath}`);
+      return res.status(404).json({
+        error: 'Video file missing',
+        message: 'The original video file is missing from storage.'
+      });
+    }
+
+    // 3. Call Python Analyzer Service
+    const analyzerUrl = process.env.ANALYZER_SERVICE_URL || 'http://analyzer:8001';
+    logger.info(`🔄 Calling analyzer service at ${analyzerUrl}/api/transcribe/${id}...`);
+
+    try {
+      const analyzerResponse = await axios.post(
+        `${analyzerUrl}/api/transcribe/${id}`,
+        { language },
+        { timeout: 600000 } // Increase to 10 minutes for large videos
+      );
+
+      logger.info('✅ Transcription completed successfully');
+
+      // Automatic search indexing
+      try {
+        const { SearchIndexService } = require('../services/search-index.service');
+        const searchIndexService = new SearchIndexService();
+        await searchIndexService.indexVideo(id);
+        logger.info('✅ Search indexing completed');
+      } catch (indexError) {
+        logger.error('⚠️ Search indexing failed (non-blocking):', indexError);
+      }
+
+      res.status(200).json(analyzerResponse.data);
+    } catch (axiosError: any) {
+      const status = axiosError.response?.status || 500;
+      const detail = axiosError.response?.data?.detail || axiosError.message;
+
+      logger.error(`❌ Analyzer service returned error ${status}:`, { detail });
+
+      res.status(status).json({
+        error: 'Transcription service error',
+        message: detail
+      });
+    }
   } catch (error) {
-    console.error('❌ Transcription error:', error);
-    res.status(500).json({ error: 'Transcription failed' });
+    logger.error('❌ Transcription route fatal error:', error);
+    res.status(500).json({
+      error: 'Transcription failed',
+      message: (error as Error).message
+    });
   }
 });
 

@@ -208,12 +208,18 @@
         setTimeout(async () => {
           await loadTranscription();
         }, 2000);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        const msg = errorData.message || errorData.error || response.statusText;
+        logger.error('Transcription failed:', { status: response.status, message: msg });
+        alert(`Transcription failed: ${msg}`);
       }
     } catch (error: any) {
       logger.error('Error triggering transcription', {
         videoId: currentVideoId,
         error: error?.message,
       });
+      alert(`Network error: ${error?.message || 'Failed to reach backend'}`);
     }
   }
 
