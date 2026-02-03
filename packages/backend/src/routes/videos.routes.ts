@@ -544,100 +544,106 @@ router.post('/:id/vision/analyze', async (req: any, res: any) => {
 
     logger.info('Video status updated to ANALYZING', { videoId: id });
 
-    // Direct scene detection (no external service)
-    const { SceneDetector } = require('../services/scene-detector');
-    const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
-    const videoPath = path.join(videosStoragePath, video.filename);
+    // Respond immediately to prevent timeout
+    res.status(202).json({
+      message: 'Vision analysis started in background',
+      videoId: id,
+      status: 'ANALYZING'
+    });
 
-    console.log('🔍 Starting direct scene detection for:', videoPath);
-
-    try {
-      const sceneDetector = new SceneDetector();
-      const scenes = await sceneDetector.detectScenes(videoPath);
-
-      console.log(`✅ Detected ${scenes.length} scenes`);
-
-      // Save scenes to database
-      for (let i = 0; i < scenes.length; i++) {
-        const scene = scenes[i];
-        await prisma.scene.create({
-          data: {
-            videoId: id,
-            startTime: scene.startTime,
-            endTime: scene.endTime,
-            keyframePath: null
-          }
-        });
-        console.log(`✅ Scene ${i + 1} saved: ${scene.startTime.toFixed(2)}s - ${scene.endTime.toFixed(2)}s`);
-      }
-
-      // Update video status
-      await prisma.video.update({
-        where: { id },
-        data: {
-          status: 'ANALYZED',
-          analyzedAt: new Date()
-        }
-      });
-
-      console.log('✅ Video analysis completed successfully');
-
-      // Trigger transcription automatically in background
+    // Run analysis in background
+    (async () => {
       try {
-        console.log('🎤 Triggering automatic transcription...');
-        const backendUrl = process.env.BACKEND_URL || 'http://localhost:4001';
-        axios.post(
-          `${backendUrl}/api/videos/${id}/transcribe`,
-          {},
-          { timeout: 300000 }
-        ).then(response => {
-          console.log('✅ Background transcription completed:', response.data);
+        // Direct scene detection (no external service)
+        const { SceneDetector } = require('../services/scene-detector');
+        const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
+        const videoPath = path.join(videosStoragePath, video.filename);
 
-          // Automatische Suchindexierung nach automatischer Transkription
-          try {
-            console.log('🔍 Starting automatic search indexing...');
-            const { SearchIndexService } = require('../services/search-index.service');
-            const searchIndexService = new SearchIndexService();
-            searchIndexService.indexVideo(id).then(() => {
-              console.log('✅ Search indexing completed');
-            }).catch((indexError: any) => {
-              console.error('❌ Search indexing failed:', (indexError as Error).message);
-            });
-          } catch (indexError) {
-            console.error('❌ Search indexing failed:', (indexError as Error).message);
+        console.log('🔍 Starting direct scene detection for:', videoPath);
+
+        const sceneDetector = new SceneDetector();
+        const scenes = await sceneDetector.detectScenes(videoPath);
+
+        console.log(`✅ Detected ${scenes.length} scenes`);
+
+        // Save scenes to database
+        for (let i = 0; i < scenes.length; i++) {
+          const scene = scenes[i];
+          await prisma.scene.create({
+            data: {
+              videoId: id,
+              startTime: scene.startTime,
+              endTime: scene.endTime,
+              keyframePath: null
+            }
+          });
+          console.log(`✅ Scene ${i + 1} saved: ${scene.startTime.toFixed(2)}s - ${scene.endTime.toFixed(2)}s`);
+        }
+
+        // Update video status
+        await prisma.video.update({
+          where: { id },
+          data: {
+            status: 'ANALYZED',
+            analyzedAt: new Date()
           }
-        }).catch(err => {
-          console.error('❌ Background transcription failed:', err.message);
         });
+
+        console.log('✅ Video analysis completed successfully');
+
+        // Trigger transcription automatically in background
+        try {
+          console.log('🎤 Triggering automatic transcription...');
+          const backendUrl = process.env.BACKEND_URL || 'http://localhost:4001';
+          axios.post(
+            `${backendUrl}/api/videos/${id}/transcribe`,
+            {},
+            { timeout: 300000 }
+          ).then(response => {
+            console.log('✅ Background transcription completed:', response.data);
+
+            // Automatische Suchindexierung nach automatischer Transkription
+            try {
+              console.log('🔍 Starting automatic search indexing...');
+              const { SearchIndexService } = require('../services/search-index.service');
+              const searchIndexService = new SearchIndexService();
+              searchIndexService.indexVideo(id).then(() => {
+                console.log('✅ Search indexing completed');
+              }).catch((indexError: any) => {
+                console.error('❌ Search indexing failed:', (indexError as Error).message);
+              });
+            } catch (indexError) {
+              console.error('❌ Search indexing failed:', (indexError as Error).message);
+            }
+          }).catch(err => {
+            console.error('❌ Background transcription failed:', err.message);
+          });
+        } catch (error) {
+          // Non-blocking: transcription runs in background
+          console.log('ℹ️ Transcription triggered in background (non-blocking)');
+        }
+
       } catch (error) {
-        // Non-blocking: transcription runs in background
-        console.log('ℹ️ Transcription triggered in background (non-blocking)');
+        console.error('❌ Scene detection failed:', error);
+
+        // Update video status to error
+        await prisma.video.update({
+          where: { id },
+          data: { status: 'ERROR' }
+        });
       }
+    })();
 
-      res.status(200).json({
-        message: 'Scene detection completed',
-        videoId: id,
-        scenesDetected: scenes.length
-      });
-
-    } catch (error) {
-      console.error('❌ Scene detection failed:', error);
-
-      // Update video status to error
-      await prisma.video.update({
-        where: { id },
-        data: { status: 'ERROR' }
-      });
-
-      res.status(500).json({
-        error: 'Scene detection failed',
-        message: (error as Error).message
-      });
-    }
   } catch (error) {
     console.error('❌ Vision analysis error:', error);
-    res.status(500).json({ error: 'Failed to start analysis' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to start analysis' });
+    }
   }
+} catch (error) {
+  console.error('❌ Vision analysis error:', error);
+  res.status(500).json({ error: 'Failed to start analysis' });
+}
 });
 
 // Get thumbnail for scene
