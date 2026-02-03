@@ -16,8 +16,6 @@
     updatePlayhead,
     initializeClips,
     audioStemOperations,
-    startPlayheadAnimation,
-    stopPlayheadAnimation,
   } from '$lib/stores/timeline.store';
   import { videosApi } from '$lib/api/videos';
   import { api } from '$lib/config/environment';
@@ -224,13 +222,6 @@
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }
-
-  // Reactive function to update playhead when zoom or time changes
-  $: if (videoElement && timelineDuration > 0 && $zoomLevel !== undefined) {
-    const time = $currentTime || 0;
-    const position = (time / timelineDuration) * timelineWidth;
-    playheadPosition.set(position);
   }
 
   // Robust actualDuration tracking
