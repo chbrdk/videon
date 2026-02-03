@@ -457,13 +457,24 @@
 
   async function triggerVisionAnalysis() {
     const currentVideoId = $page.params.id;
-    if (!currentVideoId) return;
+    console.log('👀 triggerVisionAnalysis called for video:', currentVideoId);
+
+    if (!currentVideoId) {
+      console.error('❌ No video ID found');
+      return;
+    }
 
     loadingVision = true;
     try {
+      console.log(
+        '🚀 Sending POST request to:',
+        `${api.baseUrl}/videos/${currentVideoId}/vision/analyze`
+      );
       const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/vision/analyze`, {
         method: 'POST',
       });
+      console.log('📥 Response received:', response.status, response.statusText);
+
       if (response.ok) {
         await loadVisionData();
       } else {
