@@ -640,10 +640,6 @@ router.post('/:id/vision/analyze', async (req: any, res: any) => {
       res.status(500).json({ error: 'Failed to start analysis' });
     }
   }
-} catch (error) {
-  console.error('❌ Vision analysis error:', error);
-  res.status(500).json({ error: 'Failed to start analysis' });
-}
 });
 
 // Get thumbnail for scene
