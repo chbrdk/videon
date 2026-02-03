@@ -13,7 +13,9 @@
     select: { id: string };
     delete: Video;
     rename: Video;
+    rename: Video;
     share: Video;
+    analyze: Video;
   }>();
 
   let thumbnailUrl = '';
@@ -140,6 +142,11 @@
             label: _('actions.share'),
             icon: 'share',
             action: () => dispatch('share', video),
+          },
+          {
+            label: _('actions.analyze') || 'Vision Analysis',
+            icon: 'image_search',
+            action: () => dispatch('analyze', video),
           },
           {
             label: _('actions.delete'),

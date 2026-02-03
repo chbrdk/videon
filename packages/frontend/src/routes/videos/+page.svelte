@@ -120,6 +120,21 @@
   function handleShareVideo(video) {
     shareDialog = { open: true, type: 'video', item: video };
   }
+
+  async function handleAnalyzeVideo(video) {
+    if (!video) return;
+    try {
+      if (
+        confirm(`${_('actions.analyze') || 'Start Vision Analysis'} for "${video.originalName}"?`)
+      ) {
+        await videosApi.analyzeFull(video.id);
+        alert(`${_('actions.analyze') || 'Vision Analysis'} started!`);
+        loadFolders(folderId); // Reload to show status update
+      }
+    } catch (error) {
+      alert(`Error starting analysis: ${error.message}`);
+    }
+  }
   let revealMode = false;
   let revealedCount = 0;
   let revealedVideoIds = new Set<string>();
@@ -453,6 +468,11 @@
           },
         },
         {
+          label: _('actions.analyze') || 'Vision Analysis',
+          icon: 'image_search',
+          action: () => handleAnalyzeVideo(item),
+        },
+        {
           label: _('contextMenu.moveToFolder'),
           icon: 'folder',
           action: () => {
@@ -767,6 +787,7 @@
             on:delete={handleDeleteVideo}
             on:rename={handleRenameVideo}
             on:share={e => handleShareVideo(e.detail)}
+            on:analyze={e => handleAnalyzeVideo(e.detail)}
           />
         {/each}
       </div>
