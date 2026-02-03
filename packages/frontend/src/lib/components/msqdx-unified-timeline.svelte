@@ -139,6 +139,10 @@
     }
   }
 
+  function handleVideoPlay() {
+    console.log('🎬 Video started playing');
+  }
+
   function handleVideoLoadedMetadata() {
     if (videoElement) {
       console.log('🎬 Video metadata loaded:', videoElement.duration);
@@ -530,20 +534,6 @@
       currentTime: videoElement.currentTime,
       readyState: videoElement.readyState,
     });
-  }
-
-  function handleVideoLoadedMetadata() {
-    console.log('📹 Video metadata loaded:', {
-      duration: videoElement.duration,
-      videoWidth: videoElement.videoWidth,
-      videoHeight: videoElement.videoHeight,
-    });
-
-    // Update actual duration when metadata is loaded
-    if (videoElement.duration > 0) {
-      actualDuration = videoElement.duration;
-      console.log('🔄 Video duration updated to:', actualDuration);
-    }
   }
 
   // Audio Stem Event Handlers
