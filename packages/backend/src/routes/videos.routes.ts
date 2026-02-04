@@ -580,6 +580,25 @@ router.post('/:id/vision/analyze', async (req: any, res: any) => {
           console.log(`✅ Scene ${i + 1} saved: ${scene.startTime.toFixed(2)}s - ${scene.endTime.toFixed(2)}s`);
         }
 
+        // Update video status to ANALYZING_SEMANTIC (optional, or just keep ANALYZING)
+        // Here we just proceed to Qwen analysis if available
+        try {
+          console.log('🎬 Checking Qwen VL availability...');
+          const { QwenVLService } = require('../services/qwen-vl.service');
+          const qwenVLService = new QwenVLService();
+
+          if (await qwenVLService.isAvailable()) {
+            console.log('🤖 Qwen VL is available, starting semantic analysis...');
+            await qwenVLService.analyzeVideo(id);
+            console.log('✅ Qwen VL analysis completed');
+          } else {
+            console.log('ℹ️ Qwen VL not available, skipping semantic analysis');
+          }
+        } catch (qwenError: any) {
+          console.error('❌ Qwen VL integration failed:', qwenError.message);
+          // We don't fail the whole process if Qwen fails
+        }
+
         // Update video status
         await prisma.video.update({
           where: { id },
