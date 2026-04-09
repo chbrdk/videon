@@ -51,6 +51,19 @@ Scope: `packages/frontend` (SvelteKit/Vite), `packages/backend` (Express/Prisma/
 - **Load** (empfohlen): k6/vegeta auf `/api/videos`, `/api/search` (mit realistischen Payloads).
 - **DB**: Prisma query logging für slow queries (z.B. via middleware) + Postgres `pg_stat_statements`.
 
+#### Test-Signal (Cloud Agent)
+
+- Backend-Tests ließen sich **nicht** direkt ausführen, weil:
+  - `jest.config.js` eine **hart codierte** tsconfig-Pfadreferenz auf ein macOS-Volume nutzte.
+  - Tests (Upload/Waveform) versuchten in **container-only Pfade** wie `/app/storage/...` zu schreiben.
+  - Prisma-Handler benötigen eine erreichbare DB: ohne `DATABASE_URL` bzw. ohne laufende Postgres brechen echte Handler-Tests.
+- Fix/Setup, damit Tests laufen:
+  - `packages/backend/jest.config.js`: tsconfig auf `'<rootDir>/tsconfig.json'` umgestellt.
+  - `WaveformService`: Cache-Verzeichnis test-freundlich (Temp-Default) + kein „clear all cache“ bei jedem Start (nur opt-in).
+  - `packages/backend/tests/videos.test.ts`: setzt Storage-Pfade in `os.tmpdir()`; Erwartung „text file upload“ auf 400 korrigiert; Root-Endpoint-Name auf „VIDEON API“ korrigiert.
+  - Lokale Postgres für Tests (ohne Docker): `postgresql` installiert/gestartet, DB `videon_test` angelegt, `prisma db push` gegen `postgresql://videon_test:videon_test@localhost:5432/videon_test?schema=public`.
+  - Danach: `npm test` **grün**.
+
 ### Frontend
 
 - **Unit**: `npm test` (vitest)

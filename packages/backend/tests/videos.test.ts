@@ -1,7 +1,23 @@
 import request from 'supertest';
 import app from '../src/app';
+import os from 'os';
+import path from 'path';
 
 describe('Videos API', () => {
+  beforeAll(() => {
+    // Ensure tests never try to write to container-only paths like /app/storage
+    const base = path.join(os.tmpdir(), 'videon-backend-tests');
+    process.env.STORAGE_PATH = base;
+    process.env.VIDEOS_STORAGE_PATH = path.join(base, 'videos');
+    process.env.KEYFRAMES_STORAGE_PATH = path.join(base, 'keyframes');
+    process.env.WAVEFORMS_STORAGE_PATH = path.join(base, 'waveforms');
+
+    // Avoid Prisma init errors in tests that hit handlers accessing DB.
+    // Real integration tests should set a real DATABASE_URL.
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL || 'postgresql://user:pass@localhost:5432/db?schema=public';
+  });
+
   describe('GET /api/videos', () => {
     it('should return list of videos', async () => {
       const response = await request(app)
@@ -30,11 +46,9 @@ describe('Videos API', () => {
       const response = await request(app)
         .post('/api/videos')
         .attach('video', Buffer.from('fake text content'), 'test.txt')
-        .expect(201); // Mock currently accepts all files
+        .expect(400);
 
-      // This test will pass for now due to mock limitations
-      // In real implementation, it would return 400
-      expect(response.body).toHaveProperty('video');
+      expect(response.body).toHaveProperty('error');
     });
   });
 
@@ -107,7 +121,7 @@ describe('Root endpoint', () => {
         .get('/')
         .expect(200);
 
-      expect(response.body).toHaveProperty('name', 'PrismVid API');
+      expect(response.body).toHaveProperty('name', 'VIDEON API');
       expect(response.body).toHaveProperty('version', '1.0.0');
       expect(response.body).toHaveProperty('endpoints');
     });

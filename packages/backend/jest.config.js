@@ -8,7 +8,7 @@ module.exports = {
   ],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
-      tsconfig: '/Volumes/DOCKER_EXTERN/prismvid/packages/backend/tsconfig.json'
+      tsconfig: '<rootDir>/tsconfig.json'
     }],
   },
   collectCoverageFrom: [

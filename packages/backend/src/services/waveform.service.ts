@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { execAsync } from '../utils/file-helper';
 import logger from '../utils/logger';
 
@@ -21,20 +22,34 @@ export class WaveformService {
   private cache: Map<string, WaveformCacheEntry>;
   private maxCacheSize: number;
   
-         constructor(cacheDir: string = (process.env.WAVEFORMS_STORAGE_PATH || process.env.STORAGE_PATH ? `${process.env.STORAGE_PATH}/waveforms` : '/app/storage/waveforms')) {
-           this.cacheDir = cacheDir;
-           this.cache = new Map();
-           this.maxCacheSize = 20; // Reduced due to larger waveforms (10000 peaks each)
-           
-           // Erstelle Cache-Verzeichnis
-           if (!fs.existsSync(this.cacheDir)) {
-             fs.mkdirSync(this.cacheDir, { recursive: true });
-           }
-           
-           // CLEAR ALL CACHE ON STARTUP (for debugging)
-           logger.warn('🗑️ CLEARING WAVEFORM CACHE ON STARTUP');
-           this.clearAllCache();
-         }
+  constructor(cacheDir?: string) {
+    this.cacheDir = cacheDir ?? this.getDefaultCacheDir();
+    this.cache = new Map();
+    this.maxCacheSize = 20; // Reduced due to larger waveforms (10000 peaks each)
+
+    // Erstelle Cache-Verzeichnis (Test-Env nutzt tmpdir, daher ebenfalls safe)
+    if (!fs.existsSync(this.cacheDir)) {
+      fs.mkdirSync(this.cacheDir, { recursive: true });
+    }
+
+    // Cache-Clearing nur opt-in, da es Startzeit + IO erhöht
+    if (process.env.CLEAR_WAVEFORM_CACHE_ON_STARTUP === 'true') {
+      logger.warn('🗑️ CLEARING WAVEFORM CACHE ON STARTUP');
+      this.clearAllCache();
+    }
+  }
+
+  private getDefaultCacheDir(): string {
+    if (process.env.WAVEFORMS_STORAGE_PATH) return process.env.WAVEFORMS_STORAGE_PATH;
+    if (process.env.STORAGE_PATH) return path.join(process.env.STORAGE_PATH, 'waveforms');
+
+    // Tests sollten nicht in /app schreiben müssen
+    if (process.env.NODE_ENV === 'test') {
+      return path.join(os.tmpdir(), 'videon-waveforms');
+    }
+
+    return '/app/storage/waveforms';
+  }
   
   /**
    * Generiert Waveform-Daten für eine Audio-Datei
