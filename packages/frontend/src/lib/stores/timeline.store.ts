@@ -145,6 +145,33 @@ export const timelineOperations = {
     console.log('✅ Timeline clips initialized:', clips.length);
   },
 
+  /**
+   * Rebuild scene clips when vision data loads after timeline mount (avoids duplicate clips on refresh).
+   * Vision API rows use `sceneId`; video detail scenes may use `id` — both map to clip id `clip-${sceneId}`.
+   */
+  reinitializeClipsFromVisionRows: (
+    visionRows: Array<{ sceneId: string; startTime: number; endTime: number; keyframePath?: string | null }>
+  ) => {
+    if (!visionRows?.length) {
+      timelineClips.set([]);
+      return;
+    }
+    const clips: TimelineClip[] = visionRows.map((scene, index) => ({
+      id: `clip-${scene.sceneId}`,
+      sceneId: scene.sceneId,
+      startTime: scene.startTime,
+      endTime: scene.endTime,
+      duration: scene.endTime - scene.startTime,
+      order: index,
+      color: getRandomColor(),
+      thumbnail: scene.keyframePath || undefined,
+      locked: false,
+      muted: false,
+    }));
+    timelineClips.set(clips);
+    console.log('✅ Timeline clips reinitialized from vision rows:', clips.length);
+  },
+
   // Select a clip
   selectClip: (clipId: string) => {
     selectedClip.set(clipId);
@@ -791,7 +818,9 @@ const audioTrackOperations = {
         }
 
         // Find the scene that matches this clip's sceneId
-        const scene = scenes.find(s => s.id === clip.sceneId);
+        const scene = scenes.find(
+          (s: any) => s.id === clip.sceneId || s.sceneId === clip.sceneId
+        );
         if (scene) {
           console.log(`🎵 Updating clip ${clip.id} with scene ${scene.id}: ${scene.startTime}-${scene.endTime}`);
           const updatedClip = {
@@ -822,6 +851,7 @@ const audioTrackOperations = {
 // Export timeline operations for easy access
 export const {
   initializeClips,
+  reinitializeClipsFromVisionRows,
   selectClip,
   updateCurrentTime,
   setPlaying,

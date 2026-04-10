@@ -411,8 +411,23 @@ router.get('/:id/vision', async (req: any, res: any) => {
       return res.status(200).json([]);
     }
 
+    // Defensive dedupe: avoid duplicate rows if DB ever contains duplicate scene ids
+    const seenIds = new Set<string>();
+    const uniqueScenes = scenes.filter((s: { id: string }) => {
+      if (seenIds.has(s.id)) return false;
+      seenIds.add(s.id);
+      return true;
+    });
+    if (uniqueScenes.length !== scenes.length) {
+      logger.warn('Duplicate scene rows detected for vision endpoint', {
+        videoId: id,
+        before: scenes.length,
+        after: uniqueScenes.length,
+      });
+    }
+
     // Transform data for frontend with vision analysis
-    const sceneDataArray = scenes.map((scene: any, index: number) => {
+    const sceneDataArray = uniqueScenes.map((scene: any, index: number) => {
       const vision = scene.visionAnalysis;
 
       // Parse JSON fields from VisionAnalysis

@@ -9,6 +9,7 @@
     loadVideoDetails,
     refreshVideo,
   } from '$lib/stores/videos.store';
+  import { dedupeScenesById } from '$lib/utils/scenes';
   import { videosApi } from '$lib/api/videos';
   import { saliencyApi } from '$lib/api/saliency';
   import { currentLocale, _ } from '$lib/i18n';
@@ -17,6 +18,7 @@
     showAudioTracks,
     updateAudioClipsWithScenes,
     loadAudioStems,
+    reinitializeClipsFromVisionRows,
   } from '$lib/stores/timeline.store';
   import logger from '$lib/utils/logger';
   import MsqdxVisionTags from '$lib/components/msqdx-vision-tags.svelte';
@@ -129,8 +131,21 @@
 
   // Reactive statement to update audio clips when scenes are loaded
   $: if ($videoScenes && $videoScenes.length > 0) {
-    console.log('🎵 Scenes loaded, updating audio clips with scene data:', $videoScenes.length);
-    updateAudioClipsWithScenes($videoScenes);
+    const scenesForAudio = dedupeScenesById($videoScenes as any[]);
+    console.log('🎵 Scenes loaded, updating audio clips with scene data:', scenesForAudio.length);
+    updateAudioClipsWithScenes(scenesForAudio);
+  }
+
+  // When vision API returns after timeline mounted with [], re-sync scene clips (fixes duplicate bars on refresh)
+  $: if (visionData && Array.isArray(visionData) && visionData.length > 0) {
+    reinitializeClipsFromVisionRows(
+      visionData.map((s: { sceneId: string; startTime: number; endTime: number; keyframePath?: string | null }) => ({
+        sceneId: s.sceneId,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        keyframePath: s.keyframePath,
+      }))
+    );
   }
 
   async function loadVisionData() {
@@ -142,7 +157,8 @@
     try {
       const response = await fetch(`${api.baseUrl}/videos/${currentVideoId}/vision`);
       if (response.ok) {
-        visionData = await response.json();
+        const raw = await response.json();
+        visionData = Array.isArray(raw) ? dedupeScenesById(raw) : raw;
         logger.info('Vision data loaded successfully', {
           videoId: currentVideoId,
           sceneCount: visionData?.length,
