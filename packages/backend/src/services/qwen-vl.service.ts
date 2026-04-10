@@ -4,14 +4,25 @@
  */
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
+import { OpenAIService } from './openai.service';
 
 const prisma = new PrismaClient();
+
+function mimeFromPath(filePath: string): string {
+  const ext = filePath.toLowerCase().split('.').pop() || '';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'gif') return 'image/gif';
+  if (ext === 'bmp') return 'image/bmp';
+  return 'image/jpeg';
+}
 
 class QwenVLService {
   private qwenVLServiceUrl: string;
   private storagePath: string;
   public readonly provider: string;
   private modelName: string;
+  private openaiService: OpenAIService | null;
 
   constructor() {
     // Qwen VL Service läuft auf Port 8081
@@ -23,8 +34,11 @@ class QwenVLService {
       'http://host.docker.internal:8081';
 
     // Provider Configuration
-    this.provider = process.env.QWEN_VL_PROVIDER || 'custom'; // 'custom' (default) or 'ollama'
-    this.modelName = process.env.QWEN_VL_MODEL || 'qwen3-vl:8b'; // Default for Ollama
+    // 'custom' | 'ollama' | 'openai' (GPT-Vision + Structured Outputs via OpenAI API)
+    this.provider = process.env.QWEN_VL_PROVIDER || 'custom';
+    this.modelName = process.env.QWEN_VL_MODEL || 'qwen3-vl:8b'; // Qwen/Ollama default; for openai often overridden by OPENAI_VISION_MODEL
+
+    this.openaiService = this.provider === 'openai' ? new OpenAIService() : null;
 
     // Storage-Pfad für Pfad-Konvertierung
     this.storagePath = process.env.STORAGE_PATH
@@ -36,7 +50,21 @@ class QwenVLService {
    * Get the service URL
    */
   getServiceUrl(): string {
+    if (this.provider === 'openai') {
+      return 'openai://vision';
+    }
     return this.qwenVLServiceUrl;
+  }
+
+  /** Model string stored in DB (qwenVLModel). */
+  private getStoredModelName(): string {
+    if (this.provider === 'openai') {
+      return process.env.OPENAI_VISION_MODEL || this.modelName || 'gpt-5.4-nano';
+    }
+    if (this.provider === 'ollama') {
+      return this.modelName;
+    }
+    return process.env.QWEN_VL_MODEL || 'Qwen3-VL-8B-Instruct-4bit';
   }
 
   /**
@@ -77,6 +105,26 @@ class QwenVLService {
    */
   async analyzeImage(imagePath: string, prompt?: string): Promise<string> {
     try {
+      if (this.provider === 'openai') {
+        if (!this.openaiService?.isConfigured()) {
+          throw new Error('OPENAI_API_KEY is required for QWEN_VL_PROVIDER=openai');
+        }
+        const fs = require('fs').promises;
+        const imageBuffer = await fs.readFile(imagePath);
+        const base64Image = imageBuffer.toString('base64');
+        const mime = mimeFromPath(imagePath);
+        const visionModel =
+          process.env.OPENAI_VISION_MODEL || this.modelName || 'gpt-5.4-nano';
+        const { descriptionText } = await this.openaiService.analyzeKeyframeStructured(
+          base64Image,
+          mime,
+          prompt ||
+            'Beschreibe diese Szene detailliert. Was passiert in diesem Bild? Nutze das JSON-Schema.',
+          visionModel
+        );
+        return descriptionText;
+      }
+
       // Check for Remote Mode
       if (this.isRemoteMode()) {
         console.log(`🖼️ Calling Remote Qwen VL for image: ${imagePath}`);
@@ -165,6 +213,32 @@ class QwenVLService {
    */
   async analyzeVideoFrames(framePaths: string[], prompt?: string): Promise<string> {
     try {
+      if (this.provider === 'openai') {
+        if (!this.openaiService?.isConfigured()) {
+          throw new Error('OPENAI_API_KEY is required for QWEN_VL_PROVIDER=openai');
+        }
+        const fs = require('fs').promises;
+        const path = require('path');
+        const frames = await Promise.all(
+          framePaths.map(async (p: string) => {
+            const buf = await fs.readFile(p);
+            return {
+              base64: buf.toString('base64'),
+              mimeType: mimeFromPath(p || path.extname(p)),
+            };
+          })
+        );
+        const visionModel =
+          process.env.OPENAI_VISION_MODEL || this.modelName || 'gpt-5.4-nano';
+        const { descriptionText } = await this.openaiService.analyzeKeyframesStructured(
+          frames,
+          prompt ||
+            'Analysiere diese Video-Frames einer Szene. Fasse zu einer strukturierten Beschreibung zusammen (JSON-Schema).',
+          visionModel
+        );
+        return descriptionText;
+      }
+
       if (this.isRemoteMode()) {
         console.log(`🎬 Calling Remote Qwen VL (${this.provider}) for ${framePaths.length} frames`);
 
@@ -283,7 +357,7 @@ class QwenVLService {
         data: {
           qwenVLDescription: description,
           qwenVLProcessed: true,
-          qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
+          qwenVLModel: this.getStoredModelName(),
           qwenVLProcessingTime: null // Wird vom Service gemessen
         }
       });
@@ -398,7 +472,7 @@ class QwenVLService {
               data: {
                 qwenVLDescription: sceneDescription,
                 qwenVLProcessed: true,
-                qwenVLModel: "Qwen3-VL-8B-Instruct-4bit"
+                qwenVLModel: this.getStoredModelName()
               }
             });
             console.log(`✅ Qwen VL description updated for scene ${scene.id}`);
@@ -409,7 +483,7 @@ class QwenVLService {
                 sceneId: scene.id,
                 qwenVLDescription: sceneDescription,
                 qwenVLProcessed: true,
-                qwenVLModel: "Qwen3-VL-8B-Instruct-4bit",
+                qwenVLModel: this.getStoredModelName(),
                 objectCount: 0,
                 faceCount: 0,
                 visionVersion: "QwenVL-Only"
@@ -442,6 +516,10 @@ class QwenVLService {
    */
   async isAvailable(): Promise<boolean> {
     try {
+      if (this.provider === 'openai') {
+        return this.openaiService?.isConfigured() ?? false;
+      }
+
       // Different health check for Ollama
       if (this.provider === 'ollama') {
         const response = await axios.get(`${this.qwenVLServiceUrl}/`, {
