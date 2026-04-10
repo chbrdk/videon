@@ -22,11 +22,12 @@ This does **not** cap concurrent uploads at the HTTP layer across multiple analy
 ## Flow
 
 1. **Upload** (`POST /api/videos` or chunked): backend creates the video row, responds immediately, then `VideosController.triggerBackgroundProcesses` runs (delayed).
-2. **Parallel jobs** (all fire-and-forget from the backend):
+2. **Analysis jobs from the backend** (default: **staggered**, not all at once):
    - Optional STORION upload when `config.storage.type === 'storion'`.
-   - `AnalyzerClient.analyzeVideo` → `POST {ANALYZER}/analyze` (scene detection, keyframes, per-scene Swift vision if configured).
-   - `AnalyzerClient.separateAudioForVideo` → `POST {ANALYZER}/separate-audio`.
-   - `SaliencyClient.analyzeSaliency` → `POST {ANALYZER}/saliency/analyze`.
+   - **First:** `POST {ANALYZER}/analyze` (scene detection, keyframes, vision, then transcription/Qwen/index inside analyzer).
+   - **After** DB status is `ANALYZED` (poll): `POST {ANALYZER}/separate-audio`, then `POST {ANALYZER}/saliency/analyze` (sequential).
+   - Set `ANALYSIS_STAGGER_JOBS=false` to restore the old behaviour (fire audio + saliency immediately without waiting for `ANALYZED`).
+   - Tuning: `ANALYSIS_PIPELINE_POLL_MS` (default 2000, min 500), `ANALYSIS_SCENE_WAIT_TIMEOUT_MS` (default 6h, min 60s).
 3. **Inside analyzer** (`process_video_analysis` after scenes):
    - **Transcription** (Whisper) once per video if no transcription row exists yet.
    - **Semantic scene descriptions** via backend `POST /api/videos/:id/qwenVL/analyze` (OpenAI or Qwen depending on env).

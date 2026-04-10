@@ -53,32 +53,18 @@ router.post('/', upload.single('video'), async (req, res) => {
 
     // Trigger analyses (async) - same as in videos.controller.ts
     try {
-      const { AnalyzerClient } = require('../services/analyzer.client');
-      const { SaliencyClient } = require('../services/saliency.client');
-      const analyzerClient = new AnalyzerClient();
-      const saliencyClient = new SaliencyClient();
-      
+      const { runPostUploadAnalysisPipeline } = require('../services/analysis-pipeline.service');
+
       const videosStoragePath = process.env.VIDEOS_STORAGE_PATH || '/app/storage/videos';
       const videoPath = path.join(videosStoragePath, req.file.filename);
-      
+
       console.log(`Queueing analyses for video ${video.id}`, { videoPath, filename: req.file.filename });
-      
-      // 1. Standard video analysis
-      analyzerClient.analyzeVideo(video.id, videoPath).catch((error: Error) => {
-        console.error(`Standard analysis failed for video ${video.id}:`, error);
+
+      runPostUploadAnalysisPipeline(video.id, videoPath).catch((error: Error) => {
+        console.error(`Analysis pipeline failed for video ${video.id}:`, error);
       });
-      
-      // 2. Audio separation
-      analyzerClient.separateAudioForVideo(video.id, videoPath).catch((error: Error) => {
-        console.error(`Audio separation failed for video ${video.id}:`, error);
-      });
-      
-      // 3. Saliency analysis
-      saliencyClient.analyzeSaliency(video.id, videoPath).catch((error: Error) => {
-        console.error(`Saliency analysis failed for video ${video.id}:`, error);
-      });
-      
-      console.log(`Video uploaded and all analyses queued: ${video.id}`);
+
+      console.log(`Video uploaded and analysis pipeline started: ${video.id}`);
     } catch (analysisError) {
       console.error(`Failed to queue analyses for video ${video.id}:`, analysisError);
     }

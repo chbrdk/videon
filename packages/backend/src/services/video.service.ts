@@ -138,6 +138,15 @@ export class VideoService {
     }
   }
 
+  /** Lightweight status read for background polling (e.g. analysis pipeline). */
+  async getVideoStatus(id: string): Promise<{ status: string } | null> {
+    const row = await prisma.video.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    return row;
+  }
+
   async getVideoById(id: string, userId?: string, isAdmin: boolean = false): Promise<VideoWithScenesResponse | null> {
     try {
       const video = await prisma.video.findUnique({

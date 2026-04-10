@@ -1,8 +1,7 @@
 // @ts-nocheck
 import { Request, Response } from 'express';
 import { VideoService } from '../services/video.service';
-import { AnalyzerClient } from '../services/analyzer.client';
-import { SaliencyClient } from '../services/saliency.client';
+import { runPostUploadAnalysisPipeline } from '../services/analysis-pipeline.service';
 import { getStorageService } from '../services/storage';
 import config from '../config';
 import logger from '../utils/logger';
@@ -13,8 +12,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const videoService = new VideoService();
-const analyzerClient = new AnalyzerClient();
-const saliencyClient = new SaliencyClient();
 const execAsync = promisify(exec);
 
 // Simple multer configuration directly in controller
@@ -75,22 +72,10 @@ export class VideosController {
           }
         }
 
-        // 2. Trigger All Analyses
+        // 2. Trigger analyses (staggered: scene pipeline first, then audio + saliency)
         logger.info(`🚀 Triggering background analyses for video ${video.id}`);
-
-        // Trigger Scene Detection & Vision Analysis
-        analyzerClient.analyzeVideo(video.id, localVideoPath).catch(error => {
-          logger.error(`Standard analysis failed for video ${video.id}:`, error);
-        });
-
-        // Trigger Audio separation
-        analyzerClient.separateAudioForVideo(video.id, localVideoPath).catch(error => {
-          logger.error(`Audio separation failed for video ${video.id}:`, error);
-        });
-
-        // Trigger Saliency analysis
-        saliencyClient.analyzeSaliency(video.id, localVideoPath).catch(error => {
-          logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+        runPostUploadAnalysisPipeline(video.id, localVideoPath).catch((error) => {
+          logger.error(`Post-upload analysis pipeline failed for video ${video.id}:`, error);
         });
 
       } catch (bgError) {
@@ -185,19 +170,8 @@ export class VideosController {
 
       logger.info(`🚀 Starting full analysis for video ${video.id}`, { videoPath });
 
-      // 1. Standard video analysis (scenes, transcription, etc.)
-      analyzerClient.analyzeVideo(video.id, videoPath).catch((error) => {
-        logger.error(`Standard analysis failed for video ${video.id}:`, error);
-      });
-
-      // 2. Audio separation
-      analyzerClient.separateAudioForVideo(video.id, videoPath).catch((error) => {
-        logger.error(`Audio separation failed for video ${video.id}:`, error);
-      });
-
-      // 3. Saliency analysis
-      saliencyClient.analyzeSaliency(video.id, videoPath).catch((error) => {
-        logger.error(`Saliency analysis failed for video ${video.id}:`, error);
+      runPostUploadAnalysisPipeline(video.id, videoPath).catch((error) => {
+        logger.error(`Full analysis pipeline failed for video ${video.id}:`, error);
       });
 
       res.status(200).json({
