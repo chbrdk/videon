@@ -31,6 +31,15 @@ app = FastAPI(
 # Vision Service Configuration
 VISION_SERVICE_URL = os.getenv('VISION_SERVICE_URL', 'http://host.docker.internal:8080')
 BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:4001')
+# Shared secret for analyzer → backend (must match backend INTERNAL_SERVICE_TOKEN)
+BACKEND_INTERNAL_TOKEN = os.getenv('BACKEND_INTERNAL_TOKEN', '')
+
+
+def _backend_headers() -> dict:
+    h = {'Content-Type': 'application/json'}
+    if BACKEND_INTERNAL_TOKEN:
+        h['x-internal-service'] = BACKEND_INTERNAL_TOKEN
+    return h
 
 # Initialize services
 scene_detector = SceneDetector(threshold=30.0)
@@ -147,6 +156,29 @@ async def analyze_video(request: AnalysisRequest, background_tasks: BackgroundTa
     background_tasks.add_task(process_video_analysis, video_id, video_path)
     return AnalysisResponse(message="Video analysis started", videoId=video_id, status="ANALYZING")
 
+async def run_transcription_if_needed(video_id: str, video_path: str) -> None:
+    """Run Whisper transcription once per video so search indexing can include speech."""
+    try:
+        if await db_client.has_transcription(video_id):
+            await db_client.create_analysis_log(video_id, 'INFO', 'Transcription skipped (already exists)')
+            return
+        await db_client.create_analysis_log(video_id, 'INFO', 'Transcription started (pipeline)')
+        result = await asyncio.to_thread(transcription_service.transcribe_video, video_path, None)
+        await asyncio.to_thread(
+            db_client.create_transcription,
+            video_id,
+            result['language'],
+            result['segments'],
+        )
+        await db_client.create_analysis_log(video_id, 'INFO', 'Transcription completed')
+    except Exception as e:
+        logger.error(f'Pipeline transcription failed for {video_id}: {e}')
+        await db_client.create_analysis_log(
+            video_id, 'INFO',
+            f'Transcription skipped or failed: {e}'
+        )
+
+
 async def process_video_analysis(video_id: str, video_path: str):
     try:
         log_analysis_step(video_id, "scene_detection_start")
@@ -172,13 +204,26 @@ async def process_video_analysis(video_id: str, video_path: str):
 
         await db_client.update_video_status(video_id, "ANALYZED")
         await db_client.create_analysis_log(video_id, "INFO", "Scene detection completed")
-        
-        # Trigger Qwen VL and indexing
+
+        await run_transcription_if_needed(video_id, video_path)
+
+        # Semantic vision (Qwen/OpenAI) and search index
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                await client.post(f"{BACKEND_URL}/api/videos/{video_id}/qwenVL/analyze", timeout=5.0)
-                await client.post(f"{BACKEND_URL}/api/videos/{video_id}/index", timeout=5.0)
-        except Exception: pass
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                qwen_url = f"{BACKEND_URL}/api/videos/{video_id}/qwenVL/analyze"
+                index_url = f"{BACKEND_URL}/api/search/videos/{video_id}/index"
+                r_q = await client.post(qwen_url, headers=_backend_headers())
+                if r_q.status_code >= 400:
+                    logger.error(
+                        f"Qwen VL trigger failed for {video_id}: {r_q.status_code} {r_q.text}"
+                    )
+                r_i = await client.post(index_url, headers=_backend_headers())
+                if r_i.status_code >= 400:
+                    logger.error(
+                        f"Search index trigger failed for {video_id}: {r_i.status_code} {r_i.text}"
+                    )
+        except Exception as e:
+            logger.error(f"Post-analysis backend calls failed for {video_id}: {e}")
     except Exception as e:
         log_error(video_id, f"Analysis failed: {str(e)}")
         await db_client.update_video_status(video_id, "ERROR")

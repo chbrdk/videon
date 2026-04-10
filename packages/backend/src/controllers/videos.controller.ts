@@ -258,11 +258,6 @@ export class VideosController {
       // Trigger background processes
       this.triggerBackgroundProcesses(video, localVideoPath, file.filename);
 
-      res.status(201).json({
-        message: 'Video upload received',
-        video,
-      });
-
     } catch (error) {
       logger.error('Error uploading video:', error);
       res.status(500).json({

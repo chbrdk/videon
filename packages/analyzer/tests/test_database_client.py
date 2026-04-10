@@ -1,4 +1,6 @@
 import pytest
+import sys
+import types
 from unittest.mock import Mock, patch
 
 @pytest.mark.unit
@@ -73,6 +75,24 @@ async def test_create_analysis_log(mock_connect):
     
     assert result is True
     mock_cursor.execute.assert_called_once()
+
+@pytest.mark.unit
+def test_has_transcription_sync_delegates_to_get_transcription():
+    """has_transcription_sync mirrors presence of _get_transcription_sync result."""
+    pg_extras = types.ModuleType('psycopg2.extras')
+    pg_extras.RealDictCursor = Mock()
+    mock_pg = types.ModuleType('psycopg2')
+    mock_pg.extras = pg_extras
+    with patch.dict(sys.modules, {'psycopg2': mock_pg, 'psycopg2.extras': pg_extras}):
+        with patch.dict('os.environ', {'DATABASE_URL': 'postgresql://test:test@localhost:5432/test'}):
+            from src.database.client import DatabaseClient
+            client = DatabaseClient()
+
+    with patch.object(client, '_get_transcription_sync', return_value={'id': 't1'}):
+        assert client.has_transcription_sync('v1') is True
+    with patch.object(client, '_get_transcription_sync', return_value=None):
+        assert client.has_transcription_sync('v1') is False
+
 
 @pytest.mark.unit
 @patch('src.database.client.psycopg2.connect')

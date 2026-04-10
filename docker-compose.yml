@@ -39,6 +39,7 @@ services:
       VISION_SERVICE_URL: http://vision-service:8004
       QWEN_VL_SERVICE_URL: http://host.docker.internal:8081
       CORS_ORIGINS: http://localhost:3010,http://192.168.50.101:3010
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       # Local storage fallback (if not using STORION)
       VIDEOS_STORAGE_PATH: /app/storage/videos
       KEYFRAMES_STORAGE_PATH: /app/storage/keyframes
@@ -97,6 +98,7 @@ services:
       DATABASE_URL: postgresql://unison:unison@msqdx-unison-postgres-1:5432/storion
       STORAGE_PATH: /app/storage
       BACKEND_URL: http://backend:4001
+      BACKEND_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       VISION_SERVICE_URL: http://host.docker.internal:8080
     ports:
       - "0.0.0.0:8004:8001"

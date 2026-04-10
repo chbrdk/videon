@@ -55,6 +55,8 @@ services:
       # Qwen VL is disabled in production unless a suitable replacement is configured
       QWEN_VL_SERVICE_URL: ${QWEN_VL_SERVICE_URL}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      # Optional: must match analyzer BACKEND_INTERNAL_TOKEN for service-to-service API calls
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       VIDEOS_STORAGE_PATH: /app/storage/videos
       KEYFRAMES_STORAGE_PATH: /app/storage/keyframes
       AUDIO_STEMS_STORAGE_PATH: /app/storage/audio_stems
@@ -119,6 +121,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-prismvid}:${POSTGRES_PASSWORD:-prismvid_dev}@postgres:5432/${POSTGRES_DB:-prismvid}
       STORAGE_PATH: /app/storage
       BACKEND_URL: http://backend:4001
+      # Must match backend INTERNAL_SERVICE_TOKEN when set (Qwen/index triggers after analysis)
+      BACKEND_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       # Vision service is disabled in prod (macOS required)
       VISION_SERVICE_URL: ""
     volumes:

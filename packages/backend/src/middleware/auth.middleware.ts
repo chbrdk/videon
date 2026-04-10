@@ -5,6 +5,14 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
     if (process.env.NODE_ENV === 'test') {
         return next();
     }
+    // Service-to-service (e.g. analyzer container calling the API)
+    const token = process.env.INTERNAL_SERVICE_TOKEN;
+    if (token) {
+        const provided = req.get('x-internal-service');
+        if (provided && provided === token) {
+            return next();
+        }
+    }
     if (req.isAuthenticated()) {
         return next();
     }

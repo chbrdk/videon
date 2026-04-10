@@ -269,6 +269,18 @@ class DatabaseClient:
         """Get transcription for video (async wrapper)"""
         return await asyncio.to_thread(self._get_transcription_sync, video_id)
 
+    def has_transcription_sync(self, video_id: str) -> bool:
+        """Return True if at least one transcription row exists for the video."""
+        try:
+            row = self._get_transcription_sync(video_id)
+            return row is not None
+        except Exception as e:
+            logger.error(f"❌ Failed to check transcription for video {video_id}: {e}")
+            return False
+
+    async def has_transcription(self, video_id: str) -> bool:
+        return await asyncio.to_thread(self.has_transcription_sync, video_id)
+
     def get_video(self, video_id: str):
         """Get video info from database"""
         try:
