@@ -123,6 +123,9 @@ services:
       BACKEND_URL: http://backend:4001
       # Must match backend INTERNAL_SERVICE_TOKEN when set (Qwen/index triggers after analysis)
       BACKEND_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+      # Optional: cap concurrent heavy CPU work inside one analyzer process (see knowledge/upload-analysis-pipeline.md)
+      ANALYZER_MAX_CONCURRENT_HEAVY_JOBS: ${ANALYZER_MAX_CONCURRENT_HEAVY_JOBS:-2}
+      ANALYZER_MAX_CONCURRENT_TRANSCRIPTIONS: ${ANALYZER_MAX_CONCURRENT_TRANSCRIPTIONS:-1}
       # Vision service is disabled in prod (macOS required)
       VISION_SERVICE_URL: ""
     volumes:

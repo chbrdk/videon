@@ -21,6 +21,7 @@ from ..services.heatmap_generator import HeatmapGenerator
 from ..services.reframing_service import ReframingService
 from ..database.client import DatabaseClient
 from ..utils.logger import logger, log_analysis_step, log_error
+from ..utils.job_limits import run_heavy_job, run_transcription_job
 
 app = FastAPI(
     title="PrismVid AI Hub API",
@@ -163,7 +164,11 @@ async def run_transcription_if_needed(video_id: str, video_path: str) -> None:
             await db_client.create_analysis_log(video_id, 'INFO', 'Transcription skipped (already exists)')
             return
         await db_client.create_analysis_log(video_id, 'INFO', 'Transcription started (pipeline)')
-        result = await asyncio.to_thread(transcription_service.transcribe_video, video_path, None)
+
+        async def _whisper():
+            return await asyncio.to_thread(transcription_service.transcribe_video, video_path, None)
+
+        result = await run_transcription_job(f"pipeline_whisper:{video_id}", _whisper())
         await asyncio.to_thread(
             db_client.create_transcription,
             video_id,
@@ -180,53 +185,56 @@ async def run_transcription_if_needed(video_id: str, video_path: str) -> None:
 
 
 async def process_video_analysis(video_id: str, video_path: str):
-    try:
-        log_analysis_step(video_id, "scene_detection_start")
-        scenes = scene_detector.detect_scenes(video_path)
-        if not scenes:
-            log_error(video_id, "No scenes detected")
-            await db_client.update_video_status(video_id, "ERROR")
-            await db_client.create_analysis_log(video_id, "ERROR", "No scenes detected")
-            return
-        
-        log_analysis_step(video_id, "scene_detection_complete", {"scene_count": len(scenes)})
-        log_analysis_step(video_id, "keyframe_extraction_start")
-        keyframe_paths = keyframe_extractor.extract_scene_keyframes(video_path, scenes, video_id)
-        
-        for i, (start_time, end_time) in enumerate(scenes):
-            keyframe_path = keyframe_paths[i] if i < len(keyframe_paths) else None
-            scene_id = await db_client.create_scene(video_id, start_time, end_time, keyframe_path)
-            if keyframe_path:
-                try:
-                    await trigger_vision_analysis(scene_id, keyframe_path)
-                except Exception as vision_error:
-                    logger.error(f"Failed vision analysis for scene {scene_id}: {vision_error}")
-
-        await db_client.update_video_status(video_id, "ANALYZED")
-        await db_client.create_analysis_log(video_id, "INFO", "Scene detection completed")
-
-        await run_transcription_if_needed(video_id, video_path)
-
-        # Semantic vision (Qwen/OpenAI) and search index
+    async def _scene_pipeline():
         try:
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                qwen_url = f"{BACKEND_URL}/api/videos/{video_id}/qwenVL/analyze"
-                index_url = f"{BACKEND_URL}/api/search/videos/{video_id}/index"
-                r_q = await client.post(qwen_url, headers=_backend_headers())
-                if r_q.status_code >= 400:
-                    logger.error(
-                        f"Qwen VL trigger failed for {video_id}: {r_q.status_code} {r_q.text}"
-                    )
-                r_i = await client.post(index_url, headers=_backend_headers())
-                if r_i.status_code >= 400:
-                    logger.error(
-                        f"Search index trigger failed for {video_id}: {r_i.status_code} {r_i.text}"
-                    )
+            log_analysis_step(video_id, "scene_detection_start")
+            scenes = scene_detector.detect_scenes(video_path)
+            if not scenes:
+                log_error(video_id, "No scenes detected")
+                await db_client.update_video_status(video_id, "ERROR")
+                await db_client.create_analysis_log(video_id, "ERROR", "No scenes detected")
+                return
+
+            log_analysis_step(video_id, "scene_detection_complete", {"scene_count": len(scenes)})
+            log_analysis_step(video_id, "keyframe_extraction_start")
+            keyframe_paths = keyframe_extractor.extract_scene_keyframes(video_path, scenes, video_id)
+
+            for i, (start_time, end_time) in enumerate(scenes):
+                keyframe_path = keyframe_paths[i] if i < len(keyframe_paths) else None
+                scene_id = await db_client.create_scene(video_id, start_time, end_time, keyframe_path)
+                if keyframe_path:
+                    try:
+                        await trigger_vision_analysis(scene_id, keyframe_path)
+                    except Exception as vision_error:
+                        logger.error(f"Failed vision analysis for scene {scene_id}: {vision_error}")
+
+            await db_client.update_video_status(video_id, "ANALYZED")
+            await db_client.create_analysis_log(video_id, "INFO", "Scene detection completed")
+
+            await run_transcription_if_needed(video_id, video_path)
+
+            # Semantic vision (Qwen/OpenAI) and search index
+            try:
+                async with httpx.AsyncClient(timeout=120.0) as client:
+                    qwen_url = f"{BACKEND_URL}/api/videos/{video_id}/qwenVL/analyze"
+                    index_url = f"{BACKEND_URL}/api/search/videos/{video_id}/index"
+                    r_q = await client.post(qwen_url, headers=_backend_headers())
+                    if r_q.status_code >= 400:
+                        logger.error(
+                            f"Qwen VL trigger failed for {video_id}: {r_q.status_code} {r_q.text}"
+                        )
+                    r_i = await client.post(index_url, headers=_backend_headers())
+                    if r_i.status_code >= 400:
+                        logger.error(
+                            f"Search index trigger failed for {video_id}: {r_i.status_code} {r_i.text}"
+                        )
+            except Exception as e:
+                logger.error(f"Post-analysis backend calls failed for {video_id}: {e}")
         except Exception as e:
-            logger.error(f"Post-analysis backend calls failed for {video_id}: {e}")
-    except Exception as e:
-        log_error(video_id, f"Analysis failed: {str(e)}")
-        await db_client.update_video_status(video_id, "ERROR")
+            log_error(video_id, f"Analysis failed: {str(e)}")
+            await db_client.update_video_status(video_id, "ERROR")
+
+    await run_heavy_job(f"scene_pipeline:{video_id}", _scene_pipeline())
 
 async def trigger_vision_analysis(scene_id: str, keyframe_path: str):
     vision_result = vision_analyzer.analyze_scene(keyframe_path, scene_id)
@@ -253,7 +261,14 @@ async def transcribe_video(video_id: str, request: TranscriptionRequest = None):
     try:
         video = db_client.get_video(video_id)
         if not video: raise HTTPException(status_code=404, detail="Video not found")
-        result = transcription_service.transcribe_video(video["file_path"], language=request.language if request else None)
+        lang = request.language if request else None
+
+        async def _run():
+            return await asyncio.to_thread(
+                transcription_service.transcribe_video, video["file_path"], lang
+            )
+
+        result = await run_transcription_job(f"api_transcribe:{video_id}", _run())
         transcription_id = db_client.create_transcription(video_id=video_id, language=result["language"], segments=result["segments"])
         db_client.update_video_status_sync(video_id, "TRANSCRIBED")
         return TranscriptionResponse(transcription_id=transcription_id, language=result["language"], segment_count=len(result["segments"]), duration=result["duration"])
@@ -290,19 +305,22 @@ async def separate_audio(request: AnalysisRequest, background_tasks: BackgroundT
     return AnalysisResponse(message="Audio separation started", videoId=video_id, status="ANALYZING")
 
 async def process_audio_separation(video_id: str, video_path: str):
-    try:
-        log_analysis_step(video_id, "audio_separation_start")
-        storage_path = os.getenv('STORAGE_PATH', '/app/storage')
-        output_dir = f"{storage_path}/audio_stems/{video_id}"
-        os.makedirs(output_dir, exist_ok=True)
-        stem_paths = audio_separator.separate_audio(video_path, output_dir, video_id)
-        for stem_type, file_path in stem_paths.items():
-            db_client.create_audio_stem(video_id=video_id, scene_id=None, stem_type=stem_type, file_path=file_path, file_size=os.path.getsize(file_path))
-        db_client.update_video_status_sync(video_id, "ANALYZED")
-        db_client.create_analysis_log_sync(video_id, "INFO", "Audio separation completed")
-    except Exception as e:
-        log_error(video_id, f"Audio separation failed: {str(e)}")
-        db_client.update_video_status_sync(video_id, "ERROR")
+    async def _demucs():
+        try:
+            log_analysis_step(video_id, "audio_separation_start")
+            storage_path = os.getenv('STORAGE_PATH', '/app/storage')
+            output_dir = f"{storage_path}/audio_stems/{video_id}"
+            os.makedirs(output_dir, exist_ok=True)
+            stem_paths = audio_separator.separate_audio(video_path, output_dir, video_id)
+            for stem_type, file_path in stem_paths.items():
+                db_client.create_audio_stem(video_id=video_id, scene_id=None, stem_type=stem_type, file_path=file_path, file_size=os.path.getsize(file_path))
+            db_client.update_video_status_sync(video_id, "ANALYZED")
+            db_client.create_analysis_log_sync(video_id, "INFO", "Audio separation completed")
+        except Exception as e:
+            log_error(video_id, f"Audio separation failed: {str(e)}")
+            db_client.update_video_status_sync(video_id, "ERROR")
+
+    await run_heavy_job(f"demucs:{video_id}", _demucs())
 
 @app.post("/api/spleeter-separate/{video_id}")
 async def spleeter_separate_audio(video_id: str, background_tasks: BackgroundTasks):
@@ -317,20 +335,23 @@ async def spleeter_separate_audio(video_id: str, background_tasks: BackgroundTas
         raise HTTPException(status_code=500, detail=str(e))
 
 async def process_spleeter_separation(video_id: str, video_path: str):
-    try:
-        db_client.update_video_status_sync(video_id, "SEPARATING")
-        scenes = db_client.get_scenes_by_video_id(video_id)
-        for scene in scenes:
-            stem_paths = spleeter_service.separate_audio_for_timerange(
-                video_path=video_path, start_time=scene["start_time"], end_time=scene["end_time"],
-                video_id=video_id, scene_id=scene["id"], stem_types=['vocals', 'accompaniment', 'original']
-            )
-            for stem_type, stem_path in stem_paths.items():
-                db_client.create_audio_stem(video_id=video_id, scene_id=scene["id"], stem_type=stem_type, file_path=stem_path, file_size=os.path.getsize(stem_path), start_time=scene["start_time"], end_time=scene["end_time"])
-        db_client.update_video_status_sync(video_id, "ANALYZED")
-    except Exception as e:
-        log_error(video_id, f"Spleeter failed: {str(e)}")
-        db_client.update_video_status_sync(video_id, "ERROR")
+    async def _spleeter():
+        try:
+            db_client.update_video_status_sync(video_id, "SEPARATING")
+            scenes = db_client.get_scenes_by_video_id(video_id)
+            for scene in scenes:
+                stem_paths = spleeter_service.separate_audio_for_timerange(
+                    video_path=video_path, start_time=scene["start_time"], end_time=scene["end_time"],
+                    video_id=video_id, scene_id=scene["id"], stem_types=['vocals', 'accompaniment', 'original']
+                )
+                for stem_type, stem_path in stem_paths.items():
+                    db_client.create_audio_stem(video_id=video_id, scene_id=scene["id"], stem_type=stem_type, file_path=stem_path, file_size=os.path.getsize(stem_path), start_time=scene["start_time"], end_time=scene["end_time"])
+            db_client.update_video_status_sync(video_id, "ANALYZED")
+        except Exception as e:
+            log_error(video_id, f"Spleeter failed: {str(e)}")
+            db_client.update_video_status_sync(video_id, "ERROR")
+
+    await run_heavy_job(f"spleeter:{video_id}", _spleeter())
 
 # Saliency Endpoints
 @app.post("/saliency/analyze", response_model=SaliencyResponse)
@@ -340,19 +361,22 @@ async def analyze_saliency(request: SaliencyRequest, background_tasks: Backgroun
     return SaliencyResponse(message="Saliency analysis started", videoId=request.videoId, status="ANALYZING")
 
 async def process_saliency_analysis(video_id: str, video_path: str, sample_rate: int, aspect_ratio: tuple, max_frames: Optional[int]):
-    try:
-        result = saliency_detector.analyze_video(video_path=video_path, video_id=video_id, sample_rate=sample_rate, aspect_ratio=aspect_ratio, max_frames=max_frames)
-        roi_suggestions = []
-        for frame in result["frames"]:
-            if "roi_suggestions" in frame: roi_suggestions.extend(frame["roi_suggestions"])
-        await db_client.create_saliency_analysis(
-            video_id=video_id, scene_id=None, data_path=f"/Volumes/DOCKER_EXTERN/prismvid/storage/saliency/{video_id}/saliency_data.json",
-            heatmap_path=None, roi_data=json.dumps(roi_suggestions), frame_count=len(result["frames"]),
-            sample_rate=sample_rate, model_version=saliency_detector.model_type, processing_time=result["metadata"]["processing_stats"]["processing_time"]
-        )
-        logger.info(f"Saliency analysis complete for video {video_id}")
-    except Exception as e:
-        logger.error(f"Saliency analysis failed: {e}")
+    async def _saliency():
+        try:
+            result = saliency_detector.analyze_video(video_path=video_path, video_id=video_id, sample_rate=sample_rate, aspect_ratio=aspect_ratio, max_frames=max_frames)
+            roi_suggestions = []
+            for frame in result["frames"]:
+                if "roi_suggestions" in frame: roi_suggestions.extend(frame["roi_suggestions"])
+            await db_client.create_saliency_analysis(
+                video_id=video_id, scene_id=None, data_path=f"/Volumes/DOCKER_EXTERN/prismvid/storage/saliency/{video_id}/saliency_data.json",
+                heatmap_path=None, roi_data=json.dumps(roi_suggestions), frame_count=len(result["frames"]),
+                sample_rate=sample_rate, model_version=saliency_detector.model_type, processing_time=result["metadata"]["processing_stats"]["processing_time"]
+            )
+            logger.info(f"Saliency analysis complete for video {video_id}")
+        except Exception as e:
+            logger.error(f"Saliency analysis failed: {e}")
+
+    await run_heavy_job(f"saliency:{video_id}", _saliency())
 
 @app.post("/saliency/generate-heatmap", response_model=HeatmapResponse)
 async def generate_heatmap(request: HeatmapRequest, background_tasks: BackgroundTasks):

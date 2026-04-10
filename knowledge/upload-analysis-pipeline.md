@@ -8,6 +8,17 @@ Central URLs (do not hardcode in app code; use env):
 | Backend base (from analyzer) | `BACKEND_URL` |
 | Service auth (optional) | `INTERNAL_SERVICE_TOKEN` on backend, `BACKEND_INTERNAL_TOKEN` on analyzer (same value) |
 
+## Analyzer concurrency (CPU protection)
+
+Inside the **single** analyzer process, heavy work is gated by semaphores:
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `ANALYZER_MAX_CONCURRENT_HEAVY_JOBS` | `2` | Max parallel **scene pipelines** (`/analyze`), **full-video Demucs** (`/separate-audio`), **Spleeter**, **saliency** |
+| `ANALYZER_MAX_CONCURRENT_TRANSCRIPTIONS` | `1` | Max parallel **Whisper** runs (pipeline + `POST /api/transcribe/:id`) |
+
+This does **not** cap concurrent uploads at the HTTP layer across multiple analyzer replicas—each replica has its own limits. For hard caps on the host, set **CPU/memory limits** on the analyzer container in Coolify/Docker.
+
 ## Flow
 
 1. **Upload** (`POST /api/videos` or chunked): backend creates the video row, responds immediately, then `VideosController.triggerBackgroundProcesses` runs (delayed).
